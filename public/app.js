@@ -1,250 +1,439 @@
 const $ = (id) => document.getElementById(id);
-let currentUser = null;
-let students = [];
 
-async function api(path, options = {}) {
-  const res = await fetch(path, {
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    },
     ...options
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "حدث خطأ غير متوقع.");
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(data.message || 'حدث خطأ غير متوقع.');
+  }
+
   return data;
 }
 
-function showView(viewId) {
-  ["authView", "studentView", "adminView"].forEach(id => {
-    $(id).hidden = id !== viewId;
-  });
-}
-
-function showMessage(id, text, type = "") {
-  const el = $(id);
-  el.textContent = text || "";
-  el.hidden = !text;
-  el.className = `message ${type}`;
-}
-
-function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+function showMessage(element, message, success = false) {
+  if (!element) return;
+  element.textContent = message || '';
+  element.classList.toggle('success', success);
 }
 
 function formatDate(value) {
-  if (!value) return "";
-  try { return new Date(value).toLocaleString("ar-EG", { dateStyle: "medium", timeStyle: "short" }); }
-  catch { return value; }
-}
-
-function setToday() {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
-}
-
-function renderProfile(user) {
-  $("profileBox").innerHTML = `
-    <div class="profile-item"><small>الاسم</small><strong>${esc(user.fullName)}</strong></div>
-    <div class="profile-item"><small>التواصل</small><strong>${esc(user.login)}</strong></div>
-    <div class="profile-item"><small>السنة</small><strong>${esc(user.grade)}</strong></div>
-    <div class="profile-item"><small>الدرس</small><strong>${esc(user.subject)}</strong></div>
-    <div class="profile-item"><small>نوع الحصة</small><strong>${esc(user.mode)}</strong></div>
-    <div class="profile-item"><small>نوع الحساب</small><strong>${user.role === "admin" ? "مدرس" : "طالب"}</strong></div>`;
-}
-
-async function loadStudent() {
-  const data = await api("/api/student/dashboard");
-  currentUser = data.user;
-  $("studentWelcome").textContent = `أهلاً ${data.user.fullName}`;
-  $("studentMeta").textContent = `${data.user.grade} • ${data.user.subject} • ${data.user.mode}`;
-  renderProfile(data.user);
-
-  const lecture = data.lecture || {};
-  const state = lecture.state || {};
-  $("lectureTitle").textContent = lecture.title || "المحاضرة القادمة";
-  $("lectureTime").textContent = lecture.scheduledAt ? `الموعد: ${formatDate(lecture.scheduledAt)}` : "لم يتم تحديد موعد بعد.";
-  $("lectureBadge").textContent = lecture.url ? "متاح" : (state.reason === "not-yet" ? "قريباً" : "غير متاح");
-  $("lectureBadge").classList.toggle("live", !!lecture.url);
-  $("lectureWaiting").hidden = !!lecture.url;
-  $("lectureLink").hidden = !lecture.url;
-  if (lecture.url) $("lectureLink").href = lecture.url;
-  $("checkinButton").hidden = !(state.visible && lecture.url);
-
-  const rows = data.attendance || [];
-  $("studentAttendance").innerHTML = rows.length
-    ? rows.map(r => `<tr><td>${esc(r.date)}</td><td>${esc(r.status)}</td><td>${r.method === "admin" ? "المدرس" : "الطالب"}</td></tr>`).join("")
-    : `<tr><td colspan="3">لا يوجد سجل حضور حتى الآن.</td></tr>`;
-}
-
-async function loadAdmin() {
-  const users = await api("/api/admin/users");
-  students = users.users || [];
-  $("statStudents").textContent = students.length;
-  renderStudents();
-
-  const setting = await api("/api/admin/settings");
-  const s = setting.settings || {};
-  $("adminLectureTitle").value = s.lecture_title || "المحاضرة القادمة";
-  $("adminLectureUrl").value = s.lecture_url || "";
-  $("adminScheduledAt").value = s.scheduled_at ? new Date(s.scheduled_at).toISOString().slice(0,16) : "";
-
-  if (!$("attendanceDate").value) $("attendanceDate").value = setToday();
-  await loadAttendance();
-}
-
-function renderStudents() {
-  $("studentsTable").innerHTML = students.length ? students.map(u => `
-    <tr>
-      <td>${esc(u.fullName)}</td>
-      <td>${esc(u.login)}</td>
-      <td>${esc(u.grade)}</td>
-      <td>${esc(u.subject)}</td>
-      <td>${esc(u.mode)}</td>
-      <td class="${u.active ? "status-active" : "status-inactive"}">${u.active ? "مفعل" : "متوقف"}</td>
-      <td>
-        <button class="action-btn ${u.active ? "danger" : "success"}" data-toggle="${esc(u.id)}">${u.active ? "إيقاف" : "تفعيل"}</button>
-        <button class="action-btn danger" data-delete="${esc(u.id)}">حذف</button>
-      </td>
-    </tr>`).join("") : `<tr><td colspan="7">لا يوجد طلاب حتى الآن.</td></tr>`;
-
-  $("studentsTable").querySelectorAll("[data-toggle]").forEach(btn => btn.onclick = async () => {
-    const user = students.find(u => u.id === btn.dataset.toggle);
-    if (!user) return;
-    try {
-      await api(`/api/admin/users/${user.id}`, { method:"PATCH", body: JSON.stringify({active: !user.active}) });
-      await loadAdmin();
-    } catch (e) { alert(e.message); }
-  });
-
-  $("studentsTable").querySelectorAll("[data-delete]").forEach(btn => btn.onclick = async () => {
-    const user = students.find(u => u.id === btn.dataset.delete);
-    if (!user || !confirm(`حذف حساب ${user.fullName}؟`)) return;
-    try {
-      await api(`/api/admin/users/${user.id}`, { method:"DELETE" });
-      await loadAdmin();
-    } catch (e) { alert(e.message); }
+  if (!value) return 'غير محدد';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString('ar-EG', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
   });
 }
 
-async function loadAttendance() {
-  const date = $("attendanceDate").value || setToday();
-  const data = await api(`/api/admin/attendance?date=${encodeURIComponent(date)}`);
-  const rows = data.rows || [];
-  $("statPresent").textContent = rows.filter(r => r.status === "حاضر").length;
-  $("statAbsent").textContent = rows.filter(r => r.status === "غائب").length;
-
-  $("attendanceTable").innerHTML = rows.length ? rows.map(r => `
-    <tr>
-      <td>${esc(r.fullName)}</td>
-      <td>${esc(r.grade)}</td>
-      <td>${esc(r.subject)}</td>
-      <td class="${r.status === "حاضر" ? "status-present" : r.status === "غائب" ? "status-absent" : ""}">${esc(r.status)}</td>
-      <td>
-        <select class="attendance-select" data-user="${esc(r.userId)}">
-          <option ${r.status === "غير محدد" ? "selected" : ""}>غير محدد</option>
-          <option ${r.status === "حاضر" ? "selected" : ""}>حاضر</option>
-          <option ${r.status === "غائب" ? "selected" : ""}>غائب</option>
-        </select>
-      </td>
-    </tr>`).join("") : `<tr><td colspan="5">لا يوجد طلاب.</td></tr>`;
-
-  $("attendanceTable").querySelectorAll("[data-user]").forEach(sel => sel.onchange = async () => {
-    try {
-      await api("/api/admin/attendance", {
-        method:"POST",
-        body:JSON.stringify({userId:sel.dataset.user,date,status:sel.value})
-      });
-      await loadAttendance();
-    } catch(e) { alert(e.message); }
-  });
+function localDateValue(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
-async function logout() {
-  try { await api("/api/logout", {method:"POST"}); }
-  finally { currentUser = null; showView("authView"); }
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
-$("showRegister").onclick = () => {
-  $("loginPanel").hidden = true;
-  $("registerPanel").hidden = false;
-  showMessage("authMessage", "");
-};
-$("showLogin").onclick = () => {
-  $("registerPanel").hidden = true;
-  $("loginPanel").hidden = false;
-  showMessage("authMessage", "");
-};
+/* =========================
+   Login / Register page
+========================= */
 
-$("loginForm").onsubmit = async e => {
-  e.preventDefault();
-  try {
-    const data = await api("/api/login", {method:"POST", body:JSON.stringify({login:$("loginInput").value.trim(),password:$("loginPassword").value})});
-    currentUser = data.user;
-    if (currentUser.role === "admin") { showView("adminView"); await loadAdmin(); }
-    else { showView("studentView"); await loadStudent(); }
-  } catch(e) { showMessage("authMessage", e.message, "error"); }
-};
+const loginForm = $('loginForm');
+const registerForm = $('registerForm');
+const toggleAuth = $('toggleAuth');
 
-$("registerForm").onsubmit = async e => {
-  e.preventDefault();
-  if ($("registerPassword").value !== $("confirmPassword").value) {
-    showMessage("authMessage", "الباسورد وتأكيد الباسورد مش متطابقين.", "error");
-    return;
+if (loginForm && registerForm) {
+  let registerMode = false;
+
+  function updateAuthMode() {
+    registerMode = !registerMode;
+    loginForm.classList.toggle('hidden', registerMode);
+    registerForm.classList.toggle('hidden', !registerMode);
+    $('authTitle').textContent = registerMode ? 'إنشاء حساب' : 'تسجيل الدخول';
+    $('authSubtitle').textContent = registerMode
+      ? 'أنشئ حسابك وابدأ استخدام المنصة.'
+      : 'ادخل بياناتك للوصول إلى المنصة.';
+    toggleAuth.textContent = registerMode
+      ? 'العودة لتسجيل الدخول'
+      : 'إنشاء حساب جديد';
   }
-  try {
-    await api("/api/register", {method:"POST", body:JSON.stringify({
-      fullName:$("fullName").value.trim(),
-      login:$("registerLogin").value.trim(),
-      grade:$("grade").value,
-      subject:$("subject").value,
-      mode:$("mode").value,
-      password:$("registerPassword").value
-    })});
-    $("registerForm").reset();
-    $("registerPanel").hidden = true;
-    $("loginPanel").hidden = false;
-    showMessage("authMessage", "تم إنشاء الحساب بنجاح. سجّل الدخول الآن.", "success");
-  } catch(e) { showMessage("authMessage", e.message, "error"); }
-};
 
-$("studentLogout").onclick = logout;
-$("adminLogout").onclick = logout;
-$("checkinButton").onclick = async () => {
-  try {
-    const d = await api("/api/student/checkin", {method:"POST"});
-    showMessage("studentMessage", d.message, "success");
-    await loadStudent();
-  } catch(e) { showMessage("studentMessage", e.message, "error"); }
-};
+  toggleAuth.addEventListener('click', updateAuthMode);
 
-$("lectureForm").onsubmit = async e => {
-  e.preventDefault();
-  try {
-    await api("/api/admin/settings", {method:"PUT", body:JSON.stringify({
-      lectureTitle:$("adminLectureTitle").value.trim(),
-      lectureUrl:$("adminLectureUrl").value.trim(),
-      scheduledAt:$("adminScheduledAt").value
-    })});
-    showMessage("adminLectureMessage", "تم حفظ المحاضرة والموعد.", "success");
-  } catch(e) { showMessage("adminLectureMessage", e.message, "error"); }
-};
+  loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    showMessage($('loginMessage'), 'جاري تسجيل الدخول...', false);
 
-$("clearLecture").onclick = async () => {
-  try {
-    const d = await api("/api/admin/settings", {method:"DELETE"});
-    showMessage("adminLectureMessage", d.message, "success");
-    await loadAdmin();
-  } catch(e) { showMessage("adminLectureMessage", e.message, "error"); }
-};
+    try {
+      const data = await api('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          login: $('login').value.trim(),
+          password: $('password').value
+        })
+      });
 
-$("refreshStudents").onclick = () => loadAdmin().catch(e => alert(e.message));
-$("attendanceDate").onchange = () => loadAttendance().catch(e => alert(e.message));
+      showMessage($('loginMessage'), data.message || 'تم تسجيل الدخول.', true);
+      setTimeout(() => {
+        window.location.href = '/dashboard.html';
+      }, 250);
+    } catch (error) {
+      showMessage($('loginMessage'), error.message);
+    }
+  });
 
-(async function boot(){
-  try {
-    const data = await api("/api/me");
-    currentUser = data.user;
-    if (currentUser.role === "admin") { showView("adminView"); await loadAdmin(); }
-    else { showView("studentView"); await loadStudent(); }
-  } catch { showView("authView"); }
-})();
+  registerForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    showMessage($('registerMessage'), 'جاري إنشاء الحساب...', false);
+
+    try {
+      const data = await api('/api/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          fullName: $('fullName').value.trim(),
+          login: $('registerLogin').value.trim(),
+          grade: $('grade').value,
+          subject: $('subject').value,
+          mode: $('mode').value,
+          password: $('registerPassword').value,
+          confirmPassword: $('confirmPassword').value
+        })
+      });
+
+      showMessage($('registerMessage'), data.message || 'تم إنشاء الحساب.', true);
+      registerForm.reset();
+      setTimeout(() => updateAuthMode(), 700);
+    } catch (error) {
+      showMessage($('registerMessage'), error.message);
+    }
+  });
+}
+
+/* =========================
+   Dashboard
+========================= */
+
+const studentView = $('studentView');
+const adminView = $('adminView');
+
+if (studentView || adminView) {
+  let currentUser = null;
+  let usersCache = [];
+
+  async function loadMe() {
+    try {
+      const data = await api('/api/me');
+      currentUser = data.user;
+
+      $('userName').textContent = currentUser.fullName;
+      $('dashboardRole').textContent = currentUser.role === 'admin'
+        ? 'لوحة المدرس'
+        : 'لوحة الطالب';
+
+      if (currentUser.role === 'admin') {
+        adminView.classList.remove('hidden');
+        await loadAdmin();
+      } else {
+        studentView.classList.remove('hidden');
+        await loadStudent();
+      }
+    } catch (error) {
+      window.location.href = '/';
+    }
+  }
+
+  async function loadStudent() {
+    const data = await api('/api/student/dashboard');
+    const user = data.user;
+    const lecture = data.lecture;
+
+    $('studentName').textContent = user.fullName;
+    $('studentGrade').textContent = user.grade;
+    $('studentSubject').textContent = user.subject;
+    $('studentMode').textContent = user.mode;
+
+    $('profileName').textContent = user.fullName;
+    $('profileLogin').textContent = user.login;
+    $('profileGrade').textContent = user.grade;
+    $('profileSubject').textContent = user.subject;
+
+    $('lectureTitle').textContent = lecture.title || 'المحاضرة القادمة';
+    $('lectureTime').textContent = lecture.scheduledAt
+      ? formatDate(lecture.scheduledAt)
+      : 'لم يتم تحديد موعد بعد.';
+
+    const available = Boolean(lecture.url && lecture.state?.visible);
+    const badge = $('lectureBadge');
+    const link = $('lectureLink');
+    const checkin = $('checkinBtn');
+
+    if (available) {
+      badge.textContent = 'متاحة الآن';
+      badge.className = 'status-badge live';
+      link.href = lecture.url;
+      link.classList.remove('disabled-link');
+      $('lectureNote').textContent = 'المحاضرة متاحة، اضغط للدخول وتابع تسجيل حضورك.';
+      checkin.disabled = false;
+    } else {
+      badge.textContent = 'غير متاحة';
+      badge.className = 'status-badge neutral';
+      link.href = '#';
+      link.classList.add('disabled-link');
+      $('lectureNote').textContent = lecture.scheduledAt
+        ? 'رابط المحاضرة سيظهر قبل الموعد بخمس دقائق.'
+        : 'انتظر تحديث موعد ورابط المحاضرة من المدرس.';
+      checkin.disabled = true;
+    }
+
+    const body = $('studentAttendanceBody');
+    const rows = data.attendance || [];
+
+    body.innerHTML = rows.length
+      ? rows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.date)}</td>
+            <td><span class="status-badge ${row.status === 'حاضر' ? 'live' : 'neutral'}">${escapeHtml(row.status)}</span></td>
+            <td>${escapeHtml(row.method)}</td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="3">لا يوجد سجل حضور حتى الآن.</td></tr>';
+  }
+
+  async function loadAdmin() {
+    await Promise.all([
+      loadAdminUsers(),
+      loadAdminSettings(),
+      loadAdminAttendance()
+    ]);
+  }
+
+  async function loadAdminUsers() {
+    const data = await api('/api/admin/users');
+    usersCache = data.users || [];
+    $('totalStudents').textContent = usersCache.length;
+    renderUsers();
+  }
+
+  function renderUsers() {
+    const body = $('usersBody');
+
+    body.innerHTML = usersCache.length
+      ? usersCache.map((user) => `
+          <tr>
+            <td>${escapeHtml(user.fullName)}</td>
+            <td>${escapeHtml(user.login)}</td>
+            <td>${escapeHtml(user.grade)}</td>
+            <td>${escapeHtml(user.subject)}</td>
+            <td>${escapeHtml(user.mode)}</td>
+            <td><span class="status-badge ${user.active ? 'live' : 'neutral'}">${user.active ? 'نشط' : 'موقوف'}</span></td>
+            <td>
+              <button class="table-action" data-toggle-user="${escapeHtml(user.id)}">${user.active ? 'إيقاف' : 'تفعيل'}</button>
+              <button class="table-action danger" data-delete-user="${escapeHtml(user.id)}">حذف</button>
+            </td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="7">لا يوجد طلاب حتى الآن.</td></tr>';
+  }
+
+  async function toggleUser(id) {
+    const user = usersCache.find((item) => item.id === id);
+    if (!user) return;
+
+    await api(`/api/admin/users/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ active: !user.active })
+    });
+
+    await loadAdminUsers();
+  }
+
+  async function deleteUser(id) {
+    const user = usersCache.find((item) => item.id === id);
+    if (!user) return;
+
+    const yes = window.confirm(`هل تريد حذف الطالب ${user.fullName}؟`);
+    if (!yes) return;
+
+    await api(`/api/admin/users/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+
+    await loadAdminUsers();
+    await loadAdminAttendance();
+  }
+
+  $('usersBody')?.addEventListener('click', async (event) => {
+    const toggle = event.target.closest('[data-toggle-user]');
+    const remove = event.target.closest('[data-delete-user]');
+
+    try {
+      if (toggle) await toggleUser(toggle.dataset.toggleUser);
+      if (remove) await deleteUser(remove.dataset.deleteUser);
+    } catch (error) {
+      showMessage($('pageMessage'), error.message);
+    }
+  });
+
+  async function loadAdminSettings() {
+    const data = await api('/api/admin/settings');
+    const settings = data.settings || {};
+
+    $('lectureTitleInput').value = settings.lecture_title || '';
+    $('lectureUrlInput').value = settings.lecture_url || '';
+    $('scheduledAtInput').value = settings.scheduled_at || '';
+  }
+
+  $('settingsForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    showMessage($('settingsMessage'), 'جاري الحفظ...');
+
+    try {
+      const data = await api('/api/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          lectureTitle: $('lectureTitleInput').value.trim(),
+          lectureUrl: $('lectureUrlInput').value.trim(),
+          scheduledAt: $('scheduledAtInput').value
+        })
+      });
+
+      showMessage($('settingsMessage'), data.message, true);
+      await loadAdminSettings();
+    } catch (error) {
+      showMessage($('settingsMessage'), error.message);
+    }
+  });
+
+  $('clearLectureBtn')?.addEventListener('click', async () => {
+    try {
+      await api('/api/admin/settings', { method: 'DELETE' });
+      showMessage($('settingsMessage'), 'تم مسح المحاضرة الحالية.', true);
+      await loadAdminSettings();
+    } catch (error) {
+      showMessage($('settingsMessage'), error.message);
+    }
+  });
+
+  const attendanceDate = $('attendanceDate');
+  if (attendanceDate) {
+    attendanceDate.value = localDateValue();
+    attendanceDate.addEventListener('change', loadAdminAttendance);
+  }
+
+  $('refreshUsersBtn')?.addEventListener('click', async () => {
+    try {
+      await loadAdminUsers();
+      await loadAdminAttendance();
+      showMessage($('pageMessage'), 'تم تحديث البيانات.', true);
+    } catch (error) {
+      showMessage($('pageMessage'), error.message);
+    }
+  });
+
+  async function loadAdminAttendance() {
+    const date = attendanceDate?.value || localDateValue();
+    const data = await api(`/api/admin/attendance?date=${encodeURIComponent(date)}`);
+    const rows = data.rows || [];
+
+    const present = rows.filter((row) => row.status === 'حاضر').length;
+    const absent = rows.filter((row) => row.status === 'غائب').length;
+
+    $('presentToday').textContent = present;
+    $('absentToday').textContent = absent;
+
+    const total = usersCache.length;
+    const percent = total ? Math.round((present / total) * 100) : 0;
+    $('todayAttendancePercent').textContent = `${percent}%`;
+    $('todayProgress').style.width = `${percent}%`;
+    $('attendanceDateLabel').textContent = date;
+
+    const body = $('adminAttendanceBody');
+    body.innerHTML = rows.length
+      ? rows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.fullName)}</td>
+            <td>${escapeHtml(row.login)}</td>
+            <td>
+              <select class="table-select" data-status-user="${escapeHtml(row.userId)}">
+                <option value="غير محدد" ${row.status === 'غير محدد' ? 'selected' : ''}>غير محدد</option>
+                <option value="حاضر" ${row.status === 'حاضر' ? 'selected' : ''}>حاضر</option>
+                <option value="غائب" ${row.status === 'غائب' ? 'selected' : ''}>غائب</option>
+              </select>
+            </td>
+            <td><button class="table-action" data-save-attendance="${escapeHtml(row.userId)}">حفظ</button></td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="4">لا يوجد طلاب.</td></tr>';
+  }
+
+  $('adminAttendanceBody')?.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-save-attendance]');
+    if (!button) return;
+
+    const userId = button.dataset.saveAttendance;
+    const select = document.querySelector(`[data-status-user="${CSS.escape(userId)}"]`);
+    if (!select) return;
+
+    try {
+      const data = await api('/api/admin/attendance', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId,
+          date: attendanceDate.value,
+          status: select.value
+        })
+      });
+
+      showMessage($('pageMessage'), data.message, true);
+      await loadAdminAttendance();
+    } catch (error) {
+      showMessage($('pageMessage'), error.message);
+    }
+  });
+
+  $('checkinBtn')?.addEventListener('click', async () => {
+    showMessage($('studentActionMessage'), 'جاري تسجيل الحضور...');
+
+    try {
+      const data = await api('/api/student/checkin', {
+        method: 'POST'
+      });
+      showMessage($('studentActionMessage'), data.message, true);
+      await loadStudent();
+    } catch (error) {
+      showMessage($('studentActionMessage'), error.message);
+    }
+  });
+
+  $('logoutBtn')?.addEventListener('click', async () => {
+    try {
+      await api('/api/logout', { method: 'POST' });
+    } finally {
+      window.location.href = '/';
+    }
+  });
+
+  loadMe();
+}
