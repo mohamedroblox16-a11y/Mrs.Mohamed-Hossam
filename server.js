@@ -30,11 +30,7 @@ const validUrl = (value) => {
 
   try {
     const url = new URL(value);
-
-    return (
-      url.protocol === 'http:' ||
-      url.protocol === 'https:'
-    );
+    return url.protocol === 'http:' || url.protocol === 'https:';
   } catch {
     return false;
   }
@@ -56,6 +52,36 @@ const safeUser = (user) => {
   };
 };
 
+const DEFAULT_ADMIN_LOGIN = 'admin';
+const DEFAULT_ADMIN_PASSWORD = '123456';
+
+function configuredAdminLogin() {
+  return normalizeLogin(
+    env.ADMIN_LOGIN || DEFAULT_ADMIN_LOGIN
+  );
+}
+
+function configuredAdminPassword() {
+  return String(
+    env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
+  );
+}
+
+function isAdminCredentials(login, password) {
+  const configuredLogin = configuredAdminLogin();
+  const configuredPassword = configuredAdminPassword();
+
+  const defaultMatch =
+    login === DEFAULT_ADMIN_LOGIN &&
+    password === DEFAULT_ADMIN_PASSWORD;
+
+  const configuredMatch =
+    login === configuredLogin &&
+    password === configuredPassword;
+
+  return defaultMatch || configuredMatch;
+}
+
 /* =========================
    Health
 ========================= */
@@ -69,12 +95,13 @@ app.get('/api/health', (req, res) => {
 });
 
 /* =========================
-   Session
+   Session / Cookie
 ========================= */
 
 async function sign(value) {
   const secret = String(
-    env.SESSION_SECRET || 'change-this-secret'
+    env.SESSION_SECRET ||
+      'mohamed-hossam-session-secret-2026'
   );
 
   const key = await crypto.subtle.importKey(
@@ -95,7 +122,9 @@ async function sign(value) {
   );
 
   return Array.from(new Uint8Array(signature))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .map((byte) =>
+      byte.toString(16).padStart(2, '0')
+    )
     .join('');
 }
 
@@ -167,51 +196,34 @@ async function currentUser(req) {
 }
 
 /* =========================
-   Admin creation / sync
+   Ensure Admin Account
 ========================= */
 
-async function ensureAdmin() {
-  const adminLogin = normalizeLogin(
-    env.ADMIN_LOGIN
-  );
+async function ensureAdminAccount() {
+  const login = configuredAdminLogin();
+  const password = configuredAdminPassword();
 
-  const adminPassword = String(
-    env.ADMIN_PASSWORD || ''
-  );
-
-  if (!adminLogin || !adminPassword) {
-    console.warn(
-      'ADMIN_LOGIN أو ADMIN_PASSWORD غير موجودين.'
-    );
-    return;
-  }
-
-  const found = await DB()
+  const existing = await DB()
     .prepare(`
       SELECT *
       FROM users
       WHERE login = ?
       LIMIT 1
     `)
-    .bind(adminLogin)
+    .bind(login)
     .first();
 
   const passwordHash = await bcrypt.hash(
-    adminPassword,
+    password,
     12
   );
 
-  /* =========================
-     Admin موجود
-  ========================= */
-
-  if (found) {
+  if (existing) {
     await DB()
       .prepare(`
         UPDATE users
         SET
           full_name = ?,
-          login = ?,
           grade = ?,
           subject = ?,
           mode = ?,
@@ -222,23 +234,23 @@ async function ensureAdmin() {
       `)
       .bind(
         'مستر محمد حسام',
-        adminLogin,
         'مدرس',
         'كل المواد',
         'إدارة المنصة',
         passwordHash,
-        found.id
+        existing.id
       )
       .run();
 
-    console.log('Admin account synchronized.');
-
-    return;
+    return DB()
+      .prepare(
+        'SELECT * FROM users WHERE id = ? LIMIT 1'
+      )
+      .bind(existing.id)
+      .first();
   }
 
-  /* =========================
-     Admin غير موجود
-  ========================= */
+  const id = crypto.randomUUID();
 
   await DB()
     .prepare(`
@@ -268,9 +280,9 @@ async function ensureAdmin() {
       )
     `)
     .bind(
-      crypto.randomUUID(),
+      id,
       'مستر محمد حسام',
-      adminLogin,
+      login,
       'مدرس',
       'كل المواد',
       'إدارة المنصة',
@@ -279,51 +291,16 @@ async function ensureAdmin() {
     )
     .run();
 
-  console.log('Admin account created.');
-}
-
-let adminInitPromise = null;
-
-async function ensureAdminOnce() {
-  if (!adminInitPromise) {
-    adminInitPromise = ensureAdmin().catch(
-      (error) => {
-        adminInitPromise = null;
-        throw error;
-      }
-    );
-  }
-
-  return adminInitPromise;
+  return DB()
+    .prepare(
+      'SELECT * FROM users WHERE id = ? LIMIT 1'
+    )
+    .bind(id)
+    .first();
 }
 
 /* =========================
-   API initialization
-========================= */
-
-app.use(async (req, res, next) => {
-  if (!req.path.startsWith('/api/')) {
-    return next();
-  }
-
-  try {
-    await ensureAdminOnce();
-    return next();
-  } catch (error) {
-    console.error(
-      'Admin initialization error:',
-      error
-    );
-
-    return res.status(500).json({
-      message: 'تعذر تجهيز حساب المدرس.',
-      error: error?.message || 'Unknown error'
-    });
-  }
-});
-
-/* =========================
-   Auth middleware
+   Auth Middleware
 ========================= */
 
 async function requireAuth(req, res, next) {
@@ -404,9 +381,10 @@ function lectureState(settings) {
     };
   }
 
-  const scheduledTime = new Date(
-    settings.scheduled_at
-  ).getTime();
+  const scheduledTime =
+    new Date(
+      settings.scheduled_at
+    ).getTime();
 
   if (Number.isNaN(scheduledTime)) {
     return {
@@ -416,9 +394,11 @@ function lectureState(settings) {
   }
 
   const showAt =
-    scheduledTime - 5 * 60 * 1000;
+    scheduledTime -
+    5 * 60 * 1000;
 
-  const visible = Date.now() >= showAt;
+  const visible =
+    Date.now() >= showAt;
 
   return {
     visible,
@@ -428,7 +408,9 @@ function lectureState(settings) {
     showAt:
       new Date(showAt).toISOString(),
     scheduledAt:
-      new Date(scheduledTime).toISOString()
+      new Date(
+        scheduledTime
+      ).toISOString()
   };
 }
 
@@ -457,27 +439,50 @@ app.post(
       const {
         fullName,
         login,
+        username,
+        phoneOrDiscord,
+        phone,
+        identifier,
         grade,
         subject,
         mode,
-        password
+        password,
+        confirmPassword,
+        passwordConfirm
       } = req.body || {};
 
-      const name = String(
-        fullName || ''
-      ).trim();
+      const name =
+        String(
+          fullName || ''
+        ).trim();
 
-      const userLogin = normalizeLogin(
-        login
-      );
+      const rawLogin =
+        login ??
+        username ??
+        phoneOrDiscord ??
+        phone ??
+        identifier ??
+        '';
 
-      const passwordText = String(
-        password || ''
-      );
+      const userLogin =
+        normalizeLogin(rawLogin);
 
-      const nameParts = name
-        .split(/\s+/)
-        .filter(Boolean);
+      const passwordText =
+        String(
+          password || ''
+        );
+
+      const confirmation =
+        String(
+          confirmPassword ??
+          passwordConfirm ??
+          passwordText
+        );
+
+      const nameParts =
+        name
+          .split(/\s+/)
+          .filter(Boolean);
 
       if (nameParts.length !== 3) {
         return res.status(400).json({
@@ -505,15 +510,38 @@ app.post(
         });
       }
 
-      const existing = await DB()
-        .prepare(`
-          SELECT id
-          FROM users
-          WHERE login = ?
-          LIMIT 1
-        `)
-        .bind(userLogin)
-        .first();
+      if (
+        passwordText !==
+        confirmation
+      ) {
+        return res.status(400).json({
+          message:
+            'تأكيد الباسورد غير مطابق.'
+        });
+      }
+
+      if (
+        userLogin ===
+          DEFAULT_ADMIN_LOGIN ||
+        userLogin ===
+          configuredAdminLogin()
+      ) {
+        return res.status(409).json({
+          message:
+            'اسم الدخول ده محجوز للمدرس.'
+        });
+      }
+
+      const existing =
+        await DB()
+          .prepare(`
+            SELECT id
+            FROM users
+            WHERE login = ?
+            LIMIT 1
+          `)
+          .bind(userLogin)
+          .first();
 
       if (existing) {
         return res.status(409).json({
@@ -593,141 +621,67 @@ app.post(
   '/api/login',
   async (req, res) => {
     try {
-      const login = normalizeLogin(
-        req.body?.login
-      );
+      const login =
+        normalizeLogin(
+          req.body?.login ??
+          req.body?.username ??
+          req.body?.phoneOrDiscord ??
+          req.body?.phone ??
+          req.body?.identifier ??
+          req.body?.userLogin ??
+          ''
+        );
 
-      const password = String(
-        req.body?.password || ''
-      );
+      const password =
+        String(
+          req.body?.password ??
+          req.body?.pass ??
+          ''
+        );
 
-      const adminLogin = normalizeLogin(
-        env.ADMIN_LOGIN
-      );
-
-      const adminPassword = String(
-        env.ADMIN_PASSWORD || ''
-      );
-
-      /* =========================
-         Admin direct login
-      ========================= */
+      /*
+         Admin:
+         يقبل admin / 123456
+         وكذلك Secrets لو اتغيرت
+      */
 
       if (
-        adminLogin &&
-        adminPassword &&
-        login === adminLogin &&
-        password === adminPassword
+        isAdminCredentials(
+          login,
+          password
+        )
       ) {
-        let admin = await DB()
-          .prepare(`
-            SELECT *
-            FROM users
-            WHERE login = ?
-            LIMIT 1
-          `)
-          .bind(adminLogin)
-          .first();
+        let admin;
 
-        const passwordHash =
-          await bcrypt.hash(
-            adminPassword,
-            12
+        try {
+          admin =
+            await ensureAdminAccount();
+        } catch (adminError) {
+          console.error(
+            'Admin sync error:',
+            adminError
           );
 
-        /* Admin غير موجود */
+          return res.status(500).json({
+            message:
+              'تعذر تجهيز حساب المدرس.',
+            error:
+              adminError?.message ||
+              'Unknown error'
+          });
+        }
+
         if (!admin) {
-          const adminId =
-            crypto.randomUUID();
-
-          await DB()
-            .prepare(`
-              INSERT INTO users (
-                id,
-                full_name,
-                login,
-                grade,
-                subject,
-                mode,
-                role,
-                active,
-                created_at,
-                password_hash
-              )
-              VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                'admin',
-                1,
-                ?,
-                ?
-              )
-            `)
-            .bind(
-              adminId,
-              'مستر محمد حسام',
-              adminLogin,
-              'مدرس',
-              'كل المواد',
-              'إدارة المنصة',
-              nowIso(),
-              passwordHash
-            )
-            .run();
-
-          admin = await DB()
-            .prepare(`
-              SELECT *
-              FROM users
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(adminId)
-            .first();
-        } else {
-          /* Admin موجود: نضمن البيانات والباسورد */
-          await DB()
-            .prepare(`
-              UPDATE users
-              SET
-                full_name = ?,
-                login = ?,
-                grade = ?,
-                subject = ?,
-                mode = ?,
-                role = 'admin',
-                active = 1,
-                password_hash = ?
-              WHERE id = ?
-            `)
-            .bind(
-              'مستر محمد حسام',
-              adminLogin,
-              'مدرس',
-              'كل المواد',
-              'إدارة المنصة',
-              passwordHash,
-              admin.id
-            )
-            .run();
-
-          admin = await DB()
-            .prepare(`
-              SELECT *
-              FROM users
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(admin.id)
-            .first();
+          return res.status(500).json({
+            message:
+              'تعذر تجهيز حساب المدرس.'
+          });
         }
 
         const sessionValue =
-          await makeSession(admin.id);
+          await makeSession(
+            admin.id
+          );
 
         res.setHeader(
           'Set-Cookie',
@@ -748,15 +702,16 @@ app.post(
          Student login
       ========================= */
 
-      const user = await DB()
-        .prepare(`
-          SELECT *
-          FROM users
-          WHERE login = ?
-          LIMIT 1
-        `)
-        .bind(login)
-        .first();
+      const user =
+        await DB()
+          .prepare(`
+            SELECT *
+            FROM users
+            WHERE login = ?
+            LIMIT 1
+          `)
+          .bind(login)
+          .first();
 
       if (!user || !user.active) {
         return res.status(401).json({
@@ -769,7 +724,8 @@ app.post(
         await bcrypt.compare(
           password,
           String(
-            user.password_hash || ''
+            user.password_hash ||
+            ''
           )
         );
 
@@ -781,7 +737,9 @@ app.post(
       }
 
       const sessionValue =
-        await makeSession(user.id);
+        await makeSession(
+          user.id
+        );
 
       res.setHeader(
         'Set-Cookie',
@@ -841,6 +799,13 @@ app.get(
   requireAuth,
   async (req, res) => {
     try {
+      if (req.user.role === 'admin') {
+        return res.status(403).json({
+          message:
+            'حساب المدرس لا يستخدم لوحة الطالب.'
+        });
+      }
+
       const settings =
         await DB()
           .prepare(`
@@ -882,10 +847,8 @@ app.get(
 
           url:
             state.visible
-              ? (
-                  settings?.lecture_url ||
-                  ''
-                )
+              ? settings?.lecture_url ||
+                ''
               : '',
 
           scheduledAt:
@@ -896,7 +859,8 @@ app.get(
         },
 
         attendance:
-          rows.results || []
+          rows.results ||
+          []
       });
     } catch (error) {
       console.error(
@@ -921,7 +885,10 @@ app.post(
   requireAuth,
   async (req, res) => {
     try {
-      if (req.user.role !== 'student') {
+      if (
+        req.user.role !==
+        'student'
+      ) {
         return res.status(400).json({
           message:
             'حساب المدرس لا يحتاج تسجيل حضور.'
@@ -951,7 +918,8 @@ app.post(
         });
       }
 
-      const date = today();
+      const date =
+        today();
 
       const already =
         await DB()
@@ -985,7 +953,14 @@ app.post(
             method,
             created_at
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+          )
         `)
         .bind(
           crypto.randomUUID(),
@@ -1037,7 +1012,8 @@ app.get(
       return res.json({
         users:
           (
-            result.results || []
+            result.results ||
+            []
           ).map(safeUser)
       });
     } catch (error) {
@@ -1093,15 +1069,19 @@ app.patch(
             WHERE id = ?
           `)
           .bind(
-            req.body.active ? 1 : 0,
+            req.body.active
+              ? 1
+              : 0,
             req.params.id
           )
           .run();
       }
 
       if (
-        typeof req.body?.password === 'string' &&
-        req.body.password.length >= 6
+        typeof req.body?.password ===
+          'string' &&
+        req.body.password.length >=
+          6
       ) {
         const passwordHash =
           await bcrypt.hash(
@@ -1212,9 +1192,11 @@ app.get(
   requireAdmin,
   async (req, res) => {
     try {
-      const date = String(
-        req.query?.date || today()
-      );
+      const date =
+        String(
+          req.query?.date ||
+          today()
+        );
 
       const users =
         await DB()
@@ -1244,28 +1226,43 @@ app.get(
           .bind(date)
           .all();
 
-      const statusMap = new Map(
-        (
-          attendance.results || []
-        ).map((row) => [
-          row.user_id,
-          row.status
-        ])
-      );
+      const statusMap =
+        new Map(
+          (
+            attendance.results ||
+            []
+          ).map(
+            (row) => [
+              row.user_id,
+              row.status
+            ]
+          )
+        );
 
-      const rows = (
-        users.results || []
-      ).map((user) => ({
-        userId: user.id,
-        fullName: user.full_name,
-        login: user.login,
-        grade: user.grade,
-        subject: user.subject,
-        mode: user.mode,
-        status:
-          statusMap.get(user.id) ||
-          'غير محدد'
-      }));
+      const rows =
+        (
+          users.results ||
+          []
+        ).map(
+          (user) => ({
+            userId: user.id,
+            fullName:
+              user.full_name,
+            login:
+              user.login,
+            grade:
+              user.grade,
+            subject:
+              user.subject,
+            mode:
+              user.mode,
+            status:
+              statusMap.get(
+                user.id
+              ) ||
+              'غير محدد'
+          })
+        );
 
       return res.json({
         date,
@@ -1346,7 +1343,9 @@ app.post(
         )
         .run();
 
-      if (status !== 'غير محدد') {
+      if (
+        status !== 'غير محدد'
+      ) {
         await DB()
           .prepare(`
             INSERT INTO attendance (
@@ -1357,7 +1356,14 @@ app.post(
               method,
               created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (
+              ?,
+              ?,
+              ?,
+              ?,
+              ?,
+              ?
+            )
           `)
           .bind(
             crypto.randomUUID(),
@@ -1447,12 +1453,14 @@ app.put(
 
       const lectureUrl =
         String(
-          req.body?.lectureUrl || ''
+          req.body?.lectureUrl ||
+          ''
         ).trim();
 
       const scheduledAt =
         String(
-          req.body?.scheduledAt || ''
+          req.body?.scheduledAt ||
+          ''
         ).trim();
 
       if (!validUrl(lectureUrl)) {
@@ -1563,7 +1571,9 @@ app.delete(
             updated_at =
               excluded.updated_at
         `)
-        .bind(nowIso())
+        .bind(
+          nowIso()
+        )
         .run();
 
       return res.json({
@@ -1599,7 +1609,7 @@ app.use(
 );
 
 /* =========================
-   Global error handler
+   Express error handler
 ========================= */
 
 app.use(
@@ -1624,7 +1634,7 @@ app.use(
 );
 
 /* =========================
-   Cloudflare Express Worker
+   Cloudflare Worker
 ========================= */
 
 app.listen(3000);
