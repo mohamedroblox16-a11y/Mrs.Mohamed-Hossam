@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <title>لوحة المنصة</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #f5f8ff;
+  --surface: #ffffff;
+  --surface-2: #f8faff;
+  --text: #15213a;
+  --muted: #6d7b93;
+  --line: #e7edf7;
+  --primary: #2563eb;
+  --primary-2: #4f46e5;
+  --purple: #7c3aed;
+  --green: #16a34a;
+  --red: #dc2626;
+  --shadow: 0 18px 50px rgba(30, 64, 175, .10);
+  --shadow-sm: 0 8px 26px rgba(25, 49, 100, .08);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Cairo", Tahoma, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(37,99,235,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,.025) 1px, transparent 1px);
+  background-size: 38px 38px;
+}
+button, input, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+.hidden { display: none !important; }
+.container { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+
+.page-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.shape { position: absolute; border-radius: 50%; filter: blur(4px); opacity: .55; animation: drift 12s ease-in-out infinite; }
+.shape-a { width: 320px; height: 320px; background: #dbeafe; top: -120px; right: -90px; }
+.shape-b { width: 260px; height: 260px; background: #ede9fe; bottom: -80px; left: -80px; animation-delay: -4s; }
+.shape-c { width: 170px; height: 170px; background: #dcfce7; top: 40%; left: 44%; opacity: .30; animation-delay: -7s; }
+@keyframes drift { 50% { transform: translate3d(0, 22px, 0) scale(1.04); } }
+
+.site-header {
+  position: relative;
+  z-index: 5;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(231,237,247,.95);
+}
+.header-inner {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.brand { display: inline-flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  box-shadow: 0 10px 24px rgba(37,99,235,.22);
+}
+.brand-copy strong { display: block; font-size: 15px; }
+.brand-copy span { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+.header-pill, .user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #44536c;
+  background: #fff;
+  font-size: 11px;
+  box-shadow: var(--shadow-sm);
+}
+.status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 0 5px #22c55e18; }
+
+.auth-main {
+  position: relative;
+  z-index: 2;
+  min-height: calc(100vh - 132px);
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  align-items: center;
+  gap: 36px;
+  padding: 42px 0 34px;
+}
+.welcome-panel { padding: 28px 10px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 800; font-size: 11px; letter-spacing: .35px; }
+.eyebrow.small { font-size: 10px; letter-spacing: 1px; }
+.spark { color: #f59e0b; }
+.welcome-panel h1 { margin: 16px 0 12px; font-size: clamp(38px, 5vw, 62px); line-height: 1.18; letter-spacing: -.8px; }
+.welcome-panel h1 span { color: var(--primary); }
+.welcome-text { max-width: 620px; color: var(--muted); font-size: 16px; line-height: 2; margin: 0; }
+.feature-cards { display: grid; gap: 12px; margin-top: 30px; max-width: 610px; }
+.feature-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  box-shadow: var(--shadow-sm);
+  transition: .2s ease;
+}
+.feature-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(37,99,235,.10); border-color: #d7e4ff; }
+.feature-icon { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-weight: 800; flex: 0 0 auto; }
+.feature-icon.blue { color: #2563eb; background: #eff6ff; }
+.feature-icon.purple { color: #7c3aed; background: #f5f3ff; }
+.feature-icon.green { color: #16a34a; background: #f0fdf4; }
+.feature-card b { display: block; font-size: 13px; }
+.feature-card span:last-child { display: block; color: var(--muted); margin-top: 2px; font-size: 11px; }
+.welcome-footer { display: flex; align-items: center; gap: 10px; color: #8794a8; font-size: 11px; margin-top: 26px; }
+.footer-separator { width: 4px; height: 4px; background: #b9c3d2; border-radius: 50%; }
+
+.auth-box {
+  background: rgba(255,255,255,.96);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 30px;
+}
+.auth-box-top { display: flex; gap: 12px; align-items: center; margin-bottom: 22px; }
+.auth-avatar { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; font-size: 24px; font-weight: 800; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+.auth-box h2 { margin: 3px 0 2px; font-size: 28px; }
+.auth-box-top p { margin: 0; color: var(--muted); font-size: 12px; }
+.form-stack { display: flex; flex-direction: column; gap: 14px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field.full { grid-column: 1 / -1; }
+.field > span { font-size: 11px; font-weight: 700; color: #52617a; }
+.input-wrap { position: relative; }
+.input-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; background: #eff6ff; color: var(--primary); font-size: 11px; font-weight: 800; }
+.input-wrap input { padding-right: 46px !important; }
+.field input, .field select, .date-input {
+  width: 100%;
+  border: 1px solid #dfe6f0;
+  background: #fff;
+  color: var(--text);
+  border-radius: 13px;
+  padding: 13px 14px;
+  outline: none;
+  transition: .18s ease;
+}
+.field input::placeholder { color: #aab5c5; }
+.field input:focus, .field select:focus, .date-input:focus { border-color: #8cb0ff; box-shadow: 0 0 0 4px #2563eb12; }
+.field select option { color: #111827; background: #fff; }
+.main-btn, .secondary-btn, .danger-btn, .outline-btn {
+  border: 0;
+  border-radius: 12px;
+  min-height: 46px;
+  padding: 11px 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: .18s ease;
+}
+.main-btn { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 12px 24px rgba(37,99,235,.20); }
+.main-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 28px rgba(37,99,235,.25); }
+.main-btn b { font-size: 17px; }
+.secondary-btn { color: #0f8a4b; background: #ecfdf3; border: 1px solid #c9f4dc; }
+.secondary-btn:hover { background: #e0faec; }
+.danger-btn { color: #b91c1c; background: #fff1f2; border: 1px solid #ffd3d8; }
+.outline-btn { color: #334155; background: #fff; border: 1px solid #dce4ef; }
+.outline-btn:hover, .danger-btn:hover, .secondary-btn:hover { transform: translateY(-1px); }
+.center { width: 100%; }
+.switch-btn { border: 0; background: transparent; color: var(--primary); font-size: 12px; margin-top: 8px; font-weight: 700; }
+.switch-btn:hover { text-decoration: underline; }
+.auth-bottom { text-align: center; margin-top: 12px; }
+.form-message { min-height: 20px; font-size: 11px; color: #dc2626; margin-top: 1px; }
+.form-message.success { color: #15803d; }
+.site-footer { position: relative; z-index: 2; text-align: center; color: #98a4b7; font-size: 10px; padding: 0 0 24px; }
+
+.dashboard-main { position: relative; z-index: 2; padding: 28px 0 50px; }
+.dashboard-actions { display: flex; align-items: center; gap: 10px; }
+.dashboard-hero {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  border-radius: 24px; padding: 28px; color: #fff;
+  box-shadow: var(--shadow);
+}
+.student-hero { background: linear-gradient(120deg, #2563eb, #4f46e5); }
+.admin-hero { background: linear-gradient(120deg, #0f4fc6, #4338ca); }
+.dashboard-hero h1 { margin: 4px 0; font-size: clamp(29px, 4vw, 42px); }
+.dashboard-hero p { margin: 0; color: #dbeafe; font-size: 12px; }
+.dashboard-hero .eyebrow { color: #dbeafe; }
+.hero-illustration { width: 90px; height: 90px; display: grid; place-items: center; border-radius: 26px; background: rgba(255,255,255,.14); font-size: 46px; box-shadow: inset 0 1px 0 rgba(255,255,255,.15); }
+
+.mini-stats { display: grid; gap: 13px; margin: 14px 0; }
+.mini-stats.three { grid-template-columns: repeat(3, 1fr); }
+.mini-stats.four { grid-template-columns: repeat(4, 1fr); }
+.mini-stat { position: relative; overflow: hidden; background: rgba(255,255,255,.95); border: 1px solid var(--line); border-radius: 18px; padding: 16px 17px; box-shadow: var(--shadow-sm); }
+.mini-stat span { display: block; font-size: 10px; color: var(--muted); }
+.mini-stat strong { display: block; margin-top: 5px; font-size: 22px; }
+.mini-stat i { position: absolute; left: 14px; bottom: 11px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 11px; background: #eff6ff; color: var(--primary); font-style: normal; }
+.mini-stat.success i { color: var(--green); background: #f0fdf4; }
+.mini-stat.danger i { color: var(--red); background: #fff1f2; }
+.mini-stat.info i { color: #7c3aed; background: #f5f3ff; }
+
+.dashboard-grid { display: grid; gap: 14px; }
+.two-cols { grid-template-columns: 1.08fr .92fr; }
+.dashboard-card { background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: var(--shadow-sm); }
+.card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.card-heading h2 { margin: 4px 0 0; font-size: 21px; }
+.lecture-card { background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); }
+.lecture-date { background: #eff6ff; border: 1px solid #dbeafe; color: #1d4ed8; border-radius: 14px; padding: 13px 14px; font-size: 12px; font-weight: 700; }
+.card-description { color: var(--muted); font-size: 11px; line-height: 1.9; }
+.action-stack { display: grid; gap: 8px; margin-top: 13px; }
+.status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+.status-badge.live { color: #15803d; background: #ecfdf3; border: 1px solid #c9f4dc; }
+.status-badge.neutral { color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; }
+.profile-list { display: grid; gap: 0; }
+.profile-list > div { display: flex; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid #eef2f7; }
+.profile-list > div:last-child { border-bottom: 0; }
+.profile-list span { color: var(--muted); font-size: 11px; }
+.profile-list b { font-size: 11px; }
+.avatar-large { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #4f46e5); color: #fff; font-weight: 800; }
+.good-text { color: var(--green); }
+.table-card { margin-top: 14px; }
+.table-head { align-items: center; }
+.table-wrap { width: 100%; overflow: auto; }
+table { width: 100%; min-width: 680px; border-collapse: collapse; }
+th, td { padding: 13px 10px; text-align: right; border-bottom: 1px solid #eef2f7; font-size: 11px; white-space: nowrap; }
+th { color: #7a889c; font-size: 10px; font-weight: 700; background: #fbfcfe; }
+tbody tr:hover { background: #f8fbff; }
+.table-action { border: 1px solid #dde5f0; background: #fff; color: #334155; padding: 7px 9px; border-radius: 8px; font-size: 10px; }
+.table-action.danger { color: #b91c1c; border-color: #ffd3d8; background: #fff7f7; }
+.table-select { min-width: 105px; border: 1px solid #dfe6f0; background: #fff; padding: 7px 8px; border-radius: 8px; color: #24324b; }
+.big-number, .attendance-summary { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+.big-number span, .attendance-summary span { color: var(--muted); font-size: 11px; }
+.big-number strong, .attendance-summary strong { font-size: 42px; color: var(--primary); line-height: 1; }
+.progress-track { height: 11px; border-radius: 999px; background: #eef2f8; overflow: hidden; margin-top: 18px; }
+.progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #4f46e5); transition: width .35s ease; }
+.compact-date { width: 165px; }
+.disabled-link { opacity: .48; pointer-events: none; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.reveal { animation: fadeUp .55s ease both; }
+.delay-1 { animation-delay: .08s; }
+.delay-2 { animation-delay: .16s; }
+.delay-3 { animation-delay: .24s; }
+.delay-4 { animation-delay: .32s; }
+
+@media (max-width: 960px) {
+  .auth-main { grid-template-columns: 1fr; max-width: 760px; }
+  .welcome-panel { padding-bottom: 0; }
+  .feature-cards { grid-template-columns: repeat(3,1fr); }
+  .two-cols { grid-template-columns: 1fr; }
+  .mini-stats.four { grid-template-columns: repeat(2,1fr); }
+}
+
+@media (max-width: 680px) {
+  .container { width: min(100% - 20px, 1180px); }
+  .header-inner { min-height: 70px; }
+  .header-pill { display: none; }
+  .dashboard-actions { gap: 6px; }
+  .user-pill { max-width: 150px; overflow: hidden; white-space: nowrap; }
+  .outline-btn { padding: 9px 11px; font-size: 11px; }
+  .auth-main { padding-top: 20px; gap: 15px; }
+  .welcome-panel h1 { font-size: 36px; }
+  .welcome-text { font-size: 13px; }
+  .feature-cards { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .field.full { grid-column: auto; }
+  .auth-box { padding: 22px; }
+  .dashboard-hero { padding: 22px; }
+  .dashboard-hero h1 { font-size: 29px; }
+  .hero-illustration { width: 68px; height: 68px; font-size: 34px; }
+  .mini-stats.three, .mini-stats.four { grid-template-columns: 1fr; }
+  .mini-stat { padding: 15px; }
+  .mini-stat i { left: 12px; }
+  .card-heading { flex-direction: column; align-items: flex-start; }
+  .table-head { flex-direction: column; }
+  .compact-date { width: 100%; }
+  .site-footer { padding-bottom: 18px; }
+}
+
+  </style>
+</head>
+<body class="dashboard-page">
+  <div class="page-bg" aria-hidden="true">
+    <div class="shape shape-a"></div>
+    <div class="shape shape-b"></div>
+  </div>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <a class="brand" href="/dashboard.html">
+        <div class="brand-mark">م</div>
+        <div class="brand-copy">
+          <strong>منصة مستر محمد حسام</strong>
+          <span id="dashboardRole">لوحة التحكم</span>
+        </div>
+      </a>
+      <div class="dashboard-actions">
+        <div class="user-pill"><span class="status-dot"></span><span id="userName">...</span></div>
+        <button id="logoutBtn" class="outline-btn">تسجيل الخروج</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container dashboard-main">
+    <div id="pageMessage" class="form-message"></div>
+
+    <!-- Student -->
+    <section id="studentView" class="hidden">
+      <div class="dashboard-hero student-hero">
+        <div>
+          <span class="eyebrow small">STUDENT DASHBOARD</span>
+          <h1>أهلاً بيك، <span id="studentName">الطالب</span> 👋</h1>
+          <p>هنا تقدر تتابع محاضرتك وحضورك وبياناتك الدراسية.</p>
+        </div>
+        <div class="hero-illustration">🎓</div>
+      </div>
+
+      <div class="mini-stats three">
+        <article class="mini-stat"><span>السنة</span><strong id="studentGrade">-</strong><i>📚</i></article>
+        <article class="mini-stat"><span>المادة</span><strong id="studentSubject">-</strong><i>📝</i></article>
+        <article class="mini-stat"><span>الاشتراك</span><strong id="studentMode">-</strong><i>👥</i></article>
+      </div>
+
+      <div class="dashboard-grid two-cols">
+        <section class="dashboard-card lecture-card">
+          <div class="card-heading">
+            <div><span class="eyebrow small">NEXT LECTURE</span><h2 id="lectureTitle">المحاضرة القادمة</h2></div>
+            <span id="lectureBadge" class="status-badge neutral">غير متاح</span>
+          </div>
+          <div class="lecture-date" id="lectureTime">لم يتم تحديد موعد بعد.</div>
+          <p class="card-description" id="lectureNote">انتظر تحديث المحاضرة من المدرس.</p>
+          <div class="action-stack">
+            <a id="lectureLink" class="main-btn center disabled-link" href="#" target="_blank" rel="noopener">دخول المحاضرة <b>←</b></a>
+            <button id="checkinBtn" class="secondary-btn" type="button">✓ تسجيل الحضور</button>
+          </div>
+          <div id="studentActionMessage" class="form-message"></div>
+        </section>
+
+        <section class="dashboard-card">
+          <div class="card-heading">
+            <div><span class="eyebrow small">MY PROFILE</span><h2>بيانات الحساب</h2></div>
+            <div class="avatar-large">م</div>
+          </div>
+          <div class="profile-list clean">
+            <div><span>الاسم</span><b id="profileName">-</b></div>
+            <div><span>رقم الدخول</span><b id="profileLogin">-</b></div>
+            <div><span>السنة</span><b id="profileGrade">-</b></div>
+            <div><span>المادة</span><b id="profileSubject">-</b></div>
+            <div><span>الحالة</span><b class="good-text">الحساب نشط</b></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="dashboard-card table-card">
+        <div class="card-heading"><div><span class="eyebrow small">ATTENDANCE</span><h2>سجل الحضور</h2></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>التاريخ</th><th>الحالة</th><th>الطريقة</th></tr></thead>
+            <tbody id="studentAttendanceBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- Admin -->
+    <section id="adminView" class="hidden">
+      <div class="dashboard-hero admin-hero">
+        <div>
+          <span class="eyebrow small">ADMIN DASHBOARD</span>
+          <h1>لوحة المدرس <span>⚡</span></h1>
+          <p>إدارة المحاضرة والطلاب والحضور من مكان واحد.</p>
+        </div>
+        <div class="hero-illustration">🧑‍🏫</div>
+      </div>
+
+      <div class="mini-stats four">
+        <article class="mini-stat"><span>إجمالي الطلاب</span><strong id="totalStudents">0</strong><i>👨‍🎓</i></article>
+        <article class="mini-stat success"><span>حاضر اليوم</span><strong id="presentToday">0</strong><i>✓</i></article>
+        <article class="mini-stat danger"><span>غائب اليوم</span><strong id="absentToday">0</strong><i>!</i></article>
+        <article class="mini-stat info"><span>حالة المنصة</span><strong>نشطة</strong><i>●</i></article>
+      </div>
+
+      <div class="dashboard-grid two-cols">
+        <section class="dashboard-card">
+          <div class="card-heading"><div><span class="eyebrow small">LECTURE CONTROL</span><h2>إعداد المحاضرة</h2></div><span class="status-badge live">ADMIN</span></div>
+          <form id="settingsForm" class="form-stack">
+            <label class="field"><span>عنوان المحاضرة</span><input id="lectureTitleInput" type="text" placeholder="المحاضرة القادمة"></label>
+            <label class="field"><span>رابط المحاضرة</span><input id="lectureUrlInput" type="url" placeholder="https://..."></label>
+            <label class="field"><span>موعد المحاضرة</span><input id="scheduledAtInput" class="date-input" type="datetime-local"></label>
+            <div class="button-row"><button class="main-btn" type="submit">حفظ المحاضرة</button><button id="clearLectureBtn" class="danger-btn" type="button">مسح</button></div>
+            <div id="settingsMessage" class="form-message"></div>
+          </form>
+        </section>
+
+        <section class="dashboard-card summary-card">
+          <div class="card-heading"><div><span class="eyebrow small">TODAY</span><h2>ملخص اليوم</h2></div></div>
+          <div class="attendance-summary"><span id="attendanceDateLabel">اليوم</span><strong id="todayAttendancePercent">0%</strong></div>
+          <div class="progress-track"><span id="todayProgress"></span></div>
+          <p class="card-description">نسبة الحضور من إجمالي الطلاب المسجلين.</p>
+        </section>
+      </div>
+
+      <section class="dashboard-card table-card">
+        <div class="card-heading table-head"><div><span class="eyebrow small">STUDENTS</span><h2>الطلاب</h2></div><button id="refreshUsersBtn" class="outline-btn" type="button">↻ تحديث البيانات</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الاسم</th><th>الدخول</th><th>السنة</th><th>المادة</th><th>النوع</th><th>الحالة</th><th>إجراء</th></tr></thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="dashboard-card table-card">
+        <div class="card-heading table-head"><div><span class="eyebrow small">ATTENDANCE CONTROL</span><h2>إدارة الحضور</h2></div><input id="attendanceDate" class="date-input compact-date" type="date"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الطالب</th><th>الدخول</th><th>الحالة</th><th>حفظ</th></tr></thead>
+            <tbody id="adminAttendanceBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
