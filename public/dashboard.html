@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b5cff">
+  <meta name="theme-color" content="#1769ff">
 
-  <title>لوحة التحكم - منصة مستر محمد حسام</title>
+  <title>لوحة التحكم - مستر محمد حسام</title>
 
   <style>
     :root{
       --primary:#1769ff;
       --primary2:#5d42ff;
-      --navy:#07152e;
       --text:#17233a;
       --muted:#6d7a92;
       --bg:#f4f7fb;
@@ -30,7 +29,7 @@
       margin:0;
       min-height:100vh;
       font-family:Arial,"Segoe UI",Tahoma,sans-serif;
-      background:linear-gradient(180deg,#f8fbff,#f2f6fb);
+      background:linear-gradient(180deg,#f8fbff 0%,#f2f6fb 100%);
       color:var(--text);
       transition:.3s ease;
     }
@@ -50,7 +49,9 @@
       margin:14px auto 40px;
     }
 
-    /* ================= TOPBAR ================= */
+    /* =========================
+       TOP BAR
+    ========================= */
 
     .topbar{
       display:flex;
@@ -58,7 +59,7 @@
       justify-content:space-between;
       gap:15px;
       padding:12px 15px;
-      background:rgba(255,255,255,.88);
+      background:rgba(255,255,255,.9);
       border:1px solid var(--line);
       border-radius:20px;
       box-shadow:0 12px 35px rgba(20,45,90,.07);
@@ -66,6 +67,7 @@
       position:sticky;
       top:12px;
       z-index:20;
+      transition:.3s ease;
     }
 
     .brand{
@@ -75,14 +77,15 @@
       font-weight:900;
     }
 
+    /* صورة الأستاذ */
     .brand-image{
-      width:50px;
-      height:50px;
-      border-radius:15px;
+      width:52px;
+      height:52px;
+      border-radius:16px;
       overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 10px 25px rgba(23,105,255,.22);
       flex-shrink:0;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 10px 25px rgba(23,105,255,.25);
     }
 
     .brand-image img{
@@ -92,22 +95,26 @@
       display:block;
     }
 
+    .brand-text{
+      font-size:16px;
+    }
+
     .brand-text small{
       display:block;
       margin-top:4px;
       color:var(--muted);
+      font-size:12px;
       font-weight:500;
     }
 
+    /* الأزرار */
     .top-actions{
       display:flex;
       align-items:center;
       gap:8px;
     }
 
-    /* زر المدرس بالصورة */
-
-    .teacher-btn{
+    .image-btn{
       width:48px;
       height:48px;
       padding:0;
@@ -119,40 +126,50 @@
       transition:.2s ease;
     }
 
-    .teacher-btn:hover{
+    .image-btn:hover{
       transform:translateY(-2px);
     }
 
-    .teacher-btn img{
+    .image-btn img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
     }
 
-    .theme-btn,
-    .logout-btn{
-      min-width:48px;
+    .theme-btn{
+      width:48px;
       height:48px;
-      padding:0 14px;
       border:1px solid var(--line);
       border-radius:15px;
       background:#fff;
-      color:var(--text);
-      font-weight:800;
+      color:#17233a;
+      font-size:20px;
       transition:.2s ease;
     }
 
-    .theme-btn:hover,
-    .logout-btn:hover{
+    .theme-btn:hover{
       transform:translateY(-2px);
     }
 
     .logout-btn{
-      color:#d33d44;
+      height:48px;
+      padding:0 15px;
+      border:1px solid #ffd5d8;
+      border-radius:15px;
+      background:#fff4f5;
+      color:#d63d45;
+      font-weight:900;
+      transition:.2s ease;
     }
 
-    /* ================= HERO ================= */
+    .logout-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    /* =========================
+       WELCOME
+    ========================= */
 
     .welcome{
       margin-top:25px;
@@ -160,22 +177,37 @@
       border-radius:28px;
       color:#fff;
       background:
-        radial-gradient(circle at 85% 20%,rgba(255,255,255,.17),transparent 30%),
+        radial-gradient(circle at 85% 20%,rgba(255,255,255,.18),transparent 30%),
         linear-gradient(135deg,#1769ff,#5d42ff);
       box-shadow:0 22px 60px rgba(23,105,255,.20);
       position:relative;
       overflow:hidden;
     }
 
+    .welcome::after{
+      content:"";
+      position:absolute;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      left:-60px;
+      bottom:-100px;
+    }
+
     .welcome h1{
       margin:0 0 8px;
       font-size:34px;
+      position:relative;
+      z-index:1;
     }
 
     .welcome p{
       margin:0;
-      opacity:.88;
+      opacity:.9;
       line-height:1.8;
+      position:relative;
+      z-index:1;
     }
 
     .welcome-badge{
@@ -187,9 +219,13 @@
       border:1px solid rgba(255,255,255,.22);
       font-size:13px;
       font-weight:800;
+      position:relative;
+      z-index:1;
     }
 
-    /* ================= GRID ================= */
+    /* =========================
+       GRID
+    ========================= */
 
     .grid{
       display:grid;
@@ -229,7 +265,9 @@
       font-size:13px;
     }
 
-    /* ================= PROFILE ================= */
+    /* =========================
+       USER INFO
+    ========================= */
 
     .profile-list{
       display:grid;
@@ -242,6 +280,7 @@
       background:#f9fbff;
       border-radius:16px;
       padding:14px;
+      transition:.3s ease;
     }
 
     .profile-item small{
@@ -255,13 +294,16 @@
       font-size:15px;
     }
 
-    /* ================= LECTURE ================= */
+    /* =========================
+       LECTURE
+    ========================= */
 
     .lecture-box{
       border:1px dashed #b8c9e8;
       background:#f8fbff;
       border-radius:18px;
       padding:18px;
+      transition:.3s ease;
     }
 
     .lecture-box h3{
@@ -270,7 +312,7 @@
     }
 
     .lecture-box p{
-      margin:5px 0;
+      margin:6px 0;
       color:var(--muted);
       line-height:1.7;
     }
@@ -285,14 +327,16 @@
       font-weight:900;
     }
 
-    /* ================= GRADES ================= */
+    /* =========================
+       GRADES
+    ========================= */
 
     .grade-form{
       display:grid;
-      grid-template-columns:1.3fr 1fr .7fr .7fr auto;
+      grid-template-columns:1.4fr 1fr .7fr .7fr auto;
       gap:10px;
       align-items:end;
-      margin-bottom:20px;
+      margin-bottom:18px;
     }
 
     .input-group label{
@@ -310,6 +354,7 @@
       outline:none;
       border-radius:13px;
       padding:13px;
+      transition:.2s ease;
     }
 
     .input-group input:focus{
@@ -321,7 +366,7 @@
       height:46px;
       border:0;
       border-radius:13px;
-      padding:0 17px;
+      padding:0 18px;
       color:#fff;
       font-weight:900;
       background:linear-gradient(135deg,var(--primary),var(--primary2));
@@ -334,7 +379,7 @@
     .grades-table{
       width:100%;
       border-collapse:collapse;
-      min-width:650px;
+      min-width:680px;
     }
 
     .grades-table th,
@@ -350,8 +395,8 @@
     }
 
     .grade-number{
-      font-weight:900;
       color:var(--primary);
+      font-weight:900;
     }
 
     .delete-grade{
@@ -369,11 +414,9 @@
       color:var(--muted);
     }
 
-    /* ================= MESSAGE ================= */
-
     .message{
       min-height:20px;
-      margin-top:10px;
+      margin-bottom:10px;
       text-align:center;
       font-size:13px;
       font-weight:800;
@@ -387,38 +430,41 @@
       color:var(--danger);
     }
 
-    /* ================= DARK ================= */
+    /* =========================
+       DARK MODE
+    ========================= */
 
     body.dark-mode{
-      --navy:#f4f7ff;
       --text:#edf2ff;
       --muted:#a7b3ca;
       --bg:#08111f;
       --card:#101b2d;
       --line:#2a3953;
 
-      background:linear-gradient(180deg,#07111f,#0d1727);
+      background:linear-gradient(180deg,#07111f 0%,#0d1727 100%);
+      color:var(--text);
     }
 
     body.dark-mode .topbar{
-      background:rgba(15,27,45,.92);
+      background:rgba(15,27,45,.93);
       border-color:#293852;
     }
 
-    body.dark-mode .teacher-btn,
-    body.dark-mode .theme-btn,
-    body.dark-mode .logout-btn{
+    body.dark-mode .brand-text small{
+      color:#9eabc2;
+    }
+
+    body.dark-mode .image-btn,
+    body.dark-mode .theme-btn{
       background:#16243a;
       border-color:#33445f;
       color:#fff;
     }
 
     body.dark-mode .logout-btn{
-      color:#ff7c82;
-    }
-
-    body.dark-mode .brand-text small{
-      color:#9eabc2;
+      background:#30181b;
+      border-color:#5a2a2f;
+      color:#ff858b;
     }
 
     body.dark-mode .card{
@@ -426,7 +472,11 @@
       border-color:#28364f;
     }
 
-    body.dark-mode .profile-item,
+    body.dark-mode .profile-item{
+      background:#0d1829;
+      border-color:#30415e;
+    }
+
     body.dark-mode .lecture-box{
       background:#0d1829;
       border-color:#30415e;
@@ -434,15 +484,22 @@
 
     body.dark-mode .input-group input{
       background:#0d1829;
-      color:#fff;
       border-color:#30415e;
+      color:#fff;
+    }
+
+    body.dark-mode .input-group input::placeholder{
+      color:#71809b;
     }
 
     body.dark-mode .delete-grade{
       background:#301a1d;
+      color:#ff858b;
     }
 
-    /* ================= MOBILE ================= */
+    /* =========================
+       MOBILE
+    ========================= */
 
     @media(max-width:950px){
 
@@ -461,6 +518,7 @@
       .add-grade-btn{
         width:100%;
       }
+
     }
 
     @media(max-width:650px){
@@ -479,15 +537,16 @@
       }
 
       .brand-image,
-      .teacher-btn,
-      .theme-btn,
-      .logout-btn{
-        width:43px;
-        height:43px;
+      .image-btn,
+      .theme-btn{
+        width:44px;
+        height:44px;
       }
 
       .logout-btn{
-        padding:0 10px;
+        width:44px;
+        height:44px;
+        padding:0;
         font-size:0;
       }
 
@@ -511,6 +570,7 @@
       .grade-form{
         grid-template-columns:1fr;
       }
+
     }
   </style>
 </head>
@@ -519,12 +579,15 @@
 
   <div class="page">
 
-    <!-- ================= TOPBAR ================= -->
+    <!-- =========================
+         TOP BAR
+    ========================= -->
 
     <header class="topbar">
 
       <div class="brand">
 
+        <!-- صورة مستر محمد حسام -->
         <div class="brand-image">
           <img src="Mrs.jpg" alt="مستر محمد حسام">
         </div>
@@ -538,29 +601,30 @@
 
       <div class="top-actions">
 
-        <!-- زرار المدرس بالصورة بدل 🧑‍🏫 -->
+        <!-- الزرار اللي كان فيه 🧑‍🏫 -->
         <button
-          class="teacher-btn"
+          class="image-btn"
           type="button"
           title="مستر محمد حسام"
         >
           <img src="Mrs.jpg" alt="مستر محمد حسام">
         </button>
 
+        <!-- Dark Mode -->
         <button
           id="themeBtn"
           class="theme-btn"
           type="button"
-          title="تغيير الوضع"
+          title="الوضع الداكن"
         >
           🌙
         </button>
 
+        <!-- Logout -->
         <button
           id="logoutBtn"
           class="logout-btn"
           type="button"
-          title="تسجيل الخروج"
         >
           خروج
         </button>
@@ -569,7 +633,9 @@
 
     </header>
 
-    <!-- ================= WELCOME ================= -->
+    <!-- =========================
+         WELCOME
+    ========================= -->
 
     <section class="welcome">
 
@@ -590,7 +656,9 @@
 
     </section>
 
-    <!-- ================= CONTENT ================= -->
+    <!-- =========================
+         CONTENT
+    ========================= -->
 
     <main class="grid">
 
@@ -657,7 +725,7 @@
           </h2>
 
           <span>
-            آخر تحديث
+            المحاضرة
           </span>
 
         </div>
@@ -690,7 +758,9 @@
 
       </section>
 
-      <!-- ================= GRADES ================= -->
+      <!-- =========================
+           الدرجات
+      ========================= -->
 
       <section class="card full">
 
@@ -701,7 +771,7 @@
           </h2>
 
           <span>
-            سجل درجات الامتحانات
+            سجل درجاتك
           </span>
 
         </div>
@@ -750,7 +820,7 @@
                 id="score"
                 type="number"
                 min="0"
-                placeholder="20"
+                placeholder="18"
               >
 
             </div>
@@ -808,14 +878,12 @@
             <tbody id="gradesBody">
 
               <tr>
-
                 <td
                   colspan="5"
                   class="empty"
                 >
                   لا توجد درجات حتى الآن.
                 </td>
-
               </tr>
 
             </tbody>
@@ -834,53 +902,53 @@
 
     /* =========================
        DARK MODE
-       ========================= */
+    ========================= */
 
     const themeBtn =
-      document.getElementById('themeBtn');
+      document.getElementById("themeBtn");
 
-    function updateTheme(){
+    function updateThemeButton(){
 
-      const dark =
-        document.body.classList.contains('dark-mode');
+      const isDark =
+        document.body.classList.contains("dark-mode");
 
       themeBtn.textContent =
-        dark ? '☀️' : '🌙';
+        isDark ? "☀️" : "🌙";
 
     }
 
     if(
-      localStorage.getItem('theme') === 'dark'
+      localStorage.getItem("theme") === "dark"
     ){
-      document.body.classList.add('dark-mode');
+      document.body.classList.add("dark-mode");
     }
 
-    updateTheme();
+    updateThemeButton();
 
     themeBtn.addEventListener(
-      'click',
+      "click",
       () => {
 
         document.body.classList.toggle(
-          'dark-mode'
+          "dark-mode"
         );
 
         localStorage.setItem(
-          'theme',
-          document.body.classList.contains('dark-mode')
-            ? 'dark'
-            : 'light'
+          "theme",
+          document.body.classList.contains("dark-mode")
+            ? "dark"
+            : "light"
         );
 
-        updateTheme();
+        updateThemeButton();
 
       }
     );
 
 
     /* =========================
-       SESSION
-       ========================= */
+       USER
+    ========================= */
 
     let currentUser = null;
 
@@ -890,20 +958,19 @@
 
         const response =
           await fetch(
-            '/api/me',
+            "/api/me",
             {
-              credentials:'include'
+              credentials:"include"
             }
           );
 
         if(!response.ok){
 
           window.location.replace(
-            'index.html'
+            "index.html"
           );
 
           return;
-
         }
 
         const data =
@@ -912,14 +979,14 @@
         if(!data?.user){
 
           window.location.replace(
-            'index.html'
+            "index.html"
           );
 
           return;
-
         }
 
-        currentUser = data.user;
+        currentUser =
+          data.user;
 
         showUser();
 
@@ -928,7 +995,7 @@
       }catch(error){
 
         window.location.replace(
-          'index.html'
+          "index.html"
         );
 
       }
@@ -939,68 +1006,65 @@
     function showUser(){
 
       document.getElementById(
-        'userName'
+        "userName"
       ).textContent =
-        currentUser.full_name || '-';
+        currentUser.full_name || "-";
 
       document.getElementById(
-        'userLogin'
+        "userLogin"
       ).textContent =
-        currentUser.login || '-';
+        currentUser.login || "-";
 
       document.getElementById(
-        'userGrade'
+        "userGrade"
       ).textContent =
-        currentUser.grade || '-';
+        currentUser.grade || "-";
 
       document.getElementById(
-        'userSubject'
+        "userSubject"
       ).textContent =
-        currentUser.subject || '-';
+        currentUser.subject || "-";
 
       document.getElementById(
-        'userMode'
+        "userMode"
       ).textContent =
-        currentUser.mode || '-';
+        currentUser.mode || "-";
 
       const isAdmin =
-        currentUser.role === 'admin';
+        currentUser.role === "admin";
 
       document.getElementById(
-        'userRole'
+        "userRole"
+      ).textContent =
+        isAdmin ? "مدير" : "طالب";
+
+      document.getElementById(
+        "roleBadge"
+      ).textContent =
+        isAdmin ? "حساب مدير" : "حساب طالب";
+
+      document.getElementById(
+        "welcomeTitle"
+      ).textContent =
+        `أهلاً بيك يا ${currentUser.full_name || "صديقي"} 👋`;
+
+      document.getElementById(
+        "welcomeText"
       ).textContent =
         isAdmin
-          ? 'مدير'
-          : 'طالب';
-
-      document.getElementById(
-        'roleBadge'
-      ).textContent =
-        isAdmin
-          ? 'حساب مدير'
-          : 'حساب طالب';
-
-      document.getElementById(
-        'welcomeTitle'
-      ).textContent =
-        `أهلاً بيك يا ${currentUser.full_name || 'صديقي'} 👋`;
-
-      document.getElementById(
-        'welcomeText'
-      ).textContent =
-        isAdmin
-          ? 'دي لوحة إدارة منصة مستر محمد حسام.'
-          : 'من هنا تقدر تتابع المحاضرات وتشوف درجات امتحاناتك.';
+          ? "دي لوحة إدارة منصة مستر محمد حسام."
+          : "من هنا تقدر تتابع المحاضرات وتشوف درجات امتحاناتك.";
 
       /*
-        نعرض إضافة الدرجات للمدير فقط
+        إضافة الدرجات للمدير فقط
       */
 
       if(!isAdmin){
 
         document.getElementById(
-          'gradeAdminBox'
-        ).style.display = 'none';
+          "gradeAdminBox"
+        ).style.display =
+          "none";
 
       }
 
@@ -1008,8 +1072,8 @@
 
 
     /* =========================
-       LOAD DASHBOARD
-       ========================= */
+       DASHBOARD
+    ========================= */
 
     async function loadDashboard(){
 
@@ -1017,18 +1081,17 @@
 
         const response =
           await fetch(
-            '/api/student/dashboard',
+            "/api/student/dashboard",
             {
-              credentials:'include'
+              credentials:"include"
             }
           );
 
         if(!response.ok){
 
-          loadSavedGrades();
+          loadGrades();
 
           return;
-
         }
 
         const data =
@@ -1040,61 +1103,58 @@
           {};
 
         document.getElementById(
-          'lectureTitle'
+          "lectureTitle"
         ).textContent =
           settings.lecture_title ||
           settings.title ||
-          'المحاضرة القادمة';
+          "المحاضرة القادمة";
 
         document.getElementById(
-          'lectureDate'
+          "lectureDate"
         ).textContent =
           settings.scheduled_at
             ? `الموعد: ${settings.scheduled_at}`
-            : 'لم يتم تحديد موعد المحاضرة بعد.';
-
-        document.getElementById(
-          'lectureInfo'
-        ).textContent =
-          'سيتم ظهور رابط المحاضرة هنا عند تحديده.';
+            : "لم يتم تحديد موعد المحاضرة بعد.";
 
         const url =
           settings.lecture_url ||
           settings.url ||
-          '';
+          "";
 
         const link =
           document.getElementById(
-            'lectureLink'
+            "lectureLink"
           );
 
         if(url){
 
-          link.href = url;
-          link.style.display = 'inline-block';
+          link.href =
+            url;
+
+          link.style.display =
+            "inline-block";
 
         }
 
       }catch(error){
 
         console.log(
-          'Dashboard:',
           error
         );
 
       }
 
-      loadSavedGrades();
+      loadGrades();
 
     }
 
 
     /* =========================
        GRADES
-       ========================= */
+    ========================= */
 
     const gradesKey =
-      'mohamed_hossam_exam_grades';
+      "mohamed_hossam_exam_grades";
 
     function getGrades(){
 
@@ -1103,7 +1163,7 @@
         return JSON.parse(
           localStorage.getItem(
             gradesKey
-          ) || '[]'
+          ) || "[]"
         );
 
       }catch(error){
@@ -1125,28 +1185,42 @@
     }
 
 
-    function loadSavedGrades(){
+    function escapeHtml(value){
+
+      return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+    }
+
+
+    function loadGrades(){
 
       const grades =
         getGrades();
 
       const body =
         document.getElementById(
-          'gradesBody'
+          "gradesBody"
         );
 
       if(!grades.length){
 
         body.innerHTML = `
           <tr>
-            <td colspan="5" class="empty">
+            <td
+              colspan="5"
+              class="empty"
+            >
               لا توجد درجات حتى الآن.
             </td>
           </tr>
         `;
 
         return;
-
       }
 
       body.innerHTML =
@@ -1184,70 +1258,67 @@
                 </td>
 
                 <td>
-                  <button
-                    class="delete-grade"
-                    onclick="deleteGrade(${index})"
-                  >
-                    حذف
-                  </button>
+
+                  ${
+                    currentUser?.role === "admin"
+                      ? `
+                        <button
+                          class="delete-grade"
+                          onclick="deleteGrade(${index})"
+                        >
+                          حذف
+                        </button>
+                      `
+                      : "-"
+                  }
+
                 </td>
 
               </tr>
             `;
 
           }
-        ).join('');
-
-    }
-
-
-    function escapeHtml(value){
-
-      return String(value)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'","&#039;");
+        ).join("");
 
     }
 
 
     document
-      .getElementById('addGradeBtn')
+      .getElementById("addGradeBtn")
       .addEventListener(
-        'click',
+        "click",
         () => {
 
           const exam =
             document
-              .getElementById('examName')
+              .getElementById("examName")
               .value
               .trim();
 
           const lesson =
             document
-              .getElementById('lessonName')
+              .getElementById("lessonName")
               .value
               .trim();
 
           const score =
             Number(
               document
-                .getElementById('score')
+                .getElementById("score")
                 .value
             );
 
           const total =
             Number(
               document
-                .getElementById('total')
+                .getElementById("total")
                 .value
             );
 
           const message =
-            document
-              .getElementById('gradeMessage');
+            document.getElementById(
+              "gradeMessage"
+            );
 
 
           if(
@@ -1258,13 +1329,12 @@
           ){
 
             message.textContent =
-              'اكتب بيانات الدرجة كاملة.';
+              "اكتب بيانات الدرجة كاملة.";
 
             message.className =
-              'message danger';
+              "message danger";
 
             return;
-
           }
 
 
@@ -1275,13 +1345,12 @@
           ){
 
             message.textContent =
-              'تأكد أن الدرجة صحيحة.';
+              "تأكد أن الدرجة صحيحة.";
 
             message.className =
-              'message danger';
+              "message danger";
 
             return;
-
           }
 
 
@@ -1290,10 +1359,10 @@
 
 
           grades.push({
-            exam,
-            lesson,
-            score,
-            total
+            exam:exam,
+            lesson:lesson,
+            score:score,
+            total:total
           });
 
 
@@ -1302,36 +1371,37 @@
           );
 
 
-          document
-            .getElementById('examName')
-            .value = '';
+          document.getElementById(
+            "examName"
+          ).value = "";
 
-          document
-            .getElementById('lessonName')
-            .value = '';
+          document.getElementById(
+            "lessonName"
+          ).value = "";
 
-          document
-            .getElementById('score')
-            .value = '';
+          document.getElementById(
+            "score"
+          ).value = "";
 
-          document
-            .getElementById('total')
-            .value = '';
+          document.getElementById(
+            "total"
+          ).value = "";
 
 
           message.textContent =
-            'تمت إضافة الدرجة بنجاح.';
+            "تمت إضافة الدرجة بنجاح.";
 
           message.className =
-            'message success';
+            "message success";
 
 
-          loadSavedGrades();
+          loadGrades();
 
           setTimeout(
             () => {
 
-              message.textContent = '';
+              message.textContent =
+                "";
 
             },
             2000
@@ -1355,35 +1425,35 @@
         grades
       );
 
-      loadSavedGrades();
+      loadGrades();
 
     }
 
 
     /* =========================
        LOGOUT
-       ========================= */
+    ========================= */
 
     document
-      .getElementById('logoutBtn')
+      .getElementById("logoutBtn")
       .addEventListener(
-        'click',
+        "click",
         async () => {
 
           try{
 
             await fetch(
-              '/api/logout',
+              "/api/logout",
               {
-                method:'POST',
-                credentials:'include'
+                method:"POST",
+                credentials:"include"
               }
             );
 
           }catch(error){}
 
           window.location.replace(
-            'index.html'
+            "index.html"
           );
 
         }
