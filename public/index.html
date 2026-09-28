@@ -1,235 +1,669 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#09101f">
-  <meta name="description" content="منصة مستر محمد حسام التعليمية للطلاب والمحاضرات والحضور والغياب.">
-  <title>منصة مستر محمد حسام</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b5cff" />
+  <title>مستر محمد حسام</title>
+  <style>
+    :root{
+      --primary:#1769ff;
+      --primary-dark:#0d4ed8;
+      --navy:#07152e;
+      --ink:#12203a;
+      --muted:#66738f;
+      --line:#e6ebf4;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --success:#0da36b;
+      --danger:#e5484d;
+      --shadow:0 24px 70px rgba(22,42,82,.12);
+      --radius:26px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Arial,"Segoe UI",Tahoma,sans-serif;
+      background:linear-gradient(180deg,#f8fbff 0%,#f2f6fb 100%);
+      color:var(--ink);
+      min-height:100vh;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    a{text-decoration:none;color:inherit}
+
+    .page{
+      width:min(1280px,calc(100% - 34px));
+      margin:18px auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(14px);
+      border:1px solid rgba(217,226,240,.9);
+      border-radius:20px;
+      padding:12px 16px;
+      box-shadow:0 12px 40px rgba(30,52,91,.06);
+      position:relative;
+      z-index:5;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+    }
+    .brand-icon{
+      width:48px;
+      height:48px;
+      display:grid;
+      place-items:center;
+      border-radius:15px;
+      color:#fff;
+      background:linear-gradient(135deg,#1b76ff,#5d42ff);
+      box-shadow:0 12px 24px rgba(23,105,255,.23);
+      font-size:21px;
+    }
+    .brand small{
+      display:block;
+      color:var(--muted);
+      font-weight:500;
+      margin-top:3px;
+    }
+
+    .hero{
+      min-height:calc(100vh - 100px);
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      align-items:center;
+      gap:44px;
+      padding:46px 24px 70px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero:before,.hero:after{
+      content:"";
+      position:absolute;
+      border-radius:999px;
+      filter:blur(3px);
+      z-index:-1;
+    }
+    .hero:before{
+      width:320px;height:320px;
+      background:rgba(23,105,255,.09);
+      top:40px;right:-110px;
+    }
+    .hero:after{
+      width:280px;height:280px;
+      background:rgba(93,66,255,.08);
+      bottom:40px;left:-100px;
+    }
+
+    .showcase{
+      padding:18px 10px 18px 0;
+      animation:rise .65s ease both;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:var(--primary-dark);
+      background:#eaf2ff;
+      border:1px solid #d7e5ff;
+      border-radius:999px;
+      padding:9px 13px;
+      font-size:13px;
+      font-weight:800;
+    }
+    .eyebrow .dot{
+      width:8px;height:8px;border-radius:50%;background:#21b26b;
+      box-shadow:0 0 0 5px rgba(33,178,107,.11);
+    }
+    .showcase h1{
+      margin:18px 0 14px;
+      font-size:clamp(42px,6vw,74px);
+      line-height:1.02;
+      letter-spacing:-2.5px;
+      color:var(--navy);
+    }
+    .showcase h1 span{color:var(--primary)}
+    .showcase p{
+      margin:0;
+      max-width:650px;
+      color:var(--muted);
+      font-size:18px;
+      line-height:1.85;
+    }
+
+    .features{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:28px;
+    }
+    .feature{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:17px;
+      box-shadow:0 12px 32px rgba(31,56,99,.06);
+      transition:transform .2s ease,box-shadow .2s ease;
+    }
+    .feature:hover{
+      transform:translateY(-4px);
+      box-shadow:0 18px 36px rgba(31,56,99,.11);
+    }
+    .feature-num{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      color:var(--primary);
+      font-weight:900;
+      font-size:12px;
+      margin-bottom:13px;
+    }
+    .feature h3{margin:0 0 7px;font-size:16px}
+    .feature p{margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:24px;
+    }
+    .badge{
+      background:#fff;
+      border:1px solid var(--line);
+      padding:10px 13px;
+      border-radius:999px;
+      color:#455372;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .auth-card{
+      width:min(500px,100%);
+      margin-inline:auto;
+      background:rgba(255,255,255,.96);
+      border:1px solid #e7edf6;
+      border-radius:28px;
+      padding:30px;
+      box-shadow:var(--shadow);
+      animation:rise .75s .08s ease both;
+    }
+    .auth-head{margin-bottom:23px}
+    .auth-head h2{margin:0 0 7px;font-size:30px}
+    .auth-head p{margin:0;color:var(--muted);line-height:1.6}
+
+    .field{margin-top:15px}
+    .field label{
+      display:block;
+      margin-bottom:8px;
+      font-size:14px;
+      font-weight:800;
+      color:#273550;
+    }
+    .input-wrap{position:relative}
+    .input-icon{
+      position:absolute;
+      inset-inline-start:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#7f8ba3;
+      font-weight:800;
+      pointer-events:none;
+    }
+    .field input,.field select{
+      width:100%;
+      border:1px solid #dce4ef;
+      background:#fbfdff;
+      color:#17233a;
+      outline:none;
+      border-radius:14px;
+      padding:14px 44px 14px 14px;
+      transition:border-color .2s,box-shadow .2s,background .2s;
+    }
+    .field input:focus,.field select:focus{
+      border-color:#73a8ff;
+      box-shadow:0 0 0 4px rgba(23,105,255,.10);
+      background:#fff;
+    }
+
+    .primary-btn{
+      width:100%;
+      margin-top:20px;
+      border:0;
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary),#5d42ff);
+      padding:15px 18px;
+      border-radius:15px;
+      font-weight:900;
+      font-size:16px;
+      box-shadow:0 14px 28px rgba(23,105,255,.22);
+      transition:transform .18s,box-shadow .18s;
+    }
+    .primary-btn:hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(23,105,255,.29)}
+    .primary-btn:disabled{opacity:.65;cursor:not-allowed;transform:none}
+
+    .switch-text{
+      text-align:center;
+      color:var(--muted);
+      margin:18px 0 0;
+      font-size:14px;
+    }
+    .switch-btn{
+      color:var(--primary-dark);
+      font-weight:900;
+      background:none;
+      border:0;
+      padding:0;
+    }
+    .error{
+      min-height:20px;
+      color:var(--danger);
+      font-size:13px;
+      font-weight:700;
+      margin-top:12px;
+      text-align:center;
+    }
+    .success{
+      color:var(--success);
+    }
+
+    .register-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(4,13,31,.56);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:100;
+    }
+    .register-overlay.open{display:flex}
+    .register-modal{
+      width:min(720px,100%);
+      max-height:min(88vh,760px);
+      overflow:auto;
+      background:#fff;
+      border-radius:26px;
+      border:1px solid #e8edf5;
+      box-shadow:0 40px 100px rgba(0,0,0,.22);
+      padding:28px;
+      animation:pop .22s ease both;
+    }
+    .register-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:6px;
+    }
+    .register-top h2{margin:0;font-size:27px}
+    .close-btn{
+      width:42px;height:42px;border-radius:12px;
+      border:1px solid var(--line);background:#f7f9fc;color:#55637e;
+      font-size:22px;
+    }
+    .register-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0 14px;
+    }
+    .register-grid .full{grid-column:1/-1}
+
+    .footer{
+      text-align:center;
+      color:#8490a7;
+      font-size:13px;
+      padding:0 20px 30px;
+    }
+
+    .hidden{display:none !important}
+
+    @keyframes rise{
+      from{opacity:0;transform:translateY(18px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes pop{
+      from{opacity:0;transform:scale(.97) translateY(8px)}
+      to{opacity:1;transform:scale(1) translateY(0)}
+    }
+
+    @media(max-width:940px){
+      .hero{grid-template-columns:1fr;min-height:auto;padding-top:34px}
+      .showcase{padding-right:0}
+      .auth-card{margin-top:4px}
+    }
+    @media(max-width:700px){
+      .page{width:min(100% - 18px,1280px);margin:9px auto}
+      .hero{padding:26px 10px 44px;gap:24px}
+      .features{grid-template-columns:1fr}
+      .showcase h1{font-size:45px;letter-spacing:-1.4px}
+      .showcase p{font-size:16px}
+      .auth-card{padding:22px;border-radius:22px}
+      .register-modal{padding:20px;border-radius:22px}
+      .register-grid{grid-template-columns:1fr}
+      .register-grid .full{grid-column:auto}
+    }
+  </style>
 </head>
 <body>
-  <div class="page-noise" aria-hidden="true"></div>
-  <div class="orb orb-one" aria-hidden="true"></div>
-  <div class="orb orb-two" aria-hidden="true"></div>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">م</div>
+        <div>
+          منصة مستر محمد حسام
+          <small>منصة تعليمية</small>
+        </div>
+      </div>
+    </header>
 
-  <header class="topbar">
-    <a class="brand" href="./" aria-label="منصة مستر محمد حسام">
-      <span class="brand-icon">م</span>
-      <span>
-        <strong>منصة مستر محمد حسام</strong>
-        <small>منصة تعليمية للطلاب</small>
-      </span>
-    </a>
-    <div class="top-actions" id="topActions"></div>
-  </header>
+    <main class="hero">
+      <section class="showcase">
+        <div class="eyebrow"><span class="dot"></span> منصة تعليمية متكاملة</div>
+        <h1>كل دروسك<br><span>في مكان واحد.</span></h1>
+        <p>سجّل دخولك لمتابعة المحاضرات، معرفة موعد الحصة، وتسجيل حضورك بسهولة من أي جهاز.</p>
 
-  <main class="container">
-    <section id="authView" class="auth-view">
-      <div class="auth-shell">
-        <aside class="auth-showcase">
-          <div class="showcase-grid" aria-hidden="true"></div>
-          <div class="brand-mark">م</div>
-          <span class="showcase-kicker">منصة تعليمية</span>
-          <h1>كل دروسك<br><span>في مكان واحد.</span></h1>
-          <p>سجّل دخولك لمتابعة المحاضرات، معرفة موعد الحصة، وتسجيل حضورك بسهولة من أي جهاز.</p>
+        <div class="features">
+          <article class="feature">
+            <div class="feature-num"><span>01</span><span>↗</span></div>
+            <h3>دخول سريع</h3>
+            <p>بالتليفون أو ديسكورد</p>
+          </article>
+          <article class="feature">
+            <div class="feature-num"><span>02</span><span>◉</span></div>
+            <h3>رابط المحاضرة</h3>
+            <p>يظهر تلقائياً في موعده</p>
+          </article>
+          <article class="feature">
+            <div class="feature-num"><span>03</span><span>✓</span></div>
+            <h3>الحضور والغياب</h3>
+            <p>متابعة منظمة مع المدرس</p>
+          </article>
+        </div>
 
-          <div class="showcase-points">
-            <div class="feature-pill"><span>01</span><b>دخول سريع</b><small>بالتليفون أو ديسكورد</small></div>
-            <div class="feature-pill"><span>02</span><b>رابط المحاضرة</b><small>يظهر تلقائياً في موعده</small></div>
-            <div class="feature-pill"><span>03</span><b>الحضور والغياب</b><small>متابعة منظمة مع المدرس</small></div>
-          </div>
+        <div class="badges">
+          <span class="badge">رياضيات</span>
+          <span class="badge">دراسات اجتماعية</span>
+          <span class="badge">خصوصي</span>
+          <span class="badge">مجموعات</span>
+        </div>
+      </section>
 
-          <div class="showcase-footer">
-            <span class="live-dot"></span>
-            <span>منصة مستر محمد حسام</span>
-          </div>
-        </aside>
+      <section class="auth-card">
+        <div class="auth-head">
+          <h2>أهلاً بيك 👋</h2>
+          <p>ادخل بيانات حسابك للمتابعة.</p>
+        </div>
 
-        <section class="auth-card" aria-label="تسجيل الدخول وإنشاء الحساب">
-          <div class="auth-card-head">
-            <div class="logo-circle">م</div>
-            <div>
-              <span class="eyebrow">أهلاً بيك</span>
-              <h2>تسجيل الدخول</h2>
-              <p class="muted">ادخل بيانات حسابك للمتابعة.</p>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="login">رقم التلفون أو يوزر ديسكورد</label>
+            <div class="input-wrap">
+              <span class="input-icon">☎</span>
+              <input id="login" name="login" type="text" autocomplete="username" placeholder="مثال: 01012345678" required>
             </div>
           </div>
 
-          <div id="loginPanel">
-            <form id="loginForm" class="form" autocomplete="on">
-              <label for="loginInput">رقم التلفون أو يوزر ديسكورد</label>
-              <div class="input-wrap">
-                <span class="input-icon">☎</span>
-                <input id="loginInput" name="username" autocomplete="username" required placeholder="01xxxxxxxxx أو username">
-              </div>
-
-              <label for="loginPassword">الباسورد</label>
-              <div class="input-wrap">
-                <span class="input-icon">••</span>
-                <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="اكتب الباسورد">
-              </div>
-
-              <button class="primary full-button" type="submit">تسجيل دخول <span>←</span></button>
-            </form>
-            <div class="switch-line">
-              <span>لسه معندكش حساب؟</span>
-              <button class="link-button" id="showRegister" type="button">إنشاء حساب</button>
+          <div class="field">
+            <label for="password">الباسورد</label>
+            <div class="input-wrap">
+              <span class="input-icon">••</span>
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="اكتب كلمة المرور" required>
             </div>
           </div>
 
-          <div id="registerPanel" hidden>
-            <form id="registerForm" class="form" autocomplete="on">
-              <div class="form-grid two-inputs">
-                <div>
-                  <label for="fullName">الاسم الثلاثي</label>
-                  <input id="fullName" name="name" autocomplete="name" required placeholder="محمد علي">
-                </div>
-                <div>
-                  <label for="registerLogin">رقم التلفون أو يوزر ديسكورد</label>
-                  <input id="registerLogin" name="login" autocomplete="username" required placeholder="01xxxxxxxxx أو username">
-                </div>
-              </div>
+          <div id="loginMessage" class="error"></div>
+          <button id="loginBtn" class="primary-btn" type="submit">تسجيل دخول ←</button>
+        </form>
 
-              <div class="form-grid two-inputs">
-                <div>
-                  <label for="grade">أنت في سنة كام؟</label>
-                  <select id="grade" required>
-                    <option>أولى إعدادي</option>
-                    <option>ثانية إعدادي</option>
-                    <option>ثالثة إعدادي</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="subject">اختار الدرس</label>
-                  <select id="subject" required>
-                    <option>رياضيات</option>
-                    <option>دراسات اجتماعية</option>
-                  </select>
-                </div>
-              </div>
+        <p class="switch-text">لسه معندكش حساب؟ <button class="switch-btn" type="button" id="openRegister">إنشاء حساب</button></p>
+      </section>
+    </main>
 
-              <label for="mode">نوع الحصة</label>
-              <select id="mode" required>
-                <option>خصوصي</option>
-                <option>مجموعة</option>
+    <footer class="footer">© 2026 منصة مستر محمد حسام</footer>
+  </div>
+
+  <div id="registerOverlay" class="register-overlay" aria-hidden="true">
+    <div class="register-modal" role="dialog" aria-modal="true" aria-labelledby="registerTitle">
+      <div class="register-top">
+        <div>
+          <h2 id="registerTitle">إنشاء حساب جديد</h2>
+          <p style="margin:7px 0 0;color:#70809b">املأ البيانات التالية لإنشاء حساب الطالب.</p>
+        </div>
+        <button id="closeRegister" class="close-btn" type="button" aria-label="إغلاق">×</button>
+      </div>
+
+      <form id="registerForm" novalidate>
+        <div class="register-grid">
+          <div class="field full">
+            <label for="fullName">الاسم الثلاثي</label>
+            <div class="input-wrap">
+              <span class="input-icon">A</span>
+              <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="مثال: محمد أحمد علي" required>
+            </div>
+          </div>
+
+          <div class="field full">
+            <label for="registerLogin">رقم التلفون أو يوزر ديسكورد</label>
+            <div class="input-wrap">
+              <span class="input-icon">☎</span>
+              <input id="registerLogin" name="login" type="text" autocomplete="username" placeholder="01012345678 أو Discord" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="grade">السنة</label>
+            <div class="input-wrap">
+              <select id="grade" name="grade" required>
+                <option value="">اختر السنة</option>
+                <option value="أولى إعدادي">أولى إعدادي</option>
+                <option value="ثانية إعدادي">ثانية إعدادي</option>
+                <option value="ثالثة إعدادي">ثالثة إعدادي</option>
               </select>
-
-              <div class="form-grid two-inputs">
-                <div>
-                  <label for="registerPassword">باسورد الحساب</label>
-                  <input id="registerPassword" name="new-password" type="password" minlength="6" autocomplete="new-password" required placeholder="6 أحرف أو أرقام على الأقل">
-                </div>
-                <div>
-                  <label for="confirmPassword">تأكيد الباسورد</label>
-                  <input id="confirmPassword" name="new-password-confirm" type="password" minlength="6" autocomplete="new-password" required placeholder="اكتب الباسورد مرة ثانية">
-                </div>
-              </div>
-
-              <button class="primary full-button" type="submit">إنشاء الحساب <span>←</span></button>
-            </form>
-            <div class="switch-line">
-              <span>عندك حساب بالفعل؟</span>
-              <button class="link-button" id="showLogin" type="button">تسجيل الدخول</button>
             </div>
           </div>
 
-          <div id="authMessage" class="message" hidden role="status" aria-live="polite"></div>
-        </section>
-      </div>
-    </section>
+          <div class="field">
+            <label for="subject">المادة</label>
+            <div class="input-wrap">
+              <select id="subject" name="subject" required>
+                <option value="">اختر المادة</option>
+                <option value="رياضيات">رياضيات</option>
+                <option value="دراسات اجتماعية">دراسات اجتماعية</option>
+              </select>
+            </div>
+          </div>
 
-    <section id="studentView" hidden>
-      <div class="hero-card student-hero">
-        <div class="hero-content">
-          <span class="eyebrow">منصة الطالب</span>
-          <h1 id="studentWelcome">أهلاً</h1>
-          <p id="studentMeta" class="muted"></p>
+          <div class="field">
+            <label for="mode">نوع الاشتراك</label>
+            <div class="input-wrap">
+              <select id="mode" name="mode" required>
+                <option value="">اختر النوع</option>
+                <option value="خصوصي">خصوصي</option>
+                <option value="مجموعة">مجموعة</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="registerPassword">كلمة المرور</label>
+            <div class="input-wrap">
+              <span class="input-icon">●</span>
+              <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="6 أحرف أو أرقام على الأقل" required>
+            </div>
+          </div>
+
+          <div class="field full">
+            <label for="confirmPassword">تأكيد كلمة المرور</label>
+            <div class="input-wrap">
+              <span class="input-icon">●</span>
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور" required>
+            </div>
+          </div>
         </div>
-        <button class="secondary" id="studentLogout" type="button">تسجيل خروج</button>
-      </div>
 
-      <div class="grid two">
-        <article class="card lecture-card">
-          <div class="card-header">
-            <div>
-              <span class="eyebrow">المحاضرة القادمة</span>
-              <h2>المحاضرة</h2>
-            </div>
-            <span id="lectureBadge" class="badge">غير متاح</span>
-          </div>
-          <h3 id="lectureTitle">المحاضرة القادمة</h3>
-          <p id="lectureTime" class="muted"></p>
-          <div id="lectureWaiting" class="waiting-box">رابط المحاضرة سيظهر هنا تلقائياً قبل الموعد بـ 5 دقائق.</div>
-          <a id="lectureLink" class="primary full-button link-card" href="#" target="_blank" rel="noopener noreferrer" hidden>دخول المحاضرة <span>←</span></a>
-          <button id="checkinButton" class="secondary full" type="button" hidden>تسجيل الحضور الآن</button>
-          <div id="studentMessage" class="message" hidden role="status" aria-live="polite"></div>
-        </article>
+        <div id="registerMessage" class="error"></div>
+        <button id="registerBtn" class="primary-btn" type="submit">إنشاء الحساب ←</button>
+      </form>
+    </div>
+  </div>
 
-        <article class="card">
-          <div class="card-header"><div><span class="eyebrow">ملف الطالب</span><h2>بيانات حسابك</h2></div></div>
-          <div id="profileBox" class="profile-box"></div>
-        </article>
-      </div>
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const registerOverlay = document.getElementById('registerOverlay');
+    const loginMessage = document.getElementById('loginMessage');
+    const registerMessage = document.getElementById('registerMessage');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
 
-      <article class="card">
-        <div class="card-header"><div><span class="eyebrow">السجل</span><h2>الحضور والغياب</h2></div></div>
-        <div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الحالة</th><th>طريقة التسجيل</th></tr></thead><tbody id="studentAttendance"></tbody></table></div>
-      </article>
-    </section>
+    function setMessage(el, text, success = false) {
+      el.textContent = text || '';
+      el.className = success ? 'error success' : 'error';
+    }
 
-    <section id="adminView" hidden>
-      <div class="hero-card admin-hero">
-        <div class="hero-content">
-          <span class="eyebrow">لوحة المدرس</span>
-          <h1>مستر محمد حسام</h1>
-          <p class="muted">إدارة الطلاب، الحضور والغياب، ورابط المحاضرة من مكان واحد.</p>
-        </div>
-        <button class="secondary" id="adminLogout" type="button">تسجيل خروج</button>
-      </div>
+    function openRegisterModal() {
+      registerOverlay.classList.add('open');
+      registerOverlay.setAttribute('aria-hidden', 'false');
+      setMessage(registerMessage, '');
+      setTimeout(() => document.getElementById('fullName')?.focus(), 80);
+    }
 
-      <div class="grid two">
-        <article class="card">
-          <div class="card-header"><div><span class="eyebrow">المحاضرة</span><h2>الرابط والموعد</h2></div></div>
-          <form id="lectureForm" class="form">
-            <label for="adminLectureTitle">اسم المحاضرة</label>
-            <input id="adminLectureTitle" required placeholder="مثال: رياضيات - الوحدة الأولى">
-            <label for="adminLectureUrl">رابط المحاضرة</label>
-            <input id="adminLectureUrl" type="url" placeholder="https://...">
-            <label for="adminScheduledAt">موعد بداية المحاضرة</label>
-            <input id="adminScheduledAt" type="datetime-local">
-            <small class="muted">الرابط يظهر للطلاب تلقائياً قبل بداية المحاضرة بـ 5 دقائق.</small>
-            <div class="row-actions">
-              <button class="primary" type="submit">حفظ المحاضرة</button>
-              <button class="danger-outline" id="clearLecture" type="button">مسح الرابط</button>
-            </div>
-          </form>
-          <div id="adminLectureMessage" class="message" hidden role="status" aria-live="polite"></div>
-        </article>
+    function closeRegisterModal() {
+      registerOverlay.classList.remove('open');
+      registerOverlay.setAttribute('aria-hidden', 'true');
+      setMessage(registerMessage, '');
+    }
 
-        <article class="card">
-          <div class="card-header"><div><span class="eyebrow">ملخص سريع</span><h2>الإحصائيات</h2></div></div>
-          <div class="stats">
-            <div class="stat"><span>إجمالي الطلاب</span><strong id="statStudents">0</strong></div>
-            <div class="stat"><span>حضور اليوم</span><strong id="statPresent">0</strong></div>
-            <div class="stat"><span>غياب اليوم</span><strong id="statAbsent">0</strong></div>
-          </div>
-        </article>
-      </div>
+    document.getElementById('openRegister').addEventListener('click', openRegisterModal);
+    document.getElementById('closeRegister').addEventListener('click', closeRegisterModal);
 
-      <article class="card">
-        <div class="card-header"><div><span class="eyebrow">إدارة الحسابات</span><h2>الطلاب</h2></div><button class="secondary" id="refreshStudents" type="button">تحديث</button></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>التواصل</th><th>السنة</th><th>الدرس</th><th>النوع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="studentsTable"></tbody></table></div>
-      </article>
+    registerOverlay.addEventListener('click', (event) => {
+      if (event.target === registerOverlay) closeRegisterModal();
+    });
 
-      <article class="card">
-        <div class="card-header"><div><span class="eyebrow">متابعة الطلاب</span><h2>الحضور والغياب</h2></div><input id="attendanceDate" type="date"></div>
-        <div class="table-wrap"><table><thead><tr><th>الطالب</th><th>السنة</th><th>الدرس</th><th>الحالة</th><th>تعديل</th></tr></thead><tbody id="attendanceTable"></tbody></table></div>
-      </article>
-    </section>
-  </main>
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && registerOverlay.classList.contains('open')) {
+        closeRegisterModal();
+      }
+    });
 
-  <noscript><div class="noscript">لازم تفعّل JavaScript لتشغيل المنصة.</div></noscript>
-  <script src="./app.js" defer></script>
+    async function postJson(url, body) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
+
+      if (!response.ok) {
+        throw new Error(data.message || 'حدث خطأ.');
+      }
+
+      return data;
+    }
+
+    function goDashboard(user) {
+      const target = user?.role === 'admin'
+        ? 'dashboard.html?role=admin'
+        : 'dashboard.html?role=student';
+      window.location.replace(target);
+    }
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setMessage(loginMessage, '');
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'جاري الدخول...';
+
+      try {
+        const login = document.getElementById('login').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!login || !password) {
+          throw new Error('اكتب بيانات الدخول كاملة.');
+        }
+
+        const data = await postJson('/api/login', { login, password });
+        goDashboard(data.user);
+      } catch (error) {
+        setMessage(loginMessage, error.message);
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'تسجيل دخول ←';
+      }
+    });
+
+    registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setMessage(registerMessage, '');
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'جاري إنشاء الحساب...';
+
+      try {
+        const fullName = document.getElementById('fullName').value.trim();
+        const login = document.getElementById('registerLogin').value.trim();
+        const grade = document.getElementById('grade').value;
+        const subject = document.getElementById('subject').value;
+        const mode = document.getElementById('mode').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        const data = await postJson('/api/register', {
+          fullName,
+          login,
+          grade,
+          subject,
+          mode,
+          password,
+          confirmPassword
+        });
+
+        setMessage(registerMessage, data.message || 'تم إنشاء الحساب بنجاح.', true);
+        registerForm.reset();
+
+        setTimeout(() => {
+          closeRegisterModal();
+          document.getElementById('login').value = login;
+          document.getElementById('password').value = '';
+          document.getElementById('password').focus();
+          setMessage(loginMessage, 'الحساب اتعمل بنجاح. سجل دخولك دلوقتي.', true);
+        }, 900);
+      } catch (error) {
+        setMessage(registerMessage, error.message);
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'إنشاء الحساب ←';
+      }
+    });
+
+    /* لو المستخدم عنده جلسة قديمة، انقله للـDashboard مباشرة */
+    (async () => {
+      try {
+        const response = await fetch('/api/me', {
+          credentials: 'include'
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data?.user) goDashboard(data.user);
+      } catch (_) {}
+    })();
+  </script>
 </body>
 </html>
