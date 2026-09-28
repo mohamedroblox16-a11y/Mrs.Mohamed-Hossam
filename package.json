@@ -1,0 +1,17 @@
+{
+  "name": "mr-mohamed-hossam-platform-cloudflare",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

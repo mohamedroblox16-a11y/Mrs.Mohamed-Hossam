@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mr-mohamed-hossam-platform",
+  "main": "server.js",
+  "compatibility_date": "2026-09-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./public" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mr-mohamed-hossam-db",
+      "database_id": "b7facb0f-73b3-4875-9079-0f98043edf28"
+    }
+  ]
+}

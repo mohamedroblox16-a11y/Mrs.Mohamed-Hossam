@@ -1,0 +1,3 @@
+ADMIN_LOGIN=admin
+ADMIN_PASSWORD=123456
+SESSION_SECRET=put-a-long-random-secret-here
