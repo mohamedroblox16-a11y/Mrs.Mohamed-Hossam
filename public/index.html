@@ -19,10 +19,11 @@
       --success:#0da36b;
       --danger:#e5484d;
       --shadow:0 24px 70px rgba(22,42,82,.12);
-      --radius:26px;
     }
 
-    *{box-sizing:border-box}
+    *{
+      box-sizing:border-box;
+    }
 
     html{
       scroll-behavior:smooth;
@@ -34,6 +35,7 @@
       background:linear-gradient(180deg,#f8fbff 0%,#f2f6fb 100%);
       color:var(--ink);
       min-height:100vh;
+      transition:background .3s ease,color .3s ease;
     }
 
     button,input,select{
@@ -54,6 +56,7 @@
       margin:18px auto;
     }
 
+    /* الشريط العلوي */
     .topbar{
       display:flex;
       align-items:center;
@@ -67,6 +70,7 @@
       box-shadow:0 12px 40px rgba(30,52,91,.06);
       position:relative;
       z-index:5;
+      transition:.3s ease;
     }
 
     .brand{
@@ -104,6 +108,27 @@
       margin-top:3px;
     }
 
+    /* زرار الدارك مود */
+    .theme-toggle{
+      width:46px;
+      height:46px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      color:#1a2945;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      transition:.25s ease;
+      box-shadow:0 8px 20px rgba(20,40,80,.08);
+    }
+
+    .theme-toggle:hover{
+      transform:translateY(-2px);
+      box-shadow:0 12px 25px rgba(20,40,80,.13);
+    }
+
     .hero{
       min-height:calc(100vh - 100px);
       display:grid;
@@ -115,7 +140,8 @@
       overflow:hidden;
     }
 
-    .hero:before,.hero:after{
+    .hero:before,
+    .hero:after{
       content:"";
       position:absolute;
       border-radius:999px;
@@ -155,6 +181,7 @@
       padding:9px 13px;
       font-size:13px;
       font-weight:800;
+      transition:.3s ease;
     }
 
     .eyebrow .dot{
@@ -171,18 +198,20 @@
       line-height:1.02;
       letter-spacing:-2.5px;
       color:var(--navy);
+      transition:.3s ease;
     }
 
     .showcase h1 span{
       color:var(--primary);
     }
 
-    .showcase p{
+    .showcase > p{
       margin:0;
       max-width:650px;
       color:var(--muted);
       font-size:18px;
       line-height:1.85;
+      transition:.3s ease;
     }
 
     .features{
@@ -198,7 +227,7 @@
       border-radius:18px;
       padding:17px;
       box-shadow:0 12px 32px rgba(31,56,99,.06);
-      transition:transform .2s ease,box-shadow .2s ease;
+      transition:.25s ease;
     }
 
     .feature:hover{
@@ -243,6 +272,7 @@
       color:#455372;
       font-size:13px;
       font-weight:700;
+      transition:.25s ease;
     }
 
     .auth-card{
@@ -254,6 +284,7 @@
       padding:30px;
       box-shadow:var(--shadow);
       animation:rise .75s .08s ease both;
+      transition:.3s ease;
     }
 
     .auth-head{
@@ -281,6 +312,7 @@
       font-size:14px;
       font-weight:800;
       color:#273550;
+      transition:.3s ease;
     }
 
     .input-wrap{
@@ -306,7 +338,7 @@
       outline:none;
       border-radius:14px;
       padding:14px 44px 14px 14px;
-      transition:border-color .2s,box-shadow .2s,background .2s;
+      transition:.2s ease;
     }
 
     .field input:focus,
@@ -327,7 +359,7 @@
       font-weight:900;
       font-size:16px;
       box-shadow:0 14px 28px rgba(23,105,255,.22);
-      transition:transform .18s,box-shadow .18s;
+      transition:.18s ease;
     }
 
     .primary-btn:hover{
@@ -395,6 +427,7 @@
       box-shadow:0 40px 100px rgba(0,0,0,.22);
       padding:28px;
       animation:pop .22s ease both;
+      transition:.3s ease;
     }
 
     .register-top{
@@ -408,6 +441,11 @@
     .register-top h2{
       margin:0;
       font-size:27px;
+    }
+
+    .register-top p{
+      margin:7px 0 0;
+      color:#70809b;
     }
 
     .close-btn{
@@ -435,17 +473,125 @@
       color:#8490a7;
       font-size:13px;
       padding:0 20px 30px;
+      transition:.3s ease;
     }
 
-    .hidden{
-      display:none !important;
+    /* =========================
+       DARK MODE
+       ========================= */
+
+    body.dark-mode{
+      --navy:#f4f7ff;
+      --ink:#edf2ff;
+      --muted:#aab5cc;
+      --line:#28364f;
+      --bg:#08111f;
+      --card:#101b2d;
+
+      background:linear-gradient(180deg,#07111f 0%,#0d1727 100%);
+      color:var(--ink);
     }
 
+    body.dark-mode .topbar{
+      background:rgba(15,27,45,.90);
+      border-color:#263650;
+      box-shadow:0 12px 40px rgba(0,0,0,.22);
+    }
+
+    body.dark-mode .theme-toggle{
+      background:#16243a;
+      border-color:#30415e;
+      color:#fff;
+    }
+
+    body.dark-mode .eyebrow{
+      background:#122542;
+      border-color:#244472;
+    }
+
+    body.dark-mode .feature{
+      background:#101b2d;
+      border-color:#28364f;
+      box-shadow:0 12px 32px rgba(0,0,0,.16);
+    }
+
+    body.dark-mode .feature h3,
+    body.dark-mode .auth-head h2,
+    body.dark-mode .register-top h2,
+    body.dark-mode .field label{
+      color:#f1f5ff;
+    }
+
+    body.dark-mode .feature p{
+      color:#aab5cc;
+    }
+
+    body.dark-mode .badge{
+      background:#101b2d;
+      border-color:#28364f;
+      color:#c7d0e2;
+    }
+
+    body.dark-mode .auth-card{
+      background:#101b2d;
+      border-color:#28364f;
+      box-shadow:0 24px 70px rgba(0,0,0,.30);
+    }
+
+    body.dark-mode .field input,
+    body.dark-mode .field select{
+      background:#0d1829;
+      color:#f1f5ff;
+      border-color:#30415e;
+    }
+
+    body.dark-mode .field input::placeholder{
+      color:#71809b;
+    }
+
+    body.dark-mode .field input:focus,
+    body.dark-mode .field select:focus{
+      background:#111e31;
+    }
+
+    body.dark-mode .register-modal{
+      background:#101b2d;
+      border-color:#28364f;
+    }
+
+    body.dark-mode .register-top p{
+      color:#9ba9c2 !important;
+    }
+
+    body.dark-mode .close-btn{
+      background:#16243a;
+      color:#d8e0ef;
+      border-color:#30415e;
+    }
+
+    body.dark-mode .switch-text{
+      color:#aab5cc;
+    }
+
+    body.dark-mode .footer{
+      color:#71809b;
+    }
+
+    body.dark-mode .hero:before{
+      background:rgba(23,105,255,.13);
+    }
+
+    body.dark-mode .hero:after{
+      background:rgba(93,66,255,.13);
+    }
+
+    /* حركات */
     @keyframes rise{
       from{
         opacity:0;
         transform:translateY(18px);
       }
+
       to{
         opacity:1;
         transform:translateY(0);
@@ -457,6 +603,7 @@
         opacity:0;
         transform:scale(.97) translateY(8px);
       }
+
       to{
         opacity:1;
         transform:scale(1) translateY(0);
@@ -464,6 +611,7 @@
     }
 
     @media(max-width:940px){
+
       .hero{
         grid-template-columns:1fr;
         min-height:auto;
@@ -480,6 +628,7 @@
     }
 
     @media(max-width:700px){
+
       .page{
         width:min(100% - 18px,1280px);
         margin:9px auto;
@@ -499,7 +648,7 @@
         letter-spacing:-1.4px;
       }
 
-      .showcase p{
+      .showcase > p{
         font-size:16px;
       }
 
@@ -525,12 +674,14 @@
 </head>
 
 <body>
+
   <div class="page">
 
+    <!-- الشريط العلوي -->
     <header class="topbar">
+
       <div class="brand">
 
-        <!-- صورة Mrs.jpg بدل حرف م -->
         <div class="brand-icon">
           <img src="Mrs.jpg" alt="مستر محمد حسام">
         </div>
@@ -539,12 +690,26 @@
           منصة مستر محمد حسام
           <small>منصة تعليمية</small>
         </div>
+
       </div>
+
+      <!-- زرار Dark Mode -->
+      <button
+        id="themeToggle"
+        class="theme-toggle"
+        type="button"
+        aria-label="تفعيل الوضع الداكن"
+      >
+        🌙
+      </button>
+
     </header>
 
     <main class="hero">
 
+      <!-- الجزء الشمال -->
       <section class="showcase">
+
         <div class="eyebrow">
           <span class="dot"></span>
           منصة تعليمية متكاملة
@@ -563,30 +728,48 @@
         <div class="features">
 
           <article class="feature">
+
             <div class="feature-num">
               <span>01</span>
               <span>↗</span>
             </div>
+
             <h3>دخول سريع</h3>
-            <p>بالتليفون أو ديسكورد</p>
+
+            <p>
+              بالتليفون أو ديسكورد
+            </p>
+
           </article>
 
           <article class="feature">
+
             <div class="feature-num">
               <span>02</span>
               <span>◉</span>
             </div>
+
             <h3>رابط المحاضرة</h3>
-            <p>يظهر تلقائياً في موعده</p>
+
+            <p>
+              يظهر تلقائياً في موعده
+            </p>
+
           </article>
 
           <article class="feature">
+
             <div class="feature-num">
               <span>03</span>
               <span>✓</span>
             </div>
+
             <h3>الحضور والغياب</h3>
-            <p>متابعة منظمة مع المدرس</p>
+
+            <p>
+              متابعة منظمة مع المدرس
+            </p>
+
           </article>
 
         </div>
@@ -597,21 +780,34 @@
           <span class="badge">خصوصي</span>
           <span class="badge">مجموعات</span>
         </div>
+
       </section>
 
+      <!-- تسجيل الدخول -->
       <section class="auth-card">
 
         <div class="auth-head">
-          <h2>أهلاً بيك 👋</h2>
-          <p>ادخل بيانات حسابك للمتابعة.</p>
+
+          <h2>
+            أهلاً بيك 👋
+          </h2>
+
+          <p>
+            ادخل بيانات حسابك للمتابعة.
+          </p>
+
         </div>
 
         <form id="loginForm" novalidate>
 
           <div class="field">
-            <label for="login">رقم التلفون أو يوزر ديسكورد</label>
+
+            <label for="login">
+              رقم التلفون أو يوزر ديسكورد
+            </label>
 
             <div class="input-wrap">
+
               <span class="input-icon">☎</span>
 
               <input
@@ -622,13 +818,19 @@
                 placeholder="مثال: 01012345678"
                 required
               >
+
             </div>
+
           </div>
 
           <div class="field">
-            <label for="password">الباسورد</label>
+
+            <label for="password">
+              الباسورد
+            </label>
 
             <div class="input-wrap">
+
               <span class="input-icon">••</span>
 
               <input
@@ -639,22 +841,35 @@
                 placeholder="اكتب كلمة المرور"
                 required
               >
+
             </div>
+
           </div>
 
           <div id="loginMessage" class="error"></div>
 
-          <button id="loginBtn" class="primary-btn" type="submit">
+          <button
+            id="loginBtn"
+            class="primary-btn"
+            type="submit"
+          >
             تسجيل دخول ←
           </button>
 
         </form>
 
         <p class="switch-text">
+
           لسه معندكش حساب؟
-          <button class="switch-btn" type="button" id="openRegister">
+
+          <button
+            class="switch-btn"
+            type="button"
+            id="openRegister"
+          >
             إنشاء حساب
           </button>
+
         </p>
 
       </section>
@@ -667,7 +882,12 @@
 
   </div>
 
-  <div id="registerOverlay" class="register-overlay" aria-hidden="true">
+  <!-- نافذة إنشاء الحساب -->
+  <div
+    id="registerOverlay"
+    class="register-overlay"
+    aria-hidden="true"
+  >
 
     <div
       class="register-modal"
@@ -679,11 +899,15 @@
       <div class="register-top">
 
         <div>
-          <h2 id="registerTitle">إنشاء حساب جديد</h2>
 
-          <p style="margin:7px 0 0;color:#70809b">
+          <h2 id="registerTitle">
+            إنشاء حساب جديد
+          </h2>
+
+          <p>
             املأ البيانات التالية لإنشاء حساب الطالب.
           </p>
+
         </div>
 
         <button
@@ -702,10 +926,16 @@
         <div class="register-grid">
 
           <div class="field full">
-            <label for="fullName">الاسم الثلاثي</label>
+
+            <label for="fullName">
+              الاسم الثلاثي
+            </label>
 
             <div class="input-wrap">
-              <span class="input-icon">A</span>
+
+              <span class="input-icon">
+                A
+              </span>
 
               <input
                 id="fullName"
@@ -715,16 +945,22 @@
                 placeholder="مثال: محمد أحمد علي"
                 required
               >
+
             </div>
+
           </div>
 
           <div class="field full">
+
             <label for="registerLogin">
               رقم التلفون أو يوزر ديسكورد
             </label>
 
             <div class="input-wrap">
-              <span class="input-icon">☎</span>
+
+              <span class="input-icon">
+                ☎
+              </span>
 
               <input
                 id="registerLogin"
@@ -734,51 +970,122 @@
                 placeholder="01012345678 أو Discord"
                 required
               >
+
             </div>
+
           </div>
 
           <div class="field">
-            <label for="grade">السنة</label>
+
+            <label for="grade">
+              السنة
+            </label>
 
             <div class="input-wrap">
-              <select id="grade" name="grade" required>
-                <option value="">اختر السنة</option>
-                <option value="أولى إعدادي">أولى إعدادي</option>
-                <option value="ثانية إعدادي">ثانية إعدادي</option>
-                <option value="ثالثة إعدادي">ثالثة إعدادي</option>
+
+              <select
+                id="grade"
+                name="grade"
+                required
+              >
+
+                <option value="">
+                  اختر السنة
+                </option>
+
+                <option value="أولى إعدادي">
+                  أولى إعدادي
+                </option>
+
+                <option value="ثانية إعدادي">
+                  ثانية إعدادي
+                </option>
+
+                <option value="ثالثة إعدادي">
+                  ثالثة إعدادي
+                </option>
+
               </select>
+
             </div>
+
           </div>
 
           <div class="field">
-            <label for="subject">المادة</label>
+
+            <label for="subject">
+              المادة
+            </label>
 
             <div class="input-wrap">
-              <select id="subject" name="subject" required>
-                <option value="">اختر المادة</option>
-                <option value="رياضيات">رياضيات</option>
-                <option value="دراسات اجتماعية">دراسات اجتماعية</option>
+
+              <select
+                id="subject"
+                name="subject"
+                required
+              >
+
+                <option value="">
+                  اختر المادة
+                </option>
+
+                <option value="رياضيات">
+                  رياضيات
+                </option>
+
+                <option value="دراسات اجتماعية">
+                  دراسات اجتماعية
+                </option>
+
               </select>
+
             </div>
+
           </div>
 
           <div class="field">
-            <label for="mode">نوع الاشتراك</label>
+
+            <label for="mode">
+              نوع الاشتراك
+            </label>
 
             <div class="input-wrap">
-              <select id="mode" name="mode" required>
-                <option value="">اختر النوع</option>
-                <option value="خصوصي">خصوصي</option>
-                <option value="مجموعة">مجموعة</option>
+
+              <select
+                id="mode"
+                name="mode"
+                required
+              >
+
+                <option value="">
+                  اختر النوع
+                </option>
+
+                <option value="خصوصي">
+                  خصوصي
+                </option>
+
+                <option value="مجموعة">
+                  مجموعة
+                </option>
+
               </select>
+
             </div>
+
           </div>
 
           <div class="field">
-            <label for="registerPassword">كلمة المرور</label>
+
+            <label for="registerPassword">
+              كلمة المرور
+            </label>
 
             <div class="input-wrap">
-              <span class="input-icon">●</span>
+
+              <span class="input-icon">
+                ●
+              </span>
 
               <input
                 id="registerPassword"
@@ -788,16 +1095,22 @@
                 placeholder="6 أحرف أو أرقام على الأقل"
                 required
               >
+
             </div>
+
           </div>
 
           <div class="field full">
+
             <label for="confirmPassword">
               تأكيد كلمة المرور
             </label>
 
             <div class="input-wrap">
-              <span class="input-icon">●</span>
+
+              <span class="input-icon">
+                ●
+              </span>
 
               <input
                 id="confirmPassword"
@@ -807,105 +1120,248 @@
                 placeholder="أعد كتابة كلمة المرور"
                 required
               >
+
             </div>
+
           </div>
 
         </div>
 
-        <div id="registerMessage" class="error"></div>
+        <div
+          id="registerMessage"
+          class="error"
+        ></div>
 
-        <button id="registerBtn" class="primary-btn" type="submit">
+        <button
+          id="registerBtn"
+          class="primary-btn"
+          type="submit"
+        >
           إنشاء الحساب ←
         </button>
 
       </form>
 
     </div>
+
   </div>
 
   <script>
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const registerOverlay = document.getElementById('registerOverlay');
 
-    const loginMessage = document.getElementById('loginMessage');
-    const registerMessage = document.getElementById('registerMessage');
+    /* =========================
+       Dark Mode
+       ========================= */
 
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
+    const themeToggle =
+      document.getElementById('themeToggle');
 
-    function setMessage(el, text, success = false) {
-      el.textContent = text || '';
-      el.className = success ? 'error success' : 'error';
+    function updateThemeButton(){
+
+      const isDark =
+        document.body.classList.contains('dark-mode');
+
+      themeToggle.textContent =
+        isDark ? '☀️' : '🌙';
+
+      themeToggle.setAttribute(
+        'aria-label',
+        isDark
+          ? 'تفعيل الوضع الفاتح'
+          : 'تفعيل الوضع الداكن'
+      );
     }
 
-    function openRegisterModal() {
-      registerOverlay.classList.add('open');
-      registerOverlay.setAttribute('aria-hidden', 'false');
+    const savedTheme =
+      localStorage.getItem('theme');
 
-      setMessage(registerMessage, '');
+    if(savedTheme === 'dark'){
+      document.body.classList.add('dark-mode');
+    }
+
+    updateThemeButton();
+
+    themeToggle.addEventListener('click', () => {
+
+      document.body.classList.toggle('dark-mode');
+
+      const isDark =
+        document.body.classList.contains('dark-mode');
+
+      localStorage.setItem(
+        'theme',
+        isDark ? 'dark' : 'light'
+      );
+
+      updateThemeButton();
+
+    });
+
+
+    /* =========================
+       Login / Register
+       ========================= */
+
+    const loginForm =
+      document.getElementById('loginForm');
+
+    const registerForm =
+      document.getElementById('registerForm');
+
+    const registerOverlay =
+      document.getElementById('registerOverlay');
+
+    const loginMessage =
+      document.getElementById('loginMessage');
+
+    const registerMessage =
+      document.getElementById('registerMessage');
+
+    const loginBtn =
+      document.getElementById('loginBtn');
+
+    const registerBtn =
+      document.getElementById('registerBtn');
+
+
+    function setMessage(el,text,success=false){
+
+      el.textContent = text || '';
+
+      el.className =
+        success
+          ? 'error success'
+          : 'error';
+    }
+
+
+    function openRegisterModal(){
+
+      registerOverlay.classList.add('open');
+
+      registerOverlay.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+
+      setMessage(
+        registerMessage,
+        ''
+      );
 
       setTimeout(() => {
-        document.getElementById('fullName')?.focus();
-      }, 80);
+
+        document
+          .getElementById('fullName')
+          ?.focus();
+
+      },80);
     }
 
-    function closeRegisterModal() {
+
+    function closeRegisterModal(){
+
       registerOverlay.classList.remove('open');
-      registerOverlay.setAttribute('aria-hidden', 'true');
 
-      setMessage(registerMessage, '');
+      registerOverlay.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+      setMessage(
+        registerMessage,
+        ''
+      );
     }
 
-    document.getElementById('openRegister').addEventListener(
+
+    document
+      .getElementById('openRegister')
+      .addEventListener(
+        'click',
+        openRegisterModal
+      );
+
+
+    document
+      .getElementById('closeRegister')
+      .addEventListener(
+        'click',
+        closeRegisterModal
+      );
+
+
+    registerOverlay.addEventListener(
       'click',
-      openRegisterModal
+      (event) => {
+
+        if(event.target === registerOverlay){
+
+          closeRegisterModal();
+
+        }
+
+      }
     );
 
-    document.getElementById('closeRegister').addEventListener(
-      'click',
-      closeRegisterModal
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+
+        if(
+          event.key === 'Escape' &&
+          registerOverlay.classList.contains('open')
+        ){
+
+          closeRegisterModal();
+
+        }
+
+      }
     );
 
-    registerOverlay.addEventListener('click', (event) => {
-      if (event.target === registerOverlay) {
-        closeRegisterModal();
-      }
-    });
 
-    document.addEventListener('keydown', (event) => {
-      if (
-        event.key === 'Escape' &&
-        registerOverlay.classList.contains('open')
-      ) {
-        closeRegisterModal();
-      }
-    });
+    async function postJson(url,body){
 
-    async function postJson(url, body) {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(body)
-      });
+      const response =
+        await fetch(
+          url,
+          {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            credentials:'include',
+            body:JSON.stringify(body)
+          }
+        );
+
 
       let data = {};
 
-      try {
-        data = await response.json();
-      } catch (_) {}
 
-      if (!response.ok) {
-        throw new Error(data.message || 'حدث خطأ.');
+      try{
+
+        data = await response.json();
+
+      }catch(_){}
+
+
+      if(!response.ok){
+
+        throw new Error(
+          data.message || 'حدث خطأ.'
+        );
+
       }
+
 
       return data;
     }
 
-    function goDashboard(user) {
+
+    function goDashboard(user){
+
       const target =
         user?.role === 'admin'
           ? 'dashboard.html?role=admin'
@@ -914,140 +1370,261 @@
       window.location.replace(target);
     }
 
-    loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
 
-      setMessage(loginMessage, '');
+    /* تسجيل الدخول */
 
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'جاري الدخول...';
+    loginForm.addEventListener(
+      'submit',
+      async (event) => {
 
-      try {
-        const login =
-          document.getElementById('login').value.trim();
-
-        const password =
-          document.getElementById('password').value;
-
-        if (!login || !password) {
-          throw new Error('اكتب بيانات الدخول كاملة.');
-        }
-
-        const data = await postJson('/api/login', {
-          login,
-          password
-        });
-
-        goDashboard(data.user);
-
-      } catch (error) {
-        setMessage(loginMessage, error.message);
-
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'تسجيل دخول ←';
-      }
-    });
-
-    registerForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      setMessage(registerMessage, '');
-
-      registerBtn.disabled = true;
-      registerBtn.textContent = 'جاري إنشاء الحساب...';
-
-      try {
-        const fullName =
-          document.getElementById('fullName').value.trim();
-
-        const login =
-          document.getElementById('registerLogin').value.trim();
-
-        const grade =
-          document.getElementById('grade').value;
-
-        const subject =
-          document.getElementById('subject').value;
-
-        const mode =
-          document.getElementById('mode').value;
-
-        const password =
-          document.getElementById('registerPassword').value;
-
-        const confirmPassword =
-          document.getElementById('confirmPassword').value;
-
-        const data = await postJson('/api/register', {
-          fullName,
-          login,
-          grade,
-          subject,
-          mode,
-          password,
-          confirmPassword
-        });
+        event.preventDefault();
 
         setMessage(
-          registerMessage,
-          data.message || 'تم إنشاء الحساب بنجاح.',
-          true
+          loginMessage,
+          ''
         );
 
-        registerForm.reset();
+        loginBtn.disabled = true;
 
-        setTimeout(() => {
-          closeRegisterModal();
+        loginBtn.textContent =
+          'جاري الدخول...';
 
-          document.getElementById('login').value = login;
 
-          document.getElementById('password').value = '';
+        try{
 
-          document.getElementById('password').focus();
+          const login =
+            document
+              .getElementById('login')
+              .value
+              .trim();
+
+
+          const password =
+            document
+              .getElementById('password')
+              .value;
+
+
+          if(!login || !password){
+
+            throw new Error(
+              'اكتب بيانات الدخول كاملة.'
+            );
+
+          }
+
+
+          const data =
+            await postJson(
+              '/api/login',
+              {
+                login,
+                password
+              }
+            );
+
+
+          goDashboard(
+            data.user
+          );
+
+
+        }catch(error){
 
           setMessage(
             loginMessage,
-            'الحساب اتعمل بنجاح. سجل دخولك دلوقتي.',
-            true
+            error.message
           );
-        }, 900);
 
-      } catch (error) {
+
+        }finally{
+
+          loginBtn.disabled = false;
+
+          loginBtn.textContent =
+            'تسجيل دخول ←';
+
+        }
+
+      }
+    );
+
+
+    /* إنشاء حساب */
+
+    registerForm.addEventListener(
+      'submit',
+      async (event) => {
+
+        event.preventDefault();
 
         setMessage(
           registerMessage,
-          error.message
+          ''
         );
 
-      } finally {
+        registerBtn.disabled = true;
 
-        registerBtn.disabled = false;
-        registerBtn.textContent = 'إنشاء الحساب ←';
+        registerBtn.textContent =
+          'جاري إنشاء الحساب...';
 
-      }
-    });
 
-    /* لو المستخدم عنده جلسة قديمة، انقله للـDashboard مباشرة */
-    (async () => {
+        try{
 
-      try {
+          const fullName =
+            document
+              .getElementById('fullName')
+              .value
+              .trim();
 
-        const response = await fetch('/api/me', {
-          credentials: 'include'
-        });
 
-        if (!response.ok) return;
+          const login =
+            document
+              .getElementById('registerLogin')
+              .value
+              .trim();
 
-        const data = await response.json();
 
-        if (data?.user) {
-          goDashboard(data.user);
+          const grade =
+            document
+              .getElementById('grade')
+              .value;
+
+
+          const subject =
+            document
+              .getElementById('subject')
+              .value;
+
+
+          const mode =
+            document
+              .getElementById('mode')
+              .value;
+
+
+          const password =
+            document
+              .getElementById('registerPassword')
+              .value;
+
+
+          const confirmPassword =
+            document
+              .getElementById('confirmPassword')
+              .value;
+
+
+          const data =
+            await postJson(
+              '/api/register',
+              {
+                fullName,
+                login,
+                grade,
+                subject,
+                mode,
+                password,
+                confirmPassword
+              }
+            );
+
+
+          setMessage(
+            registerMessage,
+            data.message ||
+            'تم إنشاء الحساب بنجاح.',
+            true
+          );
+
+
+          registerForm.reset();
+
+
+          setTimeout(() => {
+
+            closeRegisterModal();
+
+            document.getElementById(
+              'login'
+            ).value = login;
+
+
+            document.getElementById(
+              'password'
+            ).value = '';
+
+
+            document.getElementById(
+              'password'
+            ).focus();
+
+
+            setMessage(
+              loginMessage,
+              'الحساب اتعمل بنجاح. سجل دخولك دلوقتي.',
+              true
+            );
+
+          },900);
+
+
+        }catch(error){
+
+          setMessage(
+            registerMessage,
+            error.message
+          );
+
+
+        }finally{
+
+          registerBtn.disabled = false;
+
+          registerBtn.textContent =
+            'إنشاء الحساب ←';
+
         }
 
-      } catch (_) {}
+      }
+    );
+
+
+    /* لو فيه جلسة قديمة */
+    (async () => {
+
+      try{
+
+        const response =
+          await fetch(
+            '/api/me',
+            {
+              credentials:'include'
+            }
+          );
+
+
+        if(!response.ok){
+          return;
+        }
+
+
+        const data =
+          await response.json();
+
+
+        if(data?.user){
+
+          goDashboard(
+            data.user
+          );
+
+        }
+
+      }catch(_){}
 
     })();
+
   </script>
 
 </body>
