@@ -60,12 +60,6 @@ const safeUser = (user) => {
    Health
 ========================= */
 
-/*
-   مهم:
-   الصحة تكون قبل middleware الخاص بـ D1
-   عشان نقدر نختبر الـWorker نفسه.
-*/
-
 app.get('/api/health', (req, res) => {
   return res.status(200).json({
     ok: true,
@@ -179,7 +173,7 @@ async function currentUser(req) {
 }
 
 /* =========================
-   Admin creation
+   Admin creation / sync
 ========================= */
 
 async function ensureAdmin() {
@@ -200,15 +194,77 @@ async function ensureAdmin() {
   }
 
   const found = await DB()
-    .prepare(
-      'SELECT id FROM users WHERE login = ? LIMIT 1'
-    )
+    .prepare(`
+      SELECT *
+      FROM users
+      WHERE login = ?
+      LIMIT 1
+    `)
     .bind(login)
     .first();
 
+  /* =========================
+     لو الأدمن موجود بالفعل
+     نحدّث الباسورد والصلاحيات
+  ========================= */
+
   if (found) {
+    let passwordMatches = false;
+
+    try {
+      passwordMatches = await bcrypt.compare(
+        password,
+        String(found.password_hash || '')
+      );
+    } catch {
+      passwordMatches = false;
+    }
+
+    if (
+      !passwordMatches ||
+      found.role !== 'admin' ||
+      !found.active
+    ) {
+      const passwordHash = await bcrypt.hash(
+        password,
+        12
+      );
+
+      await DB()
+        .prepare(`
+          UPDATE users
+          SET
+            full_name = ?,
+            role = 'admin',
+            active = 1,
+            grade = ?,
+            subject = ?,
+            mode = ?,
+            password_hash = ?
+          WHERE id = ?
+        `)
+        .bind(
+          'مستر محمد حسام',
+          'مدرس',
+          'كل المواد',
+          'إدارة المنصة',
+          passwordHash,
+          found.id
+        )
+        .run();
+
+      console.log(
+        'Admin account synchronized.'
+      );
+    }
+
     return;
   }
+
+  /* =========================
+     لو الأدمن غير موجود
+     ننشئ حساب جديد
+  ========================= */
 
   const passwordHash = await bcrypt.hash(
     password,
@@ -235,7 +291,7 @@ async function ensureAdmin() {
         ?,
         ?,
         ?,
-        'admin',
+        ?,
         'admin',
         1,
         ?,
@@ -248,12 +304,15 @@ async function ensureAdmin() {
       login,
       'مدرس',
       'كل المواد',
+      'إدارة المنصة',
       nowIso(),
       passwordHash
     )
     .run();
 
-  console.log('Admin account created.');
+  console.log(
+    'Admin account created.'
+  );
 }
 
 let adminInitPromise = null;
@@ -279,11 +338,6 @@ app.use(async (req, res, next) => {
   if (!req.path.startsWith('/api/')) {
     return next();
   }
-
-  /*
-     health مستثنى من تهيئة الأدمن
-     لأنه فوق هذا middleware بالفعل.
-  */
 
   try {
     await ensureAdminOnce();
@@ -602,14 +656,20 @@ app.post(
           .bind(login)
           .first();
 
-      if (
-        !user ||
-        !user.active ||
-        !(await bcrypt.compare(
+      if (!user || !user.active) {
+        return res.status(401).json({
+          message:
+            'بيانات الدخول غير صحيحة.'
+        });
+      }
+
+      const passwordMatches =
+        await bcrypt.compare(
           password,
-          user.password_hash
-        ))
-      ) {
+          String(user.password_hash || '')
+        );
+
+      if (!passwordMatches) {
         return res.status(401).json({
           message:
             'بيانات الدخول غير صحيحة.'
