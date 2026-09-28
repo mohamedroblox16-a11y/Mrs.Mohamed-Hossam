@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09101f">
+  <meta name="description" content="منصة مستر محمد حسام التعليمية للطلاب والمحاضرات والحضور والغياب.">
+  <title>منصة مستر محمد حسام</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-noise" aria-hidden="true"></div>
+  <div class="orb orb-one" aria-hidden="true"></div>
+  <div class="orb orb-two" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="منصة مستر محمد حسام">
+      <span class="brand-icon">م</span>
+      <span>
+        <strong>منصة مستر محمد حسام</strong>
+        <small>منصة تعليمية للطلاب</small>
+      </span>
+    </a>
+    <div class="top-actions" id="topActions"></div>
+  </header>
+
+  <main class="container">
+    <section id="authView" class="auth-view">
+      <div class="auth-shell">
+        <aside class="auth-showcase">
+          <div class="showcase-grid" aria-hidden="true"></div>
+          <div class="brand-mark">م</div>
+          <span class="showcase-kicker">منصة تعليمية</span>
+          <h1>كل دروسك<br><span>في مكان واحد.</span></h1>
+          <p>سجّل دخولك لمتابعة المحاضرات، معرفة موعد الحصة، وتسجيل حضورك بسهولة من أي جهاز.</p>
+
+          <div class="showcase-points">
+            <div class="feature-pill"><span>01</span><b>دخول سريع</b><small>بالتليفون أو ديسكورد</small></div>
+            <div class="feature-pill"><span>02</span><b>رابط المحاضرة</b><small>يظهر تلقائياً في موعده</small></div>
+            <div class="feature-pill"><span>03</span><b>الحضور والغياب</b><small>متابعة منظمة مع المدرس</small></div>
+          </div>
+
+          <div class="showcase-footer">
+            <span class="live-dot"></span>
+            <span>منصة مستر محمد حسام</span>
+          </div>
+        </aside>
+
+        <section class="auth-card" aria-label="تسجيل الدخول وإنشاء الحساب">
+          <div class="auth-card-head">
+            <div class="logo-circle">م</div>
+            <div>
+              <span class="eyebrow">أهلاً بيك</span>
+              <h2>تسجيل الدخول</h2>
+              <p class="muted">ادخل بيانات حسابك للمتابعة.</p>
+            </div>
+          </div>
+
+          <div id="loginPanel">
+            <form id="loginForm" class="form" autocomplete="on">
+              <label for="loginInput">رقم التلفون أو يوزر ديسكورد</label>
+              <div class="input-wrap">
+                <span class="input-icon">☎</span>
+                <input id="loginInput" name="username" autocomplete="username" required placeholder="01xxxxxxxxx أو username">
+              </div>
+
+              <label for="loginPassword">الباسورد</label>
+              <div class="input-wrap">
+                <span class="input-icon">••</span>
+                <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="اكتب الباسورد">
+              </div>
+
+              <button class="primary full-button" type="submit">تسجيل دخول <span>←</span></button>
+            </form>
+            <div class="switch-line">
+              <span>لسه معندكش حساب؟</span>
+              <button class="link-button" id="showRegister" type="button">إنشاء حساب</button>
+            </div>
+          </div>
+
+          <div id="registerPanel" hidden>
+            <form id="registerForm" class="form" autocomplete="on">
+              <div class="form-grid two-inputs">
+                <div>
+                  <label for="fullName">الاسم الثلاثي</label>
+                  <input id="fullName" name="name" autocomplete="name" required placeholder="محمد علي">
+                </div>
+                <div>
+                  <label for="registerLogin">رقم التلفون أو يوزر ديسكورد</label>
+                  <input id="registerLogin" name="login" autocomplete="username" required placeholder="01xxxxxxxxx أو username">
+                </div>
+              </div>
+
+              <div class="form-grid two-inputs">
+                <div>
+                  <label for="grade">أنت في سنة كام؟</label>
+                  <select id="grade" required>
+                    <option>أولى إعدادي</option>
+                    <option>ثانية إعدادي</option>
+                    <option>ثالثة إعدادي</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="subject">اختار الدرس</label>
+                  <select id="subject" required>
+                    <option>رياضيات</option>
+                    <option>دراسات اجتماعية</option>
+                  </select>
+                </div>
+              </div>
+
+              <label for="mode">نوع الحصة</label>
+              <select id="mode" required>
+                <option>خصوصي</option>
+                <option>مجموعة</option>
+              </select>
+
+              <div class="form-grid two-inputs">
+                <div>
+                  <label for="registerPassword">باسورد الحساب</label>
+                  <input id="registerPassword" name="new-password" type="password" minlength="6" autocomplete="new-password" required placeholder="6 أحرف أو أرقام على الأقل">
+                </div>
+                <div>
+                  <label for="confirmPassword">تأكيد الباسورد</label>
+                  <input id="confirmPassword" name="new-password-confirm" type="password" minlength="6" autocomplete="new-password" required placeholder="اكتب الباسورد مرة ثانية">
+                </div>
+              </div>
+
+              <button class="primary full-button" type="submit">إنشاء الحساب <span>←</span></button>
+            </form>
+            <div class="switch-line">
+              <span>عندك حساب بالفعل؟</span>
+              <button class="link-button" id="showLogin" type="button">تسجيل الدخول</button>
+            </div>
+          </div>
+
+          <div id="authMessage" class="message" hidden role="status" aria-live="polite"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="studentView" hidden>
+      <div class="hero-card student-hero">
+        <div class="hero-content">
+          <span class="eyebrow">منصة الطالب</span>
+          <h1 id="studentWelcome">أهلاً</h1>
+          <p id="studentMeta" class="muted"></p>
+        </div>
+        <button class="secondary" id="studentLogout" type="button">تسجيل خروج</button>
+      </div>
+
+      <div class="grid two">
+        <article class="card lecture-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow">المحاضرة القادمة</span>
+              <h2>المحاضرة</h2>
+            </div>
+            <span id="lectureBadge" class="badge">غير متاح</span>
+          </div>
+          <h3 id="lectureTitle">المحاضرة القادمة</h3>
+          <p id="lectureTime" class="muted"></p>
+          <div id="lectureWaiting" class="waiting-box">رابط المحاضرة سيظهر هنا تلقائياً قبل الموعد بـ 5 دقائق.</div>
+          <a id="lectureLink" class="primary full-button link-card" href="#" target="_blank" rel="noopener noreferrer" hidden>دخول المحاضرة <span>←</span></a>
+          <button id="checkinButton" class="secondary full" type="button" hidden>تسجيل الحضور الآن</button>
+          <div id="studentMessage" class="message" hidden role="status" aria-live="polite"></div>
+        </article>
+
+        <article class="card">
+          <div class="card-header"><div><span class="eyebrow">ملف الطالب</span><h2>بيانات حسابك</h2></div></div>
+          <div id="profileBox" class="profile-box"></div>
+        </article>
+      </div>
+
+      <article class="card">
+        <div class="card-header"><div><span class="eyebrow">السجل</span><h2>الحضور والغياب</h2></div></div>
+        <div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الحالة</th><th>طريقة التسجيل</th></tr></thead><tbody id="studentAttendance"></tbody></table></div>
+      </article>
+    </section>
+
+    <section id="adminView" hidden>
+      <div class="hero-card admin-hero">
+        <div class="hero-content">
+          <span class="eyebrow">لوحة المدرس</span>
+          <h1>مستر محمد حسام</h1>
+          <p class="muted">إدارة الطلاب، الحضور والغياب، ورابط المحاضرة من مكان واحد.</p>
+        </div>
+        <button class="secondary" id="adminLogout" type="button">تسجيل خروج</button>
+      </div>
+
+      <div class="grid two">
+        <article class="card">
+          <div class="card-header"><div><span class="eyebrow">المحاضرة</span><h2>الرابط والموعد</h2></div></div>
+          <form id="lectureForm" class="form">
+            <label for="adminLectureTitle">اسم المحاضرة</label>
+            <input id="adminLectureTitle" required placeholder="مثال: رياضيات - الوحدة الأولى">
+            <label for="adminLectureUrl">رابط المحاضرة</label>
+            <input id="adminLectureUrl" type="url" placeholder="https://...">
+            <label for="adminScheduledAt">موعد بداية المحاضرة</label>
+            <input id="adminScheduledAt" type="datetime-local">
+            <small class="muted">الرابط يظهر للطلاب تلقائياً قبل بداية المحاضرة بـ 5 دقائق.</small>
+            <div class="row-actions">
+              <button class="primary" type="submit">حفظ المحاضرة</button>
+              <button class="danger-outline" id="clearLecture" type="button">مسح الرابط</button>
+            </div>
+          </form>
+          <div id="adminLectureMessage" class="message" hidden role="status" aria-live="polite"></div>
+        </article>
+
+        <article class="card">
+          <div class="card-header"><div><span class="eyebrow">ملخص سريع</span><h2>الإحصائيات</h2></div></div>
+          <div class="stats">
+            <div class="stat"><span>إجمالي الطلاب</span><strong id="statStudents">0</strong></div>
+            <div class="stat"><span>حضور اليوم</span><strong id="statPresent">0</strong></div>
+            <div class="stat"><span>غياب اليوم</span><strong id="statAbsent">0</strong></div>
+          </div>
+        </article>
+      </div>
+
+      <article class="card">
+        <div class="card-header"><div><span class="eyebrow">إدارة الحسابات</span><h2>الطلاب</h2></div><button class="secondary" id="refreshStudents" type="button">تحديث</button></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>التواصل</th><th>السنة</th><th>الدرس</th><th>النوع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="studentsTable"></tbody></table></div>
+      </article>
+
+      <article class="card">
+        <div class="card-header"><div><span class="eyebrow">متابعة الطلاب</span><h2>الحضور والغياب</h2></div><input id="attendanceDate" type="date"></div>
+        <div class="table-wrap"><table><thead><tr><th>الطالب</th><th>السنة</th><th>الدرس</th><th>الحالة</th><th>تعديل</th></tr></thead><tbody id="attendanceTable"></tbody></table></div>
+      </article>
+    </section>
+  </main>
+
+  <noscript><div class="noscript">لازم تفعّل JavaScript لتشغيل المنصة.</div></noscript>
+  <script src="./app.js" defer></script>
+</body>
+</html>
