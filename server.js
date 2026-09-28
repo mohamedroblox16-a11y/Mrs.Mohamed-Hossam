@@ -30,6 +30,7 @@ const validUrl = (value) => {
 
   try {
     const url = new URL(value);
+
     return (
       url.protocol === 'http:' ||
       url.protocol === 'https:'
@@ -54,6 +55,24 @@ const safeUser = (user) => {
     createdAt: user.created_at
   };
 };
+
+/* =========================
+   Health
+========================= */
+
+/*
+   مهم:
+   الصحة تكون قبل middleware الخاص بـ D1
+   عشان نقدر نختبر الـWorker نفسه.
+*/
+
+app.get('/api/health', (req, res) => {
+  return res.status(200).json({
+    ok: true,
+    platform: 'cloudflare-workers',
+    message: 'Worker is running'
+  });
+});
 
 /* =========================
    Session
@@ -127,9 +146,11 @@ function getCookie(request, name) {
     const [key, ...rest] = part.trim().split('=');
 
     if (key === name) {
-      return decodeURIComponent(
-        rest.join('=')
-      );
+      try {
+        return decodeURIComponent(rest.join('='));
+      } catch {
+        return '';
+      }
     }
   }
 
@@ -174,6 +195,7 @@ async function ensureAdmin() {
     console.warn(
       'ADMIN_LOGIN أو ADMIN_PASSWORD غير موجودين.'
     );
+
     return;
   }
 
@@ -195,8 +217,7 @@ async function ensureAdmin() {
 
   await DB()
     .prepare(`
-      INSERT INTO users
-      (
+      INSERT INTO users (
         id,
         full_name,
         login,
@@ -208,14 +229,13 @@ async function ensureAdmin() {
         created_at,
         password_hash
       )
-      VALUES
-      (
+      VALUES (
         ?,
         ?,
         ?,
         ?,
         ?,
-        ?,
+        'admin',
         'admin',
         1,
         ?,
@@ -228,7 +248,6 @@ async function ensureAdmin() {
       login,
       'مدرس',
       'كل المواد',
-      'إدارة المنصة',
       nowIso(),
       passwordHash
     )
@@ -261,8 +280,14 @@ app.use(async (req, res, next) => {
     return next();
   }
 
+  /*
+     health مستثنى من تهيئة الأدمن
+     لأنه فوق هذا middleware بالفعل.
+  */
+
   try {
     await ensureAdminOnce();
+
     return next();
   } catch (error) {
     console.error(
@@ -272,7 +297,10 @@ app.use(async (req, res, next) => {
 
     return res.status(500).json({
       message:
-        'تعذر تجهيز حساب المدرس.'
+        'تعذر تجهيز حساب المدرس.',
+      error:
+        error?.message ||
+        'Unknown error'
     });
   }
 });
@@ -281,11 +309,7 @@ app.use(async (req, res, next) => {
    Auth middleware
 ========================= */
 
-async function requireAuth(
-  req,
-  res,
-  next
-) {
+async function requireAuth(req, res, next) {
   try {
     const user = await currentUser(req);
 
@@ -312,11 +336,7 @@ async function requireAuth(
   }
 }
 
-async function requireAdmin(
-  req,
-  res,
-  next
-) {
+async function requireAdmin(req, res, next) {
   try {
     const user = await currentUser(req);
 
@@ -395,26 +415,9 @@ function lectureState(settings) {
     showAt:
       new Date(showAt).toISOString(),
     scheduledAt:
-      new Date(
-        scheduledTime
-      ).toISOString()
+      new Date(scheduledTime).toISOString()
   };
 }
-
-/* =========================
-   Health
-========================= */
-
-app.get(
-  '/api/health',
-  (req, res) => {
-    return res.json({
-      ok: true,
-      platform:
-        'cloudflare-workers'
-    });
-  }
-);
 
 /* =========================
    Current user
@@ -515,8 +518,7 @@ app.post(
 
       await DB()
         .prepare(`
-          INSERT INTO users
-          (
+          INSERT INTO users (
             id,
             full_name,
             login,
@@ -528,8 +530,7 @@ app.post(
             created_at,
             password_hash
           )
-          VALUES
-          (
+          VALUES (
             ?,
             ?,
             ?,
@@ -815,8 +816,7 @@ app.post(
 
       await DB()
         .prepare(`
-          INSERT INTO attendance
-          (
+          INSERT INTO attendance (
             id,
             user_id,
             date,
@@ -923,7 +923,7 @@ app.patch(
       }
 
       if (
-        typeof req.body.active ===
+        typeof req.body?.active ===
         'boolean'
       ) {
         await DB()
@@ -940,8 +940,7 @@ app.patch(
       }
 
       if (
-        typeof req.body.password ===
-          'string' &&
+        typeof req.body?.password === 'string' &&
         req.body.password.length >= 6
       ) {
         const passwordHash =
@@ -1055,7 +1054,7 @@ app.get(
     try {
       const date =
         String(
-          req.query.date ||
+          req.query?.date ||
           today()
         );
 
@@ -1204,13 +1203,10 @@ app.post(
         )
         .run();
 
-      if (
-        status !== 'غير محدد'
-      ) {
+      if (status !== 'غير محدد') {
         await DB()
           .prepare(`
-            INSERT INTO attendance
-            (
+            INSERT INTO attendance (
               id,
               user_id,
               date,
@@ -1339,16 +1335,14 @@ app.put(
 
       await DB()
         .prepare(`
-          INSERT INTO settings
-          (
+          INSERT INTO settings (
             id,
             lecture_title,
             lecture_url,
             scheduled_at,
             updated_at
           )
-          VALUES
-          (
+          VALUES (
             1,
             ?,
             ?,
@@ -1403,16 +1397,14 @@ app.delete(
     try {
       await DB()
         .prepare(`
-          INSERT INTO settings
-          (
+          INSERT INTO settings (
             id,
             lecture_title,
             lecture_url,
             scheduled_at,
             updated_at
           )
-          VALUES
-          (
+          VALUES (
             1,
             'المحاضرة القادمة',
             '',
@@ -1464,13 +1456,36 @@ app.use(
 );
 
 /* =========================
+   Global error handler
+========================= */
+
+app.use(
+  (error, req, res, next) => {
+    console.error(
+      'Unhandled Express error:',
+      error
+    );
+
+    if (res.headersSent) {
+      return next(error);
+    }
+
+    return res.status(500).json({
+      message:
+        'حدث خطأ داخلي في السيرفر.',
+      error:
+        error?.message ||
+        'Unknown error'
+    });
+  }
+);
+
+/* =========================
    Cloudflare Express Worker
 ========================= */
 
 app.listen(3000);
 
-export default {
-  fetch: httpServerHandler({
-    port: 3000
-  })
-};
+export default httpServerHandler({
+  port: 3000
+});
