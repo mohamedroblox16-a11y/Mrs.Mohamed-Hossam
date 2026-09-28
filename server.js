@@ -30,7 +30,6 @@ const validUrl = (value) => {
 
   try {
     const url = new URL(value);
-
     return (
       url.protocol === 'http:' ||
       url.protocol === 'https:'
@@ -82,8 +81,12 @@ async function sign(value) {
     new TextEncoder().encode(value)
   );
 
-  return Array.from(new Uint8Array(signature))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
+  return Array.from(
+    new Uint8Array(signature)
+  )
+    .map((byte) =>
+      byte.toString(16).padStart(2, '0')
+    )
     .join('');
 }
 
@@ -96,7 +99,13 @@ async function verifySession(value) {
     return null;
   }
 
-  const [id, signature] = value.split('.');
+  const parts = value.split('.');
+
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const [id, signature] = parts;
 
   if (!id || !signature) {
     return null;
@@ -118,7 +127,9 @@ function getCookie(request, name) {
     const [key, ...rest] = part.trim().split('=');
 
     if (key === name) {
-      return decodeURIComponent(rest.join('='));
+      return decodeURIComponent(
+        rest.join('=')
+      );
     }
   }
 
@@ -141,7 +152,9 @@ async function currentUser(req) {
     .bind(sessionId)
     .first();
 
-  return user && user.active ? user : null;
+  return user && user.active
+    ? user
+    : null;
 }
 
 /* =========================
@@ -161,7 +174,6 @@ async function ensureAdmin() {
     console.warn(
       'ADMIN_LOGIN أو ADMIN_PASSWORD غير موجودين.'
     );
-
     return;
   }
 
@@ -222,9 +234,7 @@ async function ensureAdmin() {
     )
     .run();
 
-  console.log(
-    'Admin account created.'
-  );
+  console.log('Admin account created.');
 }
 
 let adminInitPromise = null;
@@ -253,7 +263,7 @@ app.use(async (req, res, next) => {
 
   try {
     await ensureAdminOnce();
-    next();
+    return next();
   } catch (error) {
     console.error(
       'Admin initialization error:',
@@ -288,7 +298,7 @@ async function requireAuth(
 
     req.user = user;
 
-    next();
+    return next();
   } catch (error) {
     console.error(
       'Authentication error:',
@@ -326,7 +336,7 @@ async function requireAdmin(
 
     req.user = user;
 
-    next();
+    return next();
   } catch (error) {
     console.error(
       'Admin authentication error:',
@@ -398,7 +408,7 @@ function lectureState(settings) {
 app.get(
   '/api/health',
   (req, res) => {
-    res.json({
+    return res.json({
       ok: true,
       platform:
         'cloudflare-workers'
@@ -414,7 +424,7 @@ app.get(
   '/api/me',
   requireAuth,
   (req, res) => {
-    res.json({
+    return res.json({
       user: safeUser(req.user)
     });
   }
@@ -649,7 +659,7 @@ app.post(
       'session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'
     );
 
-    res.json({
+    return res.json({
       message:
         'تم تسجيل الخروج.'
     });
@@ -1282,7 +1292,7 @@ app.get(
 );
 
 /* =========================
-   Save lecture settings
+   Save lecture
 ========================= */
 
 app.put(
@@ -1306,9 +1316,7 @@ app.put(
           req.body?.scheduledAt || ''
         ).trim();
 
-      if (
-        !validUrl(lectureUrl)
-      ) {
+      if (!validUrl(lectureUrl)) {
         return res.status(400).json({
           message:
             'رابط المحاضرة غير صحيح.'
@@ -1442,66 +1450,21 @@ app.delete(
 );
 
 /* =========================
-   Static assets
+   API 404
 ========================= */
 
 app.use(
-  async (req, res) => {
-    try {
-      if (!env.ASSETS) {
-        return res.status(404).send(
-          'Assets binding غير موجود.'
-        );
-      }
-
-      const pathname =
-        req.originalUrl || '/';
-
-      const assetUrl =
-        new URL(
-          pathname,
-          'https://assets.local'
-        );
-
-      const response =
-        await env.ASSETS.fetch(
-          new Request(assetUrl, {
-            method: 'GET'
-          })
-        );
-
-      response.headers.forEach(
-        (value, key) => {
-          res.setHeader(
-            key,
-            value
-          );
-        }
-      );
-
-      const body =
-        Buffer.from(
-          await response.arrayBuffer()
-        );
-
-      return res
-        .status(response.status)
-        .send(body);
-    } catch (error) {
-      console.error(
-        'Asset error:',
-        error
-      );
-
-      return res.status(500).send(
-        'Asset error'
-      );
-    }
+  '/api',
+  (req, res) => {
+    return res.status(404).json({
+      message:
+        'المسار غير موجود.'
+    });
   }
 );
 
 /* =========================
-   Cloudflare Worker
+   Cloudflare Express Worker
 ========================= */
 
 app.listen(3000);
