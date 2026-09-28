@@ -5,45 +5,28 @@ import { env } from 'cloudflare:workers';
 
 const app = express();
 
-/* =========================
-   Express
-========================= */
-
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-/* =========================
-   Helpers
-========================= */
-
 const DB = () => env.DB;
-
 const nowIso = () => new Date().toISOString();
+const today = () => new Date().toISOString().slice(0, 10);
 
-const today = () =>
-  new Date().toISOString().slice(0, 10);
+const normalizeLogin = (v) =>
+  String(v ?? '').trim().toLowerCase();
 
-const normalizeLogin = (value) =>
-  String(value ?? '')
-    .trim()
-    .toLowerCase();
-
-const validUrl = (value) => {
-  if (!value) return true;
+const validUrl = (v) => {
+  if (!v) return true;
 
   try {
-    const url = new URL(value);
-
-    return (
-      url.protocol === 'http:' ||
-      url.protocol === 'https:'
-    );
+    const u = new URL(v);
+    return u.protocol === 'http:' || u.protocol === 'https:';
   } catch {
     return false;
   }
 };
 
-const safeUser = (user) => {
+function safeUser(user) {
   if (!user) return null;
 
   return {
@@ -57,77 +40,45 @@ const safeUser = (user) => {
     active: !!user.active,
     createdAt: user.created_at
   };
-};
-
-/* =========================
-   Admin credentials
-========================= */
+}
 
 const DEFAULT_ADMIN_LOGIN = 'admin';
 const DEFAULT_ADMIN_PASSWORD = '123456';
 
-function getAdminLogin() {
-  const configured = normalizeLogin(
-    env.ADMIN_LOGIN
+const adminLogin = () =>
+  normalizeLogin(
+    env.ADMIN_LOGIN || DEFAULT_ADMIN_LOGIN
   );
 
-  return configured || DEFAULT_ADMIN_LOGIN;
-}
-
-function getAdminPassword() {
-  const configured = String(
-    env.ADMIN_PASSWORD || ''
+const adminPassword = () =>
+  String(
+    env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
   );
 
-  return configured || DEFAULT_ADMIN_PASSWORD;
-}
-
-function isAdminLogin(login, password) {
-  const normalizedLogin =
-    normalizeLogin(login);
-
-  const normalizedPassword =
-    String(password ?? '');
-
-  const adminLogin = getAdminLogin();
-  const adminPassword =
-    getAdminPassword();
-
-  const defaultCredentials =
-    normalizedLogin ===
-      DEFAULT_ADMIN_LOGIN &&
-    normalizedPassword ===
-      DEFAULT_ADMIN_PASSWORD;
-
-  const configuredCredentials =
-    normalizedLogin ===
-      adminLogin &&
-    normalizedPassword ===
-      adminPassword;
-
+function isAdminCredentials(login, password) {
   return (
-    defaultCredentials ||
-    configuredCredentials
+    (login === DEFAULT_ADMIN_LOGIN &&
+      password === DEFAULT_ADMIN_PASSWORD) ||
+    (login === adminLogin() &&
+      password === adminPassword())
+  );
+}
+
+function setSessionCookie(
+  res,
+  value,
+  maxAge = 604800
+) {
+  res.setHeader(
+    'Set-Cookie',
+    `session=${encodeURIComponent(
+      value
+    )}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`
   );
 }
 
 /* =========================
-   Health
-========================= */
-
-app.get(
-  '/api/health',
-  (req, res) => {
-    return res.status(200).json({
-      ok: true,
-      platform: 'cloudflare-workers',
-      message: 'Worker is running'
-    });
-  }
-);
-
-/* =========================
-   Session
+   SESSION
 ========================= */
 
 async function sign(value) {
@@ -148,7 +99,7 @@ async function sign(value) {
       ['sign']
     );
 
-  const signature =
+  const sig =
     await crypto.subtle.sign(
       'HMAC',
       key,
@@ -156,12 +107,10 @@ async function sign(value) {
     );
 
   return Array.from(
-    new Uint8Array(signature)
+    new Uint8Array(sig)
   )
-    .map((byte) =>
-      byte
-        .toString(16)
-        .padStart(2, '0')
+    .map((b) =>
+      b.toString(16).padStart(2, '0')
     )
     .join('');
 }
@@ -171,66 +120,46 @@ async function makeSession(userId) {
 }
 
 async function verifySession(value) {
-  if (
-    !value ||
-    !value.includes('.')
-  ) {
-    return null;
-  }
-
-  const parts =
-    value.split('.');
-
-  if (parts.length !== 2) {
+  if (!value || !value.includes('.')) {
     return null;
   }
 
   const [
     id,
-    signature
-  ] = parts;
+    signature,
+    extra
+  ] = value.split('.');
 
-  if (!id || !signature) {
+  if (
+    extra ||
+    !id ||
+    !signature
+  ) {
     return null;
   }
 
-  const expected =
-    await sign(id);
-
-  if (signature !== expected) {
-    return null;
-  }
-
-  return id;
+  return signature ===
+    await sign(id)
+    ? id
+    : null;
 }
 
-/* =========================
-   Cookie
-   يدعم Express وWeb Headers
-========================= */
-
-function getCookie(request, name) {
+function getCookie(req, name) {
   const headers =
-    request?.headers;
+    req?.headers || {};
 
   let raw = '';
 
   try {
-    if (
-      headers &&
+    raw =
       typeof headers.get ===
-        'function'
-    ) {
-      raw =
-        headers.get('cookie') ||
-        headers.get('Cookie') ||
-        '';
-    } else {
-      raw =
-        headers?.cookie ||
-        headers?.Cookie ||
-        '';
-    }
+      'function'
+        ? headers.get('cookie') ||
+          headers.get('Cookie') ||
+          ''
+        : headers.cookie ||
+          headers.Cookie ||
+          '';
   } catch {
     raw = '';
   }
@@ -241,8 +170,7 @@ function getCookie(request, name) {
     const [
       key,
       ...rest
-    ] =
-      part.trim().split('=');
+    ] = part.trim().split('=');
 
     if (key === name) {
       try {
@@ -258,17 +186,10 @@ function getCookie(request, name) {
   return '';
 }
 
-/* =========================
-   Current user
-========================= */
-
 async function currentUser(req) {
   const sessionId =
     await verifySession(
-      getCookie(
-        req,
-        'session'
-      )
+      getCookie(req, 'session')
     );
 
   if (!sessionId) {
@@ -277,52 +198,27 @@ async function currentUser(req) {
 
   const user =
     await DB()
-      .prepare(`
-        SELECT *
-        FROM users
-        WHERE id = ?
-        LIMIT 1
-      `)
+      .prepare(
+        'SELECT * FROM users WHERE id = ? LIMIT 1'
+      )
       .bind(sessionId)
       .first();
 
-  if (
-    user &&
-    user.active
-  ) {
-    return user;
-  }
-
-  return null;
+  return user && user.active
+    ? user
+    : null;
 }
 
 /* =========================
-   Ensure Admin
+   ADMIN ACCOUNT
 ========================= */
 
-async function ensureAdmin() {
+async function ensureAdminAccount() {
   const login =
-    getAdminLogin();
+    adminLogin();
 
   const password =
-    getAdminPassword();
-
-  if (!login || !password) {
-    throw new Error(
-      'بيانات حساب المدرس غير موجودة.'
-    );
-  }
-
-  let admin =
-    await DB()
-      .prepare(`
-        SELECT *
-        FROM users
-        WHERE login = ?
-        LIMIT 1
-      `)
-      .bind(login)
-      .first();
+    adminPassword();
 
   const passwordHash =
     await bcrypt.hash(
@@ -330,15 +226,18 @@ async function ensureAdmin() {
       12
     );
 
-  /* =========================
-     الأدمن موجود
-  ========================= */
+  const existing =
+    await DB()
+      .prepare(
+        'SELECT * FROM users WHERE login = ? LIMIT 1'
+      )
+      .bind(login)
+      .first();
 
-  if (admin) {
+  if (existing) {
     await DB()
       .prepare(`
-        UPDATE users
-        SET
+        UPDATE users SET
           full_name = ?,
           grade = ?,
           subject = ?,
@@ -354,29 +253,19 @@ async function ensureAdmin() {
         'كل المواد',
         'إدارة المنصة',
         passwordHash,
-        admin.id
+        existing.id
       )
       .run();
 
-    admin =
-      await DB()
-        .prepare(`
-          SELECT *
-          FROM users
-          WHERE id = ?
-          LIMIT 1
-        `)
-        .bind(admin.id)
-        .first();
-
-    return admin;
+    return DB()
+      .prepare(
+        'SELECT * FROM users WHERE id = ? LIMIT 1'
+      )
+      .bind(existing.id)
+      .first();
   }
 
-  /* =========================
-     الأدمن غير موجود
-  ========================= */
-
-  const adminId =
+  const id =
     crypto.randomUUID();
 
   await DB()
@@ -393,21 +282,10 @@ async function ensureAdmin() {
         created_at,
         password_hash
       )
-      VALUES (
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        'admin',
-        1,
-        ?,
-        ?
-      )
+      VALUES (?, ?, ?, ?, ?, ?, 'admin', 1, ?, ?)
     `)
     .bind(
-      adminId,
+      id,
       'مستر محمد حسام',
       login,
       'مدرس',
@@ -418,84 +296,16 @@ async function ensureAdmin() {
     )
     .run();
 
-  return (
-    await DB()
-      .prepare(`
-        SELECT *
-        FROM users
-        WHERE id = ?
-        LIMIT 1
-      `)
-      .bind(adminId)
-      .first()
-  );
-}
-
-let adminInitPromise =
-  null;
-
-async function ensureAdminOnce() {
-  if (!adminInitPromise) {
-    adminInitPromise =
-      ensureAdmin().catch(
-        (error) => {
-          adminInitPromise = null;
-          throw error;
-        }
-      );
-  }
-
-  return adminInitPromise;
+  return DB()
+    .prepare(
+      'SELECT * FROM users WHERE id = ? LIMIT 1'
+    )
+    .bind(id)
+    .first();
 }
 
 /* =========================
-   API Initialization
-========================= */
-
-app.use(
-  async (
-    req,
-    res,
-    next
-  ) => {
-    if (
-      !req.path.startsWith(
-        '/api/'
-      )
-    ) {
-      return next();
-    }
-
-    if (
-      req.path ===
-      '/api/health'
-    ) {
-      return next();
-    }
-
-    try {
-      await ensureAdminOnce();
-
-      return next();
-    } catch (error) {
-      console.error(
-        'Admin initialization error:',
-        error
-      );
-
-      return res.status(500).json({
-        message:
-          'تعذر تجهيز حساب المدرس.',
-        error:
-          error?.message ||
-          'Unknown error'
-      });
-    }
-  }
-);
-
-/* =========================
-   Auth Middleware
+   AUTH
 ========================= */
 
 async function requireAuth(
@@ -518,10 +328,7 @@ async function requireAuth(
 
     return next();
   } catch (error) {
-    console.error(
-      'Authentication error:',
-      error
-    );
+    console.error(error);
 
     return res.status(500).json({
       message:
@@ -547,8 +354,7 @@ async function requireAdmin(
     }
 
     if (
-      user.role !==
-      'admin'
+      user.role !== 'admin'
     ) {
       return res.status(403).json({
         message:
@@ -560,10 +366,7 @@ async function requireAdmin(
 
     return next();
   } catch (error) {
-    console.error(
-      'Admin authentication error:',
-      error
-    );
+    console.error(error);
 
     return res.status(500).json({
       message:
@@ -573,24 +376,18 @@ async function requireAdmin(
 }
 
 /* =========================
-   Lecture State
+   LECTURE STATE
 ========================= */
 
-function lectureState(
-  settings
-) {
-  if (
-    !settings?.lecture_url
-  ) {
+function lectureState(settings) {
+  if (!settings?.lecture_url) {
     return {
       visible: false,
       reason: 'no-link'
     };
   }
 
-  if (
-    !settings.scheduled_at
-  ) {
+  if (!settings.scheduled_at) {
     return {
       visible: true,
       reason: 'always'
@@ -609,8 +406,7 @@ function lectureState(
   ) {
     return {
       visible: true,
-      reason:
-        'invalid-schedule'
+      reason: 'invalid-schedule'
     };
   }
 
@@ -638,80 +434,108 @@ function lectureState(
 }
 
 /* =========================
-   /api/me
+   GRADES TABLE
+========================= */
+
+async function ensureGradesTable() {
+  await DB()
+    .prepare(`
+      CREATE TABLE IF NOT EXISTS grades (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        exam_name TEXT NOT NULL,
+        lesson_name TEXT NOT NULL,
+        score REAL NOT NULL,
+        total REAL NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    `)
+    .run();
+}
+
+/* =========================
+   HEALTH
 ========================= */
 
 app.get(
-  '/api/me',
-  requireAuth,
-  (
-    req,
-    res
-  ) => {
+  '/api/health',
+  (req, res) => {
     return res.json({
-      user:
-        safeUser(
-          req.user
-        )
+      ok: true,
+      platform:
+        'cloudflare-workers',
+      message:
+        'Worker is running'
     });
   }
 );
 
 /* =========================
-   Register
+   CURRENT USER
+========================= */
+
+app.get(
+  '/api/me',
+  requireAuth,
+  (req, res) => {
+    return res.json({
+      user:
+        safeUser(req.user)
+    });
+  }
+);
+
+/* =========================
+   REGISTER
 ========================= */
 
 app.post(
   '/api/register',
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
-      const body =
-        req.body || {};
-
-      const fullName =
-        body.fullName;
-
-      const login =
-        body.login ??
-        body.username ??
-        body.phoneOrDiscord ??
-        body.phone ??
-        body.identifier ??
-        '';
-
-      const grade =
-        body.grade;
-
-      const subject =
-        body.subject;
-
-      const mode =
-        body.mode;
-
-      const password =
-        String(
-          body.password ||
-          ''
-        );
-
-      const confirmPassword =
-        String(
-          body.confirmPassword ??
-          body.passwordConfirm ??
-          password
-        );
+      const {
+        fullName,
+        login,
+        username,
+        phoneOrDiscord,
+        phone,
+        identifier,
+        grade,
+        subject,
+        mode,
+        password,
+        confirmPassword,
+        passwordConfirm
+      } = req.body || {};
 
       const name =
         String(
           fullName || ''
         ).trim();
 
+      const rawLogin =
+        login ??
+        username ??
+        phoneOrDiscord ??
+        phone ??
+        identifier ??
+        '';
+
       const userLogin =
         normalizeLogin(
-          login
+          rawLogin
+        );
+
+      const passwordText =
+        String(
+          password || ''
+        );
+
+      const confirmation =
+        String(
+          confirmPassword ??
+            passwordConfirm ??
+            passwordText
         );
 
       const nameParts =
@@ -720,8 +544,7 @@ app.post(
           .filter(Boolean);
 
       if (
-        nameParts.length !==
-        3
+        nameParts.length !== 3
       ) {
         return res.status(400).json({
           message:
@@ -742,8 +565,7 @@ app.post(
       }
 
       if (
-        password.length <
-        6
+        passwordText.length < 6
       ) {
         return res.status(400).json({
           message:
@@ -752,8 +574,8 @@ app.post(
       }
 
       if (
-        password !==
-        confirmPassword
+        passwordText !==
+        confirmation
       ) {
         return res.status(400).json({
           message:
@@ -761,14 +583,11 @@ app.post(
         });
       }
 
-      const adminLogin =
-        getAdminLogin();
-
       if (
         userLogin ===
           DEFAULT_ADMIN_LOGIN ||
         userLogin ===
-          adminLogin
+          adminLogin()
       ) {
         return res.status(409).json({
           message:
@@ -778,12 +597,9 @@ app.post(
 
       const existing =
         await DB()
-          .prepare(`
-            SELECT id
-            FROM users
-            WHERE login = ?
-            LIMIT 1
-          `)
+          .prepare(
+            'SELECT id FROM users WHERE login = ? LIMIT 1'
+          )
           .bind(userLogin)
           .first();
 
@@ -796,7 +612,7 @@ app.post(
 
       const passwordHash =
         await bcrypt.hash(
-          password,
+          passwordText,
           12
         );
 
@@ -814,18 +630,7 @@ app.post(
             created_at,
             password_hash
           )
-          VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            'student',
-            1,
-            ?,
-            ?
-          )
+          VALUES (?, ?, ?, ?, ?, ?, 'student', 1, ?, ?)
         `)
         .bind(
           crypto.randomUUID(),
@@ -844,66 +649,50 @@ app.post(
           'تم إنشاء الحساب بنجاح.'
       });
     } catch (error) {
-      console.error(
-        'Register error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
-          'حدث خطأ أثناء إنشاء الحساب.',
-        error:
-          error?.message ||
-          'Unknown error'
+          'حدث خطأ أثناء إنشاء الحساب.'
       });
     }
   }
 );
 
 /* =========================
-   Login
+   LOGIN
 ========================= */
 
 app.post(
   '/api/login',
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
-      const body =
-        req.body || {};
-
       const login =
         normalizeLogin(
-          body.login ??
-          body.username ??
-          body.phoneOrDiscord ??
-          body.phone ??
-          body.identifier ??
-          body.userLogin ??
+          req.body?.login ??
+          req.body?.username ??
+          req.body?.phoneOrDiscord ??
+          req.body?.phone ??
+          req.body?.identifier ??
+          req.body?.userLogin ??
           ''
         );
 
       const password =
         String(
-          body.password ??
-          body.pass ??
+          req.body?.password ??
+          req.body?.pass ??
           ''
         );
 
-      /* =========================
-         Admin Login
-      ========================= */
-
       if (
-        isAdminLogin(
+        isAdminCredentials(
           login,
           password
         )
       ) {
         const admin =
-          await ensureAdmin();
+          await ensureAdminAccount();
 
         if (!admin) {
           return res.status(500).json({
@@ -912,40 +701,26 @@ app.post(
           });
         }
 
-        const sessionValue =
+        setSessionCookie(
+          res,
           await makeSession(
             admin.id
-          );
-
-        res.setHeader(
-          'Set-Cookie',
-          `session=${encodeURIComponent(
-            sessionValue
-          )}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
+          )
         );
 
         return res.json({
           message:
             'تم تسجيل دخول المدرس.',
           user:
-            safeUser(
-              admin
-            )
+            safeUser(admin)
         });
       }
 
-      /* =========================
-         Student Login
-      ========================= */
-
       const user =
         await DB()
-          .prepare(`
-            SELECT *
-            FROM users
-            WHERE login = ?
-            LIMIT 1
-          `)
+          .prepare(
+            'SELECT * FROM users WHERE login = ? LIMIT 1'
+          )
           .bind(login)
           .first();
 
@@ -959,74 +734,57 @@ app.post(
         });
       }
 
-      const passwordMatches =
+      const ok =
         await bcrypt.compare(
           password,
           String(
             user.password_hash ||
-            ''
+              ''
           )
         );
 
-      if (
-        !passwordMatches
-      ) {
+      if (!ok) {
         return res.status(401).json({
           message:
             'بيانات الدخول غير صحيحة.'
         });
       }
 
-      const sessionValue =
+      setSessionCookie(
+        res,
         await makeSession(
           user.id
-        );
-
-      res.setHeader(
-        'Set-Cookie',
-        `session=${encodeURIComponent(
-          sessionValue
-        )}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
+        )
       );
 
       return res.json({
         message:
           'تم تسجيل الدخول.',
         user:
-          safeUser(
-            user
-          )
+          safeUser(user)
       });
     } catch (error) {
-      console.error(
-        'Login error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
-          'حدث خطأ أثناء تسجيل الدخول.',
-        error:
-          error?.message ||
-          'Unknown error'
+          'حدث خطأ أثناء تسجيل الدخول.'
       });
     }
   }
 );
 
 /* =========================
-   Logout
+   LOGOUT
 ========================= */
 
 app.post(
   '/api/logout',
-  (
-    req,
-    res
-  ) => {
-    res.setHeader(
-      'Set-Cookie',
-      'session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'
+  (req, res) => {
+    setSessionCookie(
+      res,
+      '',
+      0
     );
 
     return res.json({
@@ -1037,16 +795,13 @@ app.post(
 );
 
 /* =========================
-   Student Dashboard
+   STUDENT DASHBOARD
 ========================= */
 
 app.get(
   '/api/student/dashboard',
   requireAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       if (
         req.user.role ===
@@ -1060,12 +815,9 @@ app.get(
 
       const settings =
         await DB()
-          .prepare(`
-            SELECT *
-            FROM settings
-            WHERE id = 1
-            LIMIT 1
-          `)
+          .prepare(
+            'SELECT * FROM settings WHERE id = 1 LIMIT 1'
+          )
           .first();
 
       const attendance =
@@ -1082,21 +834,15 @@ app.get(
             WHERE user_id = ?
             ORDER BY date DESC
           `)
-          .bind(
-            req.user.id
-          )
+          .bind(req.user.id)
           .all();
 
       const state =
-        lectureState(
-          settings
-        );
+        lectureState(settings);
 
       return res.json({
         user:
-          safeUser(
-            req.user
-          ),
+          safeUser(req.user),
 
         lecture: {
           title:
@@ -1105,10 +851,8 @@ app.get(
 
           url:
             state.visible
-              ? (
-                  settings?.lecture_url ||
-                  ''
-                )
+              ? settings?.lecture_url ||
+                ''
               : '',
 
           scheduledAt:
@@ -1123,10 +867,7 @@ app.get(
           []
       });
     } catch (error) {
-      console.error(
-        'Student dashboard error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1137,16 +878,13 @@ app.get(
 );
 
 /* =========================
-   Student Check-in
+   STUDENT CHECKIN
 ========================= */
 
 app.post(
   '/api/student/checkin',
   requireAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       if (
         req.user.role !==
@@ -1160,18 +898,13 @@ app.post(
 
       const settings =
         await DB()
-          .prepare(`
-            SELECT *
-            FROM settings
-            WHERE id = 1
-            LIMIT 1
-          `)
+          .prepare(
+            'SELECT * FROM settings WHERE id = 1 LIMIT 1'
+          )
           .first();
 
       const state =
-        lectureState(
-          settings
-        );
+        lectureState(settings);
 
       if (
         !state.visible ||
@@ -1218,14 +951,7 @@ app.post(
             method,
             created_at
           )
-          VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-          )
+          VALUES (?, ?, ?, ?, ?, ?)
         `)
         .bind(
           crypto.randomUUID(),
@@ -1242,10 +968,7 @@ app.post(
           'تم تسجيل حضورك.'
       });
     } catch (error) {
-      console.error(
-        'Check-in error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1256,16 +979,13 @@ app.post(
 );
 
 /* =========================
-   Admin - Users
+   ADMIN USERS
 ========================= */
 
 app.get(
   '/api/admin/users',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const result =
         await DB()
@@ -1282,15 +1002,10 @@ app.get(
           (
             result.results ||
             []
-          ).map(
-            safeUser
-          )
+          ).map(safeUser)
       });
     } catch (error) {
-      console.error(
-        'Admin users error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1301,113 +1016,208 @@ app.get(
 );
 
 /* =========================
-   Update Student
+   EDIT STUDENT
 ========================= */
 
 app.patch(
   '/api/admin/users/:id',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
-      const user =
+      const id =
+        String(
+          req.params.id || ''
+        ).trim();
+
+      const student =
         await DB()
           .prepare(`
-            SELECT id
+            SELECT *
             FROM users
             WHERE id = ?
             AND role = 'student'
             LIMIT 1
           `)
-          .bind(
-            req.params.id
-          )
+          .bind(id)
           .first();
 
-      if (!user) {
+      if (!student) {
         return res.status(404).json({
           message:
             'الطالب غير موجود.'
         });
       }
 
-      if (
-        typeof req.body?.active ===
-        'boolean'
-      ) {
-        await DB()
-          .prepare(`
-            UPDATE users
-            SET active = ?
-            WHERE id = ?
-          `)
-          .bind(
-            req.body.active
-              ? 1
-              : 0,
-            req.params.id
-          )
-          .run();
-      }
+      const fullName =
+        String(
+          req.body?.fullName ??
+            student.full_name
+        ).trim();
+
+      const login =
+        normalizeLogin(
+          req.body?.login ??
+            student.login
+        );
+
+      const grade =
+        String(
+          req.body?.grade ??
+            student.grade
+        ).trim();
+
+      const subject =
+        String(
+          req.body?.subject ??
+            student.subject
+        ).trim();
+
+      const mode =
+        String(
+          req.body?.mode ??
+            student.mode
+        ).trim();
+
+      const active =
+        Number(
+          req.body?.active ??
+            student.active
+        )
+          ? 1
+          : 0;
 
       if (
-        typeof req.body?.password ===
-          'string' &&
-        req.body.password.length >=
-          6
+        !fullName ||
+        !login ||
+        !grade ||
+        !subject ||
+        !mode
       ) {
-        const passwordHash =
-          await bcrypt.hash(
-            req.body.password,
-            12
+        return res.status(400).json({
+          message:
+            'أكمل بيانات الطالب.'
+        });
+      }
+
+      const duplicate =
+        await DB()
+          .prepare(`
+            SELECT id
+            FROM users
+            WHERE login = ?
+            AND id != ?
+            LIMIT 1
+          `)
+          .bind(
+            login,
+            id
+          )
+          .first();
+
+      if (duplicate) {
+        return res.status(409).json({
+          message:
+            'رقم التلفون أو يوزر ديسكورد مستخدم بالفعل.'
+        });
+      }
+
+      let passwordHash =
+        student.password_hash;
+
+      if (
+        req.body?.password !==
+          undefined &&
+        String(
+          req.body.password
+        ).length > 0
+      ) {
+        const password =
+          String(
+            req.body.password
           );
 
-        await DB()
-          .prepare(`
-            UPDATE users
-            SET password_hash = ?
-            WHERE id = ?
-          `)
-          .bind(
-            passwordHash,
-            req.params.id
-          )
-          .run();
+        if (
+          password.length < 6
+        ) {
+          return res.status(400).json({
+            message:
+              'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
+          });
+        }
+
+        passwordHash =
+          await bcrypt.hash(
+            password,
+            12
+          );
       }
+
+      await DB()
+        .prepare(`
+          UPDATE users
+          SET
+            full_name = ?,
+            login = ?,
+            grade = ?,
+            subject = ?,
+            mode = ?,
+            active = ?,
+            password_hash = ?
+          WHERE id = ?
+          AND role = 'student'
+        `)
+        .bind(
+          fullName,
+          login,
+          grade,
+          subject,
+          mode,
+          active,
+          passwordHash,
+          id
+        )
+        .run();
+
+      const updated =
+        await DB()
+          .prepare(
+            'SELECT * FROM users WHERE id = ? LIMIT 1'
+          )
+          .bind(id)
+          .first();
 
       return res.json({
         message:
-          'تم تحديث الحساب.'
+          'تم تعديل بيانات الطالب بنجاح.',
+        user:
+          safeUser(updated)
       });
     } catch (error) {
-      console.error(
-        'Update user error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
-          'حدث خطأ أثناء تحديث الحساب.'
+          'حدث خطأ أثناء تعديل بيانات الطالب.'
       });
     }
   }
 );
 
 /* =========================
-   Delete Student
+   DELETE STUDENT
 ========================= */
 
 app.delete(
   '/api/admin/users/:id',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
-      const user =
+      const id =
+        String(
+          req.params.id || ''
+        ).trim();
+
+      const student =
         await DB()
           .prepare(`
             SELECT id
@@ -1416,12 +1226,10 @@ app.delete(
             AND role = 'student'
             LIMIT 1
           `)
-          .bind(
-            req.params.id
-          )
+          .bind(id)
           .first();
 
-      if (!user) {
+      if (!student) {
         return res.status(404).json({
           message:
             'الطالب غير موجود.'
@@ -1429,13 +1237,19 @@ app.delete(
       }
 
       await DB()
-        .prepare(`
-          DELETE FROM attendance
-          WHERE user_id = ?
-        `)
-        .bind(
-          req.params.id
+        .prepare(
+          'DELETE FROM attendance WHERE user_id = ?'
         )
+        .bind(id)
+        .run();
+
+      await ensureGradesTable();
+
+      await DB()
+        .prepare(
+          'DELETE FROM grades WHERE user_id = ?'
+        )
+        .bind(id)
         .run();
 
       await DB()
@@ -1444,9 +1258,7 @@ app.delete(
           WHERE id = ?
           AND role = 'student'
         `)
-        .bind(
-          req.params.id
-        )
+        .bind(id)
         .run();
 
       return res.json({
@@ -1454,10 +1266,7 @@ app.delete(
           'تم حذف الطالب.'
       });
     } catch (error) {
-      console.error(
-        'Delete user error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1468,21 +1277,351 @@ app.delete(
 );
 
 /* =========================
-   Admin - Attendance
+   STUDENT GRADES
+========================= */
+
+app.get(
+  '/api/student/grades',
+  requireAuth,
+  async (req, res) => {
+    try {
+      if (
+        req.user.role !==
+        'student'
+      ) {
+        return res.status(403).json({
+          message:
+            'هذا المسار خاص بالطلاب.'
+        });
+      }
+
+      await ensureGradesTable();
+
+      const result =
+        await DB()
+          .prepare(`
+            SELECT
+              id,
+              exam_name,
+              lesson_name,
+              score,
+              total,
+              created_at
+            FROM grades
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+          `)
+          .bind(
+            req.user.id
+          )
+          .all();
+
+      return res.json({
+        grades:
+          result.results ||
+          []
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message:
+          'حدث خطأ أثناء تحميل الدرجات.'
+      });
+    }
+  }
+);
+
+/* =========================
+   ADMIN GRADES
+========================= */
+
+app.get(
+  '/api/admin/grades',
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const userId =
+        String(
+          req.query?.userId ||
+            ''
+        ).trim();
+
+      if (!userId) {
+        return res.status(400).json({
+          message:
+            'حدد الطالب أولاً.'
+        });
+      }
+
+      await ensureGradesTable();
+
+      const student =
+        await DB()
+          .prepare(`
+            SELECT
+              id,
+              full_name
+            FROM users
+            WHERE id = ?
+            AND role = 'student'
+            LIMIT 1
+          `)
+          .bind(userId)
+          .first();
+
+      if (!student) {
+        return res.status(404).json({
+          message:
+            'الطالب غير موجود.'
+        });
+      }
+
+      const result =
+        await DB()
+          .prepare(`
+            SELECT
+              id,
+              user_id,
+              exam_name,
+              lesson_name,
+              score,
+              total,
+              created_at
+            FROM grades
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+          `)
+          .bind(userId)
+          .all();
+
+      return res.json({
+        student: {
+          id: student.id,
+          fullName:
+            student.full_name
+        },
+        grades:
+          result.results ||
+          []
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message:
+          'حدث خطأ أثناء تحميل درجات الطالب.'
+      });
+    }
+  }
+);
+
+/* =========================
+   ADD GRADE
+========================= */
+
+app.post(
+  '/api/admin/grades',
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const userId =
+        String(
+          req.body?.userId ||
+            ''
+        ).trim();
+
+      const examName =
+        String(
+          req.body?.examName ||
+            ''
+        ).trim();
+
+      const lessonName =
+        String(
+          req.body?.lessonName ||
+            ''
+        ).trim();
+
+      const score =
+        Number(
+          req.body?.score
+        );
+
+      const total =
+        Number(
+          req.body?.total
+        );
+
+      if (
+        !userId ||
+        !examName ||
+        !lessonName
+      ) {
+        return res.status(400).json({
+          message:
+            'اختر الطالب واكتب بيانات الامتحان.'
+        });
+      }
+
+      if (
+        !Number.isFinite(score) ||
+        !Number.isFinite(total) ||
+        total <= 0 ||
+        score < 0 ||
+        score > total
+      ) {
+        return res.status(400).json({
+          message:
+            'الدرجة المدخلة غير صحيحة.'
+        });
+      }
+
+      const student =
+        await DB()
+          .prepare(`
+            SELECT id
+            FROM users
+            WHERE id = ?
+            AND role = 'student'
+            LIMIT 1
+          `)
+          .bind(userId)
+          .first();
+
+      if (!student) {
+        return res.status(404).json({
+          message:
+            'الطالب غير موجود.'
+        });
+      }
+
+      await ensureGradesTable();
+
+      const id =
+        crypto.randomUUID();
+
+      const createdAt =
+        nowIso();
+
+      await DB()
+        .prepare(`
+          INSERT INTO grades (
+            id,
+            user_id,
+            exam_name,
+            lesson_name,
+            score,
+            total,
+            created_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `)
+        .bind(
+          id,
+          userId,
+          examName,
+          lessonName,
+          score,
+          total,
+          createdAt
+        )
+        .run();
+
+      return res
+        .status(201)
+        .json({
+          message:
+            'تمت إضافة الدرجة للطالب بنجاح.',
+
+          grade: {
+            id,
+            userId,
+            examName,
+            lessonName,
+            score,
+            total,
+            createdAt
+          }
+        });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message:
+          'حدث خطأ أثناء إضافة الدرجة.'
+      });
+    }
+  }
+);
+
+/* =========================
+   DELETE GRADE
+========================= */
+
+app.delete(
+  '/api/admin/grades/:id',
+  requireAdmin,
+  async (req, res) => {
+    try {
+      await ensureGradesTable();
+
+      const id =
+        String(
+          req.params.id ||
+            ''
+        ).trim();
+
+      const existing =
+        await DB()
+          .prepare(
+            'SELECT id FROM grades WHERE id = ? LIMIT 1'
+          )
+          .bind(id)
+          .first();
+
+      if (!existing) {
+        return res.status(404).json({
+          message:
+            'الدرجة غير موجودة.'
+        });
+      }
+
+      await DB()
+        .prepare(
+          'DELETE FROM grades WHERE id = ?'
+        )
+        .bind(id)
+        .run();
+
+      return res.json({
+        message:
+          'تم حذف الدرجة.'
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message:
+          'حدث خطأ أثناء حذف الدرجة.'
+      });
+    }
+  }
+);
+
+/* =========================
+   ADMIN ATTENDANCE
 ========================= */
 
 app.get(
   '/api/admin/attendance',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const date =
         String(
           req.query?.date ||
-          today()
+            today()
         );
 
       const users =
@@ -1513,15 +1652,15 @@ app.get(
           .bind(date)
           .all();
 
-      const statusMap =
+      const map =
         new Map(
           (
             attendance.results ||
             []
           ).map(
-            (row) => [
-              row.user_id,
-              row.status
+            (r) => [
+              r.user_id,
+              r.status
             ]
           )
         );
@@ -1531,22 +1670,17 @@ app.get(
           users.results ||
           []
         ).map(
-          (user) => ({
-            userId: user.id,
+          (u) => ({
+            userId: u.id,
             fullName:
-              user.full_name,
-            login:
-              user.login,
-            grade:
-              user.grade,
+              u.full_name,
+            login: u.login,
+            grade: u.grade,
             subject:
-              user.subject,
-            mode:
-              user.mode,
+              u.subject,
+            mode: u.mode,
             status:
-              statusMap.get(
-                user.id
-              ) ||
+              map.get(u.id) ||
               'غير محدد'
           })
         );
@@ -1556,10 +1690,7 @@ app.get(
         rows
       });
     } catch (error) {
-      console.error(
-        'Attendance error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1570,23 +1701,19 @@ app.get(
 );
 
 /* =========================
-   Set Attendance
+   SET ATTENDANCE
 ========================= */
 
 app.post(
   '/api/admin/attendance',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const {
         userId,
         date,
         status
-      } =
-        req.body || {};
+      } = req.body || {};
 
       if (
         !userId ||
@@ -1648,14 +1775,7 @@ app.post(
               method,
               created_at
             )
-            VALUES (
-              ?,
-              ?,
-              ?,
-              ?,
-              ?,
-              ?
-            )
+            VALUES (?, ?, ?, ?, ?, ?)
           `)
           .bind(
             crypto.randomUUID(),
@@ -1673,10 +1793,7 @@ app.post(
           'تم تحديث الحضور.'
       });
     } catch (error) {
-      console.error(
-        'Set attendance error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1687,25 +1804,19 @@ app.post(
 );
 
 /* =========================
-   Admin - Settings
+   ADMIN SETTINGS
 ========================= */
 
 app.get(
   '/api/admin/settings',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const settings =
         await DB()
-          .prepare(`
-            SELECT *
-            FROM settings
-            WHERE id = 1
-            LIMIT 1
-          `)
+          .prepare(
+            'SELECT * FROM settings WHERE id = 1 LIMIT 1'
+          )
           .first();
 
       return res.json({
@@ -1718,10 +1829,7 @@ app.get(
           }
       });
     } catch (error) {
-      console.error(
-        'Settings error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1732,33 +1840,30 @@ app.get(
 );
 
 /* =========================
-   Save Lecture
+   SAVE LECTURE
 ========================= */
 
 app.put(
   '/api/admin/settings',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const lectureTitle =
         String(
           req.body?.lectureTitle ||
-          'المحاضرة القادمة'
+            'المحاضرة القادمة'
         ).trim();
 
       const lectureUrl =
         String(
           req.body?.lectureUrl ||
-          ''
+            ''
         ).trim();
 
       const scheduledAt =
         String(
           req.body?.scheduledAt ||
-          ''
+            ''
         ).trim();
 
       if (
@@ -1795,13 +1900,7 @@ app.put(
             scheduled_at,
             updated_at
           )
-          VALUES (
-            1,
-            ?,
-            ?,
-            ?,
-            ?
-          )
+          VALUES (1, ?, ?, ?, ?)
           ON CONFLICT(id)
           DO UPDATE SET
             lecture_title =
@@ -1826,10 +1925,7 @@ app.put(
           'تم تحديث المحاضرة والرابط.'
       });
     } catch (error) {
-      console.error(
-        'Save settings error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1840,16 +1936,13 @@ app.put(
 );
 
 /* =========================
-   Clear Lecture
+   CLEAR LECTURE
 ========================= */
 
 app.delete(
   '/api/admin/settings',
   requireAdmin,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       await DB()
         .prepare(`
@@ -1886,10 +1979,7 @@ app.delete(
           'تم مسح المحاضرة الحالية.'
       });
     } catch (error) {
-      console.error(
-        'Clear settings error:',
-        error
-      );
+      console.error(error);
 
       return res.status(500).json({
         message:
@@ -1905,10 +1995,7 @@ app.delete(
 
 app.use(
   '/api',
-  (
-    req,
-    res
-  ) => {
+  (req, res) => {
     return res.status(404).json({
       message:
         'المسار غير موجود.'
@@ -1917,7 +2004,7 @@ app.use(
 );
 
 /* =========================
-   Global Error Handler
+   ERROR HANDLER
 ========================= */
 
 app.use(
@@ -1949,7 +2036,7 @@ app.use(
 );
 
 /* =========================
-   Cloudflare Worker
+   CLOUDFLARE WORKER
 ========================= */
 
 app.listen(3000);
