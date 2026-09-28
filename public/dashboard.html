@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1769ff">
-
-  <title>لوحة التحكم - مستر محمد حسام</title>
+  <title>لوحة التحكم - منصة مستر محمد حسام</title>
 
   <style>
     :root{
@@ -21,9 +20,7 @@
       --shadow:0 18px 55px rgba(20,45,90,.10);
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{box-sizing:border-box}
 
     body{
       margin:0;
@@ -34,9 +31,7 @@
       transition:.3s ease;
     }
 
-    button,
-    input,
-    select{
+    button,input{
       font:inherit;
     }
 
@@ -50,7 +45,7 @@
     }
 
     /* =========================
-       TOP BAR
+       TOPBAR
     ========================= */
 
     .topbar{
@@ -67,7 +62,6 @@
       position:sticky;
       top:12px;
       z-index:20;
-      transition:.3s ease;
     }
 
     .brand{
@@ -77,7 +71,6 @@
       font-weight:900;
     }
 
-    /* صورة الأستاذ */
     .brand-image{
       width:52px;
       height:52px;
@@ -107,7 +100,6 @@
       font-weight:500;
     }
 
-    /* الأزرار */
     .top-actions{
       display:flex;
       align-items:center;
@@ -123,11 +115,6 @@
       overflow:hidden;
       background:#fff;
       box-shadow:0 7px 18px rgba(20,40,80,.08);
-      transition:.2s ease;
-    }
-
-    .image-btn:hover{
-      transform:translateY(-2px);
     }
 
     .image-btn img{
@@ -145,11 +132,6 @@
       background:#fff;
       color:#17233a;
       font-size:20px;
-      transition:.2s ease;
-    }
-
-    .theme-btn:hover{
-      transform:translateY(-2px);
     }
 
     .logout-btn{
@@ -160,11 +142,6 @@
       background:#fff4f5;
       color:#d63d45;
       font-weight:900;
-      transition:.2s ease;
-    }
-
-    .logout-btn:hover{
-      transform:translateY(-2px);
     }
 
     /* =========================
@@ -180,34 +157,17 @@
         radial-gradient(circle at 85% 20%,rgba(255,255,255,.18),transparent 30%),
         linear-gradient(135deg,#1769ff,#5d42ff);
       box-shadow:0 22px 60px rgba(23,105,255,.20);
-      position:relative;
-      overflow:hidden;
-    }
-
-    .welcome::after{
-      content:"";
-      position:absolute;
-      width:220px;
-      height:220px;
-      border-radius:50%;
-      background:rgba(255,255,255,.08);
-      left:-60px;
-      bottom:-100px;
     }
 
     .welcome h1{
       margin:0 0 8px;
       font-size:34px;
-      position:relative;
-      z-index:1;
     }
 
     .welcome p{
       margin:0;
       opacity:.9;
       line-height:1.8;
-      position:relative;
-      z-index:1;
     }
 
     .welcome-badge{
@@ -219,8 +179,6 @@
       border:1px solid rgba(255,255,255,.22);
       font-size:13px;
       font-weight:800;
-      position:relative;
-      z-index:1;
     }
 
     /* =========================
@@ -266,7 +224,7 @@
     }
 
     /* =========================
-       USER INFO
+       PROFILE
     ========================= */
 
     .profile-list{
@@ -280,7 +238,6 @@
       background:#f9fbff;
       border-radius:16px;
       padding:14px;
-      transition:.3s ease;
     }
 
     .profile-item small{
@@ -295,7 +252,7 @@
     }
 
     /* =========================
-       LECTURE
+       LECTURE VIEW
     ========================= */
 
     .lecture-box{
@@ -303,40 +260,61 @@
       background:#f8fbff;
       border-radius:18px;
       padding:18px;
-      transition:.3s ease;
     }
 
     .lecture-box h3{
-      margin:0 0 9px;
-      font-size:19px;
+      margin:0 0 10px;
+      font-size:20px;
     }
 
     .lecture-box p{
-      margin:6px 0;
+      margin:7px 0;
       color:var(--muted);
-      line-height:1.7;
+      line-height:1.8;
     }
 
     .lecture-link{
       display:inline-block;
-      margin-top:13px;
+      margin-top:14px;
       padding:11px 16px;
       border-radius:12px;
       background:linear-gradient(135deg,var(--primary),var(--primary2));
       color:#fff;
       font-weight:900;
+      text-decoration:none;
     }
 
     /* =========================
-       GRADES
+       ADMIN LECTURE SETTINGS
     ========================= */
 
-    .grade-form{
+    .admin-lecture{
+      margin-top:16px;
+      padding:18px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fafcff;
+    }
+
+    .admin-lecture h3{
+      margin:0 0 5px;
+      font-size:18px;
+    }
+
+    .admin-lecture > p{
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .settings-grid{
       display:grid;
-      grid-template-columns:1.4fr 1fr .7fr .7fr auto;
-      gap:10px;
-      align-items:end;
-      margin-bottom:18px;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .settings-grid .full{
+      grid-column:1/-1;
     }
 
     .input-group label{
@@ -349,17 +327,53 @@
     .input-group input{
       width:100%;
       border:1px solid var(--line);
-      background:#fbfdff;
-      color:var(--text);
-      outline:none;
       border-radius:13px;
       padding:13px;
-      transition:.2s ease;
+      background:#fff;
+      color:var(--text);
+      outline:none;
     }
 
     .input-group input:focus{
       border-color:#73a8ff;
       box-shadow:0 0 0 4px rgba(23,105,255,.10);
+    }
+
+    .settings-buttons{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .save-btn,
+    .clear-btn{
+      border:0;
+      border-radius:13px;
+      padding:12px 18px;
+      font-weight:900;
+    }
+
+    .save-btn{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      color:#fff;
+    }
+
+    .clear-btn{
+      background:#fff0f1;
+      color:#d94148;
+    }
+
+    /* =========================
+       GRADES
+    ========================= */
+
+    .grade-form{
+      display:grid;
+      grid-template-columns:1.4fr 1fr .7fr .7fr auto;
+      gap:10px;
+      align-items:end;
+      margin-bottom:18px;
     }
 
     .add-grade-btn{
@@ -416,7 +430,7 @@
 
     .message{
       min-height:20px;
-      margin-bottom:10px;
+      margin:10px 0;
       text-align:center;
       font-size:13px;
       font-weight:800;
@@ -440,9 +454,7 @@
       --bg:#08111f;
       --card:#101b2d;
       --line:#2a3953;
-
       background:linear-gradient(180deg,#07111f 0%,#0d1727 100%);
-      color:var(--text);
     }
 
     body.dark-mode .topbar{
@@ -472,12 +484,9 @@
       border-color:#28364f;
     }
 
-    body.dark-mode .profile-item{
-      background:#0d1829;
-      border-color:#30415e;
-    }
-
-    body.dark-mode .lecture-box{
+    body.dark-mode .profile-item,
+    body.dark-mode .lecture-box,
+    body.dark-mode .admin-lecture{
       background:#0d1829;
       border-color:#30415e;
     }
@@ -492,6 +501,7 @@
       color:#71809b;
     }
 
+    body.dark-mode .clear-btn,
     body.dark-mode .delete-grade{
       background:#301a1d;
       color:#ff858b;
@@ -514,14 +524,9 @@
       .grade-form{
         grid-template-columns:1fr 1fr;
       }
-
-      .add-grade-btn{
-        width:100%;
-      }
-
     }
 
-    @media(max-width:650px){
+    @media(max-width:700px){
 
       .page{
         width:calc(100% - 16px);
@@ -563,14 +568,15 @@
         font-size:27px;
       }
 
-      .profile-list{
-        grid-template-columns:1fr;
-      }
-
+      .profile-list,
+      .settings-grid,
       .grade-form{
         grid-template-columns:1fr;
       }
 
+      .settings-grid .full{
+        grid-column:auto;
+      }
     }
   </style>
 </head>
@@ -580,14 +586,13 @@
   <div class="page">
 
     <!-- =========================
-         TOP BAR
+         TOPBAR
     ========================= -->
 
     <header class="topbar">
 
       <div class="brand">
 
-        <!-- صورة مستر محمد حسام -->
         <div class="brand-image">
           <img src="Mrs.jpg" alt="مستر محمد حسام">
         </div>
@@ -601,7 +606,6 @@
 
       <div class="top-actions">
 
-        <!-- الزرار اللي كان فيه 🧑‍🏫 -->
         <button
           class="image-btn"
           type="button"
@@ -610,7 +614,6 @@
           <img src="Mrs.jpg" alt="مستر محمد حسام">
         </button>
 
-        <!-- Dark Mode -->
         <button
           id="themeBtn"
           class="theme-btn"
@@ -620,7 +623,6 @@
           🌙
         </button>
 
-        <!-- Logout -->
         <button
           id="logoutBtn"
           class="logout-btn"
@@ -647,35 +649,23 @@
         جاري تحميل بيانات الحساب...
       </p>
 
-      <div
-        id="roleBadge"
-        class="welcome-badge"
-      >
+      <div id="roleBadge" class="welcome-badge">
         حساب طالب
       </div>
 
     </section>
 
-    <!-- =========================
-         CONTENT
-    ========================= -->
-
     <main class="grid">
 
-      <!-- بيانات الحساب -->
+      <!-- =========================
+           PROFILE
+      ========================= -->
 
       <section class="card">
 
         <div class="card-title">
-
-          <h2>
-            بيانات الحساب
-          </h2>
-
-          <span>
-            حسابك
-          </span>
-
+          <h2>بيانات الحساب</h2>
+          <span>حسابك</span>
         </div>
 
         <div class="profile-list">
@@ -714,20 +704,15 @@
 
       </section>
 
-      <!-- المحاضرة -->
+      <!-- =========================
+           LECTURE
+      ========================= -->
 
       <section class="card">
 
         <div class="card-title">
-
-          <h2>
-            المحاضرة القادمة
-          </h2>
-
-          <span>
-            المحاضرة
-          </span>
-
+          <h2>المحاضرة القادمة</h2>
+          <span>المحاضرة</span>
         </div>
 
         <div class="lecture-box">
@@ -756,29 +741,107 @@
 
         </div>
 
+        <!-- =========================
+             ADMIN SETTINGS
+        ========================= -->
+
+        <div
+          id="adminLectureSettings"
+          class="admin-lecture"
+          style="display:none;"
+        >
+
+          <h3>
+            إعداد موعد المحاضرة
+          </h3>
+
+          <p>
+            من هنا تقدر تحدد عنوان المحاضرة وموعدها ورابطها.
+          </p>
+
+          <div class="settings-grid">
+
+            <div class="input-group full">
+              <label for="lectureTitleInput">
+                اسم المحاضرة
+              </label>
+
+              <input
+                id="lectureTitleInput"
+                type="text"
+                placeholder="مثال: مراجعة الوحدة الأولى"
+              >
+            </div>
+
+            <div class="input-group">
+              <label for="lectureDateInput">
+                موعد المحاضرة
+              </label>
+
+              <input
+                id="lectureDateInput"
+                type="datetime-local"
+              >
+            </div>
+
+            <div class="input-group">
+              <label for="lectureUrlInput">
+                رابط المحاضرة
+              </label>
+
+              <input
+                id="lectureUrlInput"
+                type="url"
+                placeholder="https://..."
+              >
+            </div>
+
+          </div>
+
+          <div class="settings-buttons">
+
+            <button
+              id="saveLectureBtn"
+              class="save-btn"
+              type="button"
+            >
+              حفظ موعد المحاضرة
+            </button>
+
+            <button
+              id="clearLectureBtn"
+              class="clear-btn"
+              type="button"
+            >
+              مسح المحاضرة
+            </button>
+
+          </div>
+
+          <div
+            id="lectureMessage"
+            class="message"
+          ></div>
+
+        </div>
+
       </section>
 
       <!-- =========================
-           الدرجات
+           GRADES
       ========================= -->
 
       <section class="card full">
 
         <div class="card-title">
-
-          <h2>
-            درجات امتحانات الحصص
-          </h2>
-
-          <span>
-            سجل درجاتك
-          </span>
-
+          <h2>درجات امتحانات الحصص</h2>
+          <span>سجل الدرجات</span>
         </div>
 
-        <!-- إضافة درجة -->
-
-        <div id="gradeAdminBox">
+        <div
+          id="gradeAdminBox"
+          style="display:none;"
+        >
 
           <div class="grade-form">
 
@@ -857,14 +920,11 @@
 
         </div>
 
-        <!-- جدول الدرجات -->
-
         <div class="grades-table-wrap">
 
           <table class="grades-table">
 
             <thead>
-
               <tr>
                 <th>الامتحان</th>
                 <th>الحصة</th>
@@ -872,7 +932,6 @@
                 <th>النسبة</th>
                 <th>الإجراء</th>
               </tr>
-
             </thead>
 
             <tbody id="gradesBody">
@@ -914,7 +973,6 @@
 
       themeBtn.textContent =
         isDark ? "☀️" : "🌙";
-
     }
 
     if(
@@ -941,16 +999,37 @@
         );
 
         updateThemeButton();
-
       }
     );
 
 
     /* =========================
-       USER
+       VARIABLES
     ========================= */
 
     let currentUser = null;
+
+    const lectureTitle =
+      document.getElementById("lectureTitle");
+
+    const lectureDate =
+      document.getElementById("lectureDate");
+
+    const lectureInfo =
+      document.getElementById("lectureInfo");
+
+    const lectureLink =
+      document.getElementById("lectureLink");
+
+    const adminLectureSettings =
+      document.getElementById(
+        "adminLectureSettings"
+      );
+
+
+    /* =========================
+       USER
+    ========================= */
 
     async function loadUser(){
 
@@ -990,20 +1069,23 @@
 
         showUser();
 
-        loadDashboard();
+        await loadLecture();
 
       }catch(error){
+
+        console.error(error);
 
         window.location.replace(
           "index.html"
         );
-
       }
-
     }
 
 
     function showUser(){
+
+      const isAdmin =
+        currentUser.role === "admin";
 
       document.getElementById(
         "userName"
@@ -1030,9 +1112,6 @@
       ).textContent =
         currentUser.mode || "-";
 
-      const isAdmin =
-        currentUser.role === "admin";
-
       document.getElementById(
         "userRole"
       ).textContent =
@@ -1055,98 +1134,398 @@
           ? "دي لوحة إدارة منصة مستر محمد حسام."
           : "من هنا تقدر تتابع المحاضرات وتشوف درجات امتحاناتك.";
 
-      /*
-        إضافة الدرجات للمدير فقط
-      */
+      /* المدير فقط */
+      if(isAdmin){
 
-      if(!isAdmin){
+        adminLectureSettings.style.display =
+          "block";
 
         document.getElementById(
           "gradeAdminBox"
         ).style.display =
-          "none";
+          "block";
 
       }
-
     }
 
 
     /* =========================
-       DASHBOARD
+       LOAD LECTURE
     ========================= */
 
-    async function loadDashboard(){
+    async function loadLecture(){
 
       try{
 
         const response =
           await fetch(
-            "/api/student/dashboard",
+            currentUser.role === "admin"
+              ? "/api/admin/settings"
+              : "/api/student/dashboard",
             {
               credentials:"include"
             }
           );
 
         if(!response.ok){
-
-          loadGrades();
-
           return;
         }
 
         const data =
           await response.json();
 
-        const settings =
+        let settings =
           data.settings ||
           data.lecture ||
-          {};
+          data;
 
-        document.getElementById(
-          "lectureTitle"
-        ).textContent =
-          settings.lecture_title ||
-          settings.title ||
-          "المحاضرة القادمة";
+        if(currentUser.role === "admin"){
 
-        document.getElementById(
-          "lectureDate"
-        ).textContent =
-          settings.scheduled_at
-            ? `الموعد: ${settings.scheduled_at}`
-            : "لم يتم تحديد موعد المحاضرة بعد.";
+          settings =
+            data.settings ||
+            data;
 
-        const url =
-          settings.lecture_url ||
-          settings.url ||
-          "";
+        }
 
-        const link =
-          document.getElementById(
-            "lectureLink"
+        applyLecture(
+          settings
+        );
+
+        if(currentUser.role === "admin"){
+
+          fillAdminLectureForm(
+            settings
           );
-
-        if(url){
-
-          link.href =
-            url;
-
-          link.style.display =
-            "inline-block";
-
         }
 
       }catch(error){
 
-        console.log(
+        console.error(
+          "Lecture error:",
           error
         );
+      }
+    }
 
+
+    function applyLecture(settings){
+
+      const title =
+        settings.lecture_title ||
+        settings.title ||
+        "المحاضرة القادمة";
+
+      const url =
+        settings.lecture_url ||
+        settings.url ||
+        "";
+
+      const scheduled =
+        settings.scheduled_at ||
+        "";
+
+      lectureTitle.textContent =
+        title;
+
+      if(scheduled){
+
+        const date =
+          new Date(scheduled);
+
+        if(!Number.isNaN(date.getTime())){
+
+          lectureDate.textContent =
+            "الموعد: " +
+            date.toLocaleString(
+              "ar-EG",
+              {
+                dateStyle:"full",
+                timeStyle:"short"
+              }
+            );
+
+        }else{
+
+          lectureDate.textContent =
+            "الموعد: " + scheduled;
+        }
+
+      }else{
+
+        lectureDate.textContent =
+          "لم يتم تحديد موعد المحاضرة بعد.";
       }
 
-      loadGrades();
+      if(url){
 
+        lectureInfo.textContent =
+          "رابط المحاضرة متاح من الزر بالأسفل.";
+
+        lectureLink.href =
+          url;
+
+        lectureLink.style.display =
+          "inline-block";
+
+      }else{
+
+        lectureInfo.textContent =
+          "سيتم ظهور رابط المحاضرة هنا.";
+
+        lectureLink.style.display =
+          "none";
+      }
     }
+
+
+    function fillAdminLectureForm(settings){
+
+      document.getElementById(
+        "lectureTitleInput"
+      ).value =
+        settings.lecture_title || "";
+
+      document.getElementById(
+        "lectureUrlInput"
+      ).value =
+        settings.lecture_url || "";
+
+      const scheduled =
+        settings.scheduled_at || "";
+
+      document.getElementById(
+        "lectureDateInput"
+      ).value =
+        toDatetimeLocalValue(
+          scheduled
+        );
+    }
+
+
+    function toDatetimeLocalValue(value){
+
+      if(!value){
+        return "";
+      }
+
+      const date =
+        new Date(value);
+
+      if(Number.isNaN(date.getTime())){
+        return value.slice(0,16);
+      }
+
+      const local =
+        new Date(
+          date.getTime() -
+          date.getTimezoneOffset() * 60000
+        );
+
+      return local
+        .toISOString()
+        .slice(0,16);
+    }
+
+
+    /* =========================
+       SAVE LECTURE
+    ========================= */
+
+    document
+      .getElementById(
+        "saveLectureBtn"
+      )
+      .addEventListener(
+        "click",
+        async () => {
+
+          const message =
+            document.getElementById(
+              "lectureMessage"
+            );
+
+          const title =
+            document.getElementById(
+              "lectureTitleInput"
+            ).value.trim();
+
+          const scheduled =
+            document.getElementById(
+              "lectureDateInput"
+            ).value;
+
+          const url =
+            document.getElementById(
+              "lectureUrlInput"
+            ).value.trim();
+
+          if(!title){
+
+            message.textContent =
+              "اكتب اسم المحاضرة.";
+
+            message.className =
+              "message danger";
+
+            return;
+          }
+
+          const button =
+            document.getElementById(
+              "saveLectureBtn"
+            );
+
+          button.disabled = true;
+          button.textContent =
+            "جاري الحفظ...";
+
+          try{
+
+            const response =
+              await fetch(
+                "/api/admin/settings",
+                {
+                  method:"PUT",
+                  headers:{
+                    "Content-Type":
+                      "application/json"
+                  },
+                  credentials:"include",
+                  body:JSON.stringify({
+                    lecture_title:title,
+                    lecture_url:url,
+                    scheduled_at:scheduled
+                  })
+                }
+              );
+
+            let data = {};
+
+            try{
+              data =
+                await response.json();
+            }catch(_){}
+
+            if(!response.ok){
+
+              throw new Error(
+                data.message ||
+                "حدث خطأ أثناء حفظ المحاضرة."
+              );
+            }
+
+            message.textContent =
+              data.message ||
+              "تم حفظ موعد المحاضرة بنجاح.";
+
+            message.className =
+              "message success";
+
+            await loadLecture();
+
+          }catch(error){
+
+            message.textContent =
+              error.message;
+
+            message.className =
+              "message danger";
+
+          }finally{
+
+            button.disabled = false;
+            button.textContent =
+              "حفظ موعد المحاضرة";
+          }
+
+        }
+      );
+
+
+    /* =========================
+       CLEAR LECTURE
+    ========================= */
+
+    document
+      .getElementById(
+        "clearLectureBtn"
+      )
+      .addEventListener(
+        "click",
+        async () => {
+
+          const message =
+            document.getElementById(
+              "lectureMessage"
+            );
+
+          try{
+
+            const response =
+              await fetch(
+                "/api/admin/settings",
+                {
+                  method:"DELETE",
+                  credentials:"include"
+                }
+              );
+
+            let data = {};
+
+            try{
+              data =
+                await response.json();
+            }catch(_){}
+
+            if(!response.ok){
+
+              throw new Error(
+                data.message ||
+                "حدث خطأ أثناء مسح المحاضرة."
+              );
+            }
+
+            document.getElementById(
+              "lectureTitleInput"
+            ).value = "";
+
+            document.getElementById(
+              "lectureDateInput"
+            ).value = "";
+
+            document.getElementById(
+              "lectureUrlInput"
+            ).value = "";
+
+            message.textContent =
+              data.message ||
+              "تم مسح بيانات المحاضرة.";
+
+            message.className =
+              "message success";
+
+            lectureTitle.textContent =
+              "المحاضرة القادمة";
+
+            lectureDate.textContent =
+              "لم يتم تحديد موعد المحاضرة بعد.";
+
+            lectureInfo.textContent =
+              "سيتم ظهور بيانات المحاضرة هنا.";
+
+            lectureLink.style.display =
+              "none";
+
+          }catch(error){
+
+            message.textContent =
+              error.message;
+
+            message.className =
+              "message danger";
+          }
+        }
+      );
 
 
     /* =========================
@@ -1166,12 +1545,10 @@
           ) || "[]"
         );
 
-      }catch(error){
+      }catch(_){
 
         return [];
-
       }
-
     }
 
 
@@ -1181,7 +1558,6 @@
         gradesKey,
         JSON.stringify(grades)
       );
-
     }
 
 
@@ -1193,7 +1569,6 @@
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
-
     }
 
 
@@ -1230,7 +1605,9 @@
             const percentage =
               grade.total > 0
                 ? Math.round(
-                    (grade.score / grade.total) * 100
+                    grade.score /
+                    grade.total *
+                    100
                   )
                 : 0;
 
@@ -1258,20 +1635,18 @@
                 </td>
 
                 <td>
-
                   ${
                     currentUser?.role === "admin"
-                      ? `
-                        <button
-                          class="delete-grade"
-                          onclick="deleteGrade(${index})"
-                        >
-                          حذف
-                        </button>
-                      `
-                      : "-"
+                    ? `
+                      <button
+                        class="delete-grade"
+                        onclick="deleteGrade(${index})"
+                      >
+                        حذف
+                      </button>
+                    `
+                    : "-"
                   }
-
                 </td>
 
               </tr>
@@ -1279,47 +1654,45 @@
 
           }
         ).join("");
-
     }
 
 
     document
-      .getElementById("addGradeBtn")
+      .getElementById(
+        "addGradeBtn"
+      )
       .addEventListener(
         "click",
         () => {
 
           const exam =
-            document
-              .getElementById("examName")
-              .value
-              .trim();
+            document.getElementById(
+              "examName"
+            ).value.trim();
 
           const lesson =
-            document
-              .getElementById("lessonName")
-              .value
-              .trim();
+            document.getElementById(
+              "lessonName"
+            ).value.trim();
 
           const score =
             Number(
-              document
-                .getElementById("score")
-                .value
+              document.getElementById(
+                "score"
+              ).value
             );
 
           const total =
             Number(
-              document
-                .getElementById("total")
-                .value
+              document.getElementById(
+                "total"
+              ).value
             );
 
           const message =
             document.getElementById(
               "gradeMessage"
             );
-
 
           if(
             !exam ||
@@ -1337,7 +1710,6 @@
             return;
           }
 
-
           if(
             total <= 0 ||
             score < 0 ||
@@ -1353,23 +1725,19 @@
             return;
           }
 
-
           const grades =
             getGrades();
 
-
           grades.push({
-            exam:exam,
-            lesson:lesson,
-            score:score,
-            total:total
+            exam,
+            lesson,
+            score,
+            total
           });
-
 
           saveGrades(
             grades
           );
-
 
           document.getElementById(
             "examName"
@@ -1387,26 +1755,20 @@
             "total"
           ).value = "";
 
-
           message.textContent =
             "تمت إضافة الدرجة بنجاح.";
 
           message.className =
             "message success";
 
-
           loadGrades();
 
           setTimeout(
             () => {
-
-              message.textContent =
-                "";
-
+              message.textContent = "";
             },
             2000
           );
-
         }
       );
 
@@ -1426,7 +1788,6 @@
       );
 
       loadGrades();
-
     }
 
 
@@ -1435,7 +1796,9 @@
     ========================= */
 
     document
-      .getElementById("logoutBtn")
+      .getElementById(
+        "logoutBtn"
+      )
       .addEventListener(
         "click",
         async () => {
@@ -1450,19 +1813,21 @@
               }
             );
 
-          }catch(error){}
+          }catch(_){}
 
           window.location.replace(
             "index.html"
           );
-
         }
       );
 
 
-    /* تشغيل الصفحة */
+    /* =========================
+       START
+    ========================= */
 
     loadUser();
+    loadGrades();
 
   </script>
 
