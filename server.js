@@ -731,6 +731,7 @@ app.post(
       const name = String(fullName || '').trim();
       const rawLogin = login ?? username ?? phoneOrDiscord ?? phone ?? identifier ?? '';
       const userLogin = normalizeLogin(rawLogin);
+      const userEmail = String(email || '').trim().toLowerCase();
       const passwordText = String(password || '');
       const confirmation = String(confirmPassword ?? passwordConfirm ?? passwordText);
 
@@ -1200,7 +1201,6 @@ app.get(
               mode,
               role,
               active,
-              email,
               created_at
             FROM users
             WHERE id = ?
@@ -1394,6 +1394,7 @@ app.patch(
       const grade = String(req.body?.grade ?? student.grade).trim();
       const subject = String(req.body?.subject ?? student.subject).trim();
       const mode = String(req.body?.mode ?? student.mode).trim();
+      const email = String(req.body?.email ?? student.email ?? '').trim().toLowerCase();
       const active = Number(req.body?.active ?? student.active) ? 1 : 0;
 
       if (!fullName || !login || !email || !grade || !subject || !mode) {
@@ -1422,8 +1423,8 @@ app.patch(
       }
 
       await DB().prepare(
-        'UPDATE users SET full_name = ?, login = ?, grade = ?, subject = ?, mode = ?, active = ?, password_hash = ? WHERE id = ? AND role = \'student\''
-      ).bind(fullName, login, grade, subject, mode, active, passwordHash, id).run();
+        'UPDATE users SET full_name = ?, login = ?, email = ?, grade = ?, subject = ?, mode = ?, active = ?, password_hash = ? WHERE id = ? AND role = \'student\''
+      ).bind(fullName, login, email, grade, subject, mode, active, passwordHash, id).run();
 
       const updated = await DB().prepare(
         'SELECT * FROM users WHERE id = ? LIMIT 1'
