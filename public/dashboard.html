@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>لوحة التحكم -  مستر محمد حسام</title>
+<title>لوحة التحكم - منصة مستر محمد حسام</title>
 
 <style>
 :root{
@@ -87,7 +87,8 @@ button{cursor:pointer}
   align-items:center
 }
 
-.icon-btn,.theme-btn{
+.icon-btn,
+.theme-btn{
   width:48px;
   height:48px;
   border:1px solid var(--line);
@@ -405,6 +406,11 @@ button{cursor:pointer}
   color:#d94148
 }
 
+.pending{
+  background:#fff7df;
+  color:#a26b00
+}
+
 .modal{
   position:fixed;
   inset:0;
@@ -484,11 +490,6 @@ button{cursor:pointer}
   background:#e8f8f1;
   color:#087e56;
   font-weight:900
-}
-
-.pending{
-  background:#fff7df;
-  color:#a26b00
 }
 
 .dark{
@@ -744,7 +745,7 @@ button{cursor:pointer}
     </h3>
 
     <p id="lectureDate">
-      لم يتم تحديد الموعد.
+      لم يتم تحديد موعد المحاضرة.
     </p>
 
     <p id="lectureInfo">
@@ -841,7 +842,6 @@ button{cursor:pointer}
     <span>إدارة الطلاب</span>
   </div>
 
-
   <div class="toolbar">
 
     <div class="search">
@@ -860,7 +860,6 @@ button{cursor:pointer}
     </button>
 
   </div>
-
 
   <div class="table-wrap">
 
@@ -915,6 +914,7 @@ button{cursor:pointer}
     <div class="form-grid">
 
       <div class="field">
+
         <label>الطالب</label>
 
         <select id="gradeStudent">
@@ -924,6 +924,7 @@ button{cursor:pointer}
           </option>
 
         </select>
+
       </div>
 
 
@@ -1196,6 +1197,7 @@ button{cursor:pointer}
       <button
         id="closeEdit"
         class="close"
+        type="button"
       >
         ×
       </button>
@@ -1214,7 +1216,6 @@ button{cursor:pointer}
       <div class="field full-field">
 
         <label>الاسم</label>
-
         <input id="editName">
 
       </div>
@@ -1223,7 +1224,6 @@ button{cursor:pointer}
       <div class="field full-field">
 
         <label>رقم التلفون / ديسكورد</label>
-
         <input id="editLogin">
 
       </div>
@@ -1313,6 +1313,7 @@ button{cursor:pointer}
       <button
         id="saveEdit"
         class="primary"
+        type="button"
       >
         حفظ
       </button>
@@ -1320,6 +1321,7 @@ button{cursor:pointer}
       <button
         id="cancelEdit"
         class="secondary"
+        type="button"
       >
         إلغاء
       </button>
@@ -1345,6 +1347,7 @@ button{cursor:pointer}
       <button
         id="closeProfile"
         class="close"
+        type="button"
       >
         ×
       </button>
@@ -1505,11 +1508,15 @@ function setMsg(el,text,ok=false){
 
 
 function cacheSafeUrl(url){
-  return url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+  return url +
+    (url.includes('?') ? '&' : '?') +
+    '_=' +
+    Date.now();
 }
 
 
 async function api(url,opt={}){
+
   const r = await fetch(
     cacheSafeUrl(url),
     {
@@ -1530,7 +1537,9 @@ async function api(url,opt={}){
   }catch{}
 
   if(!r.ok){
-    throw new Error(d.message || 'حدث خطأ.');
+    throw new Error(
+      d.message || 'حدث خطأ.'
+    );
   }
 
   return d;
@@ -1544,11 +1553,16 @@ async function api(url,opt={}){
 
 function dark(){
 
-  const on = localStorage.getItem('theme') === 'dark';
+  const on =
+    localStorage.getItem('theme') === 'dark';
 
-  document.body.classList.toggle('dark',on);
+  document.body.classList.toggle(
+    'dark',
+    on
+  );
 
-  $('themeBtn').textContent = on ? '☀️' : '🌙';
+  $('themeBtn').textContent =
+    on ? '☀️' : '🌙';
 }
 
 dark();
@@ -1598,20 +1612,27 @@ function formatDate(v){
 
 function scheduledMillis(v){
 
-  if(!v) return NaN;
+  if(!v){
+    return NaN;
+  }
 
-  const raw = String(v).trim();
+  const raw =
+    String(v).trim();
+
 
   if(
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/
+      .test(raw)
   ){
 
-    const d = new Date(
-      raw + ':00+03:00'
-    );
+    const d =
+      new Date(
+        raw + ':00+03:00'
+      );
 
     return d.getTime();
   }
+
 
   return new Date(raw).getTime();
 }
@@ -1626,16 +1647,23 @@ function getCairoDateTimeParts(v){
     };
   }
 
-  const d = new Date(v);
 
-  if(Number.isNaN(d.getTime())){
+  const d =
+    new Date(v);
+
+
+  if(
+    Number.isNaN(d.getTime())
+  ){
+
     return {
       date:'',
       time:''
     };
   }
 
-  const p =
+
+  const parts =
     new Intl.DateTimeFormat(
       'en-CA',
       {
@@ -1650,22 +1678,34 @@ function getCairoDateTimeParts(v){
     ).formatToParts(d);
 
 
-  const get = t =>
-    p.find(x => x.type === t)?.value || '';
+  const get =
+    type =>
+      parts.find(
+        x => x.type === type
+      )?.value || '';
 
 
   return {
-    date:`${get('year')}-${get('month')}-${get('day')}`,
-    time:`${get('hour')}:${get('minute')}`
+    date:
+      `${get('year')}-${get('month')}-${get('day')}`,
+
+    time:
+      `${get('hour')}:${get('minute')}`
   };
 }
 
 
-function showStudentLecture(url,scheduledAt){
 
-  $('lectureLink').style.display = 'none';
+function showStudentLecture(
+  url,
+  scheduledAt
+){
 
-  $('lectureLink').removeAttribute('href');
+  $('lectureLink').style.display =
+    'none';
+
+  $('lectureLink')
+    .removeAttribute('href');
 
 
   if(!url){
@@ -1677,10 +1717,15 @@ function showStudentLecture(url,scheduledAt){
   }
 
 
-  const t = scheduledMillis(scheduledAt);
+  const t =
+    scheduledMillis(
+      scheduledAt
+    );
 
 
-  if(Number.isNaN(t)){
+  if(
+    Number.isNaN(t)
+  ){
 
     $('lectureInfo').textContent =
       'سيظهر رابط المحاضرة قبل الموعد بخمس دقائق.';
@@ -1689,14 +1734,19 @@ function showStudentLecture(url,scheduledAt){
   }
 
 
-  const showAt = t - (5 * 60 * 1000);
+  const showAt =
+    t - (5 * 60 * 1000);
 
 
-  if(Date.now() >= showAt){
+  if(
+    Date.now() >= showAt
+  ){
 
-    $('lectureLink').href = url;
+    $('lectureLink').href =
+      url;
 
-    $('lectureLink').style.display = 'inline-block';
+    $('lectureLink').style.display =
+      'inline-block';
 
     $('lectureInfo').textContent =
       'رابط المحاضرة متاح الآن.';
@@ -1707,9 +1757,11 @@ function showStudentLecture(url,scheduledAt){
       Math.max(
         1,
         Math.ceil(
-          (showAt - Date.now()) / 60000
+          (showAt - Date.now()) /
+          60000
         )
       );
+
 
     $('lectureInfo').textContent =
       `رابط المحاضرة هيظهر قبل الموعد بـ5 دقائق. متبقي تقريبًا ${mins} دقيقة.`;
@@ -1720,21 +1772,29 @@ function showStudentLecture(url,scheduledAt){
 
 async function loadLecture(){
 
-  if(currentUser.role === 'admin'){
+  if(
+    currentUser.role === 'admin'
+  ){
 
     const d =
-      await api('/api/admin/settings');
+      await api(
+        '/api/admin/settings'
+      );
+
 
     const s =
       d.settings || {};
 
 
     $('lectureTitle').textContent =
-      s.lecture_title || 'المحاضرة القادمة';
+      s.lecture_title ||
+      'المحاضرة القادمة';
 
 
     $('lectureDate').textContent =
-      formatDate(s.scheduled_at);
+      formatDate(
+        s.scheduled_at
+      );
 
 
     $('lectureInfo').textContent =
@@ -1750,6 +1810,7 @@ async function loadLecture(){
 
 
     if(s.lecture_url){
+
       $('lectureLink').href =
         s.lecture_url;
     }
@@ -1766,11 +1827,11 @@ async function loadLecture(){
 
 
     $('lectureDateInput').value =
-      parts.date;
+      parts.date || '';
 
 
     $('lectureTimeInput').value =
-      parts.time;
+      parts.time || '';
 
 
     $('lectureUrlInput').value =
@@ -1779,18 +1840,24 @@ async function loadLecture(){
   }else{
 
     const d =
-      await api('/api/student/dashboard');
+      await api(
+        '/api/student/dashboard'
+      );
+
 
     const l =
       d.lecture || {};
 
 
     $('lectureTitle').textContent =
-      l.title || 'المحاضرة القادمة';
+      l.title ||
+      'المحاضرة القادمة';
 
 
     $('lectureDate').textContent =
-      formatDate(l.scheduledAt);
+      formatDate(
+        l.scheduledAt
+      );
 
 
     showStudentLecture(
@@ -1845,7 +1912,10 @@ function renderUser(){
 
 
   $('welcomeTitle').textContent =
-    `أهلاً بيك يا ${currentUser.fullName || 'صديقي'} 👋`;
+    `أهلاً بيك يا ${
+      currentUser.fullName ||
+      'صديقي'
+    } 👋`;
 
 
   $('welcomeText').textContent =
@@ -1865,11 +1935,16 @@ async function loadStudents(){
   try{
 
     const d =
-      await api('/api/admin/users');
+      await api(
+        '/api/admin/users'
+      );
+
 
     students =
       (d.users || [])
-        .filter(x => x.role !== 'admin');
+        .filter(
+          x => x.role !== 'admin'
+        );
 
 
     $('studentsCount').textContent =
@@ -1890,16 +1965,20 @@ async function loadStudents(){
 
     fillGradeStudents();
 
-    renderStudents(students);
+    renderStudents(
+      students
+    );
 
   }catch(e){
 
     $('studentsBody').innerHTML =
-      `<tr>
+      `
+      <tr>
         <td colspan="7" class="empty">
           ${esc(e.message)}
         </td>
-      </tr>`;
+      </tr>
+      `;
   }
 }
 
@@ -1910,6 +1989,7 @@ function fillGradeStudents(){
   const s =
     $('gradeStudent');
 
+
   const old =
     s.value;
 
@@ -1918,19 +1998,26 @@ function fillGradeStudents(){
     '<option value="">اختر الطالب</option>';
 
 
-  students.forEach(u => {
+  students.forEach(
+    u => {
 
-    const o =
-      document.createElement('option');
+      const o =
+        document.createElement(
+          'option'
+        );
 
-    o.value =
-      u.id;
 
-    o.textContent =
-      `${u.fullName} - ${u.login}`;
+      o.value =
+        u.id;
 
-    s.appendChild(o);
-  });
+
+      o.textContent =
+        `${u.fullName} - ${u.login}`;
+
+
+      s.appendChild(o);
+    }
+  );
 
 
   if(
@@ -1950,19 +2037,28 @@ function renderStudents(list){
   if(!list.length){
 
     $('studentsBody').innerHTML =
-      '<tr><td colspan="7" class="empty">لا يوجد طلاب.</td></tr>';
+      `
+      <tr>
+        <td colspan="7" class="empty">
+          لا يوجد طلاب.
+        </td>
+      </tr>
+      `;
 
     return;
   }
 
 
   $('studentsBody').innerHTML =
-    list.map(u => `
+    list.map(
+      u => `
 
       <tr>
 
         <td>
-          <strong>${esc(u.fullName)}</strong>
+          <strong>
+            ${esc(u.fullName)}
+          </strong>
         </td>
 
         <td>
@@ -1983,8 +2079,18 @@ function renderStudents(list){
 
         <td>
 
-          <span class="status ${u.active ? 'active' : 'inactive'}">
-            ${u.active ? 'نشط' : 'غير نشط'}
+          <span
+            class="status ${
+              u.active
+                ? 'active'
+                : 'inactive'
+            }"
+          >
+            ${
+              u.active
+                ? 'نشط'
+                : 'غير نشط'
+            }
           </span>
 
         </td>
@@ -1992,7 +2098,11 @@ function renderStudents(list){
         <td>
 
           <div
-            style="display:flex;gap:6px;flex-wrap:wrap"
+            style="
+              display:flex;
+              gap:6px;
+              flex-wrap:wrap
+            "
           >
 
             <button
@@ -2017,37 +2127,40 @@ function renderStudents(list){
 
       </tr>
 
-    `).join('');
+    `
+    ).join('');
 }
 
 
 
-$('studentSearch').oninput = () => {
+$('studentSearch').oninput =
+  () => {
 
-  const q =
-    $('studentSearch')
-      .value
-      .trim()
-      .toLowerCase();
+    const q =
+      $('studentSearch')
+        .value
+        .trim()
+        .toLowerCase();
 
 
-  renderStudents(
-    !q
-      ? students
-      : students.filter(u =>
-          [
-            u.fullName,
-            u.login,
-            u.grade,
-            u.subject,
-            u.mode
-          ]
-          .join(' ')
-          .toLowerCase()
-          .includes(q)
-        )
-  );
-};
+    renderStudents(
+      !q
+        ? students
+        : students.filter(
+            u =>
+              [
+                u.fullName,
+                u.login,
+                u.grade,
+                u.subject,
+                u.mode
+              ]
+              .join(' ')
+              .toLowerCase()
+              .includes(q)
+          )
+    );
+  };
 
 
 $('refreshStudents').onclick =
@@ -2055,37 +2168,38 @@ $('refreshStudents').onclick =
 
 
 
-$('studentsBody').onclick = e => {
+$('studentsBody').onclick =
+  e => {
 
-  const p =
-    e.target.closest(
-      '[data-profile-id]'
-    );
-
-
-  if(p){
-
-    openProfile(
-      p.dataset.profileId
-    );
-
-    return;
-  }
+    const p =
+      e.target.closest(
+        '[data-profile-id]'
+      );
 
 
-  const b =
-    e.target.closest(
-      '[data-edit-id]'
-    );
+    if(p){
+
+      openProfile(
+        p.dataset.profileId
+      );
+
+      return;
+    }
 
 
-  if(b){
+    const b =
+      e.target.closest(
+        '[data-edit-id]'
+      );
 
-    openEdit(
-      b.dataset.editId
-    );
-  }
-};
+
+    if(b){
+
+      openEdit(
+        b.dataset.editId
+      );
+    }
+  };
 
 
 
@@ -2142,9 +2256,8 @@ function openEdit(id){
   );
 
 
-  $('editModal').classList.add(
-    'open'
-  );
+  $('editModal')
+    .classList.add('open');
 }
 
 
@@ -2156,7 +2269,6 @@ function closeEdit(){
 }
 
 
-
 $('closeEdit').onclick =
   closeEdit;
 
@@ -2165,95 +2277,106 @@ $('cancelEdit').onclick =
   closeEdit;
 
 
-$('editModal').onclick = e => {
-
-  if(
-    e.target === $('editModal')
-  ){
-    closeEdit();
-  }
-};
-
-
-
-$('saveEdit').onclick = async () => {
-
-  try{
-
-    const id =
-      $('editId').value;
-
-
-    const body = {
-      fullName:
-        $('editName').value.trim(),
-
-      login:
-        $('editLogin').value.trim(),
-
-      grade:
-        $('editGrade').value,
-
-      subject:
-        $('editSubject').value,
-
-      mode:
-        $('editMode').value,
-
-      active:
-        Number(
-          $('editActive').value
-        )
-    };
-
+$('editModal').onclick =
+  e => {
 
     if(
-      $('editPassword').value
+      e.target ===
+      $('editModal')
     ){
 
-      body.password =
-        $('editPassword').value;
+      closeEdit();
     }
+  };
 
 
-    await api(
-      '/api/admin/users/' +
-      encodeURIComponent(id),
-      {
-        method:'PATCH',
-        headers:{
-          'Content-Type':
-            'application/json'
-        },
-        body:
-          JSON.stringify(body)
+
+$('saveEdit').onclick =
+  async () => {
+
+    try{
+
+      const id =
+        $('editId').value;
+
+
+      const body = {
+
+        fullName:
+          $('editName')
+            .value
+            .trim(),
+
+        login:
+          $('editLogin')
+            .value
+            .trim(),
+
+        grade:
+          $('editGrade').value,
+
+        subject:
+          $('editSubject').value,
+
+        mode:
+          $('editMode').value,
+
+        active:
+          Number(
+            $('editActive').value
+          )
+      };
+
+
+      if(
+        $('editPassword').value
+      ){
+
+        body.password =
+          $('editPassword').value;
       }
-    );
 
 
-    setMsg(
-      $('editMsg'),
-      'تم تعديل بيانات الطالب.',
-      true
-    );
+      await api(
+        '/api/admin/users/' +
+        encodeURIComponent(id),
+        {
+          method:'PATCH',
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify(body)
+        }
+      );
 
 
-    await loadStudents();
+      setMsg(
+        $('editMsg'),
+        'تم تعديل بيانات الطالب.',
+        true
+      );
 
 
-    setTimeout(
-      closeEdit,
-      500
-    );
+      await loadStudents();
 
-  }catch(e){
 
-    setMsg(
-      $('editMsg'),
-      e.message
-    );
-  }
-};
+      setTimeout(
+        closeEdit,
+        500
+      );
+
+    }catch(e){
+
+      setMsg(
+        $('editMsg'),
+        e.message
+      );
+    }
+  };
 
 
 
@@ -2275,6 +2398,7 @@ async function openProfile(id){
 
     const p =
       d.profile || {};
+
 
     const s =
       d.stats || {};
@@ -2301,7 +2425,9 @@ async function openProfile(id){
 
 
     $('profileStatus').textContent =
-      p.active ? 'نشط' : 'غير نشط';
+      p.active
+        ? 'نشط'
+        : 'غير نشط';
 
 
     $('profileGradesCount').textContent =
@@ -2317,7 +2443,8 @@ async function openProfile(id){
 
 
     $('profilePercent').textContent =
-      (s.percentage || 0) + '%';
+      (s.percentage || 0) +
+      '%';
 
 
     const grades =
@@ -2327,61 +2454,70 @@ async function openProfile(id){
     $('profileGradesBody').innerHTML =
       grades.length
 
-      ? grades.map(g => {
+      ? grades.map(
+          g => {
 
-          const pct =
-            g.total > 0
-              ? Math.round(
-                  g.score /
-                  g.total *
-                  100
-                )
-              : 0;
+            const pct =
+              g.total > 0
+                ? Math.round(
+                    g.score /
+                    g.total *
+                    100
+                  )
+                : 0;
 
 
-          return `
-            <tr>
+            return `
+              <tr>
 
-              <td>
-                ${esc(g.exam_name)}
-              </td>
+                <td>
+                  ${esc(
+                    g.exam_name
+                  )}
+                </td>
 
-              <td>
-                ${esc(g.lesson_name)}
-              </td>
+                <td>
+                  ${esc(
+                    g.lesson_name
+                  )}
+                </td>
 
-              <td>
-                <strong>
-                  ${g.score} / ${g.total}
-                </strong>
-              </td>
+                <td>
+                  <strong>
+                    ${g.score} / ${g.total}
+                  </strong>
+                </td>
 
-              <td>
-                ${pct}%
-              </td>
+                <td>
+                  ${pct}%
+                </td>
 
-            </tr>
-          `;
-
-        }).join('')
+              </tr>
+            `;
+          }
+        ).join('')
 
       : `
         <tr>
-          <td colspan="4" class="empty">
+          <td
+            colspan="4"
+            class="empty"
+          >
             لا توجد درجات.
           </td>
         </tr>
       `;
 
 
-    const a =
+    const attendance =
       d.attendance || [];
 
 
     $('profileAttendanceBody').innerHTML =
-      a.length
+      attendance.length
 
-      ? a.map(x => `
+      ? attendance.map(
+          x => `
 
           <tr>
 
@@ -2406,30 +2542,34 @@ async function openProfile(id){
             </td>
 
             <td>
-              ${esc(x.method || '-')}
+              ${esc(
+                x.method || '-'
+              )}
             </td>
 
           </tr>
 
-        `).join('')
+        `
+        ).join('')
 
       : `
         <tr>
-          <td colspan="3" class="empty">
+          <td
+            colspan="3"
+            class="empty"
+          >
             لا يوجد سجل حضور.
           </td>
         </tr>
       `;
 
 
-    $('profileModal').classList.add(
-      'open'
-    );
+    $('profileModal')
+      .classList.add('open');
 
   }catch(e){
 
     alert(e.message);
-
   }
 }
 
@@ -2446,14 +2586,17 @@ $('closeProfile').onclick =
   closeProfile;
 
 
-$('profileModal').onclick = e => {
+$('profileModal').onclick =
+  e => {
 
-  if(
-    e.target === $('profileModal')
-  ){
-    closeProfile();
-  }
-};
+    if(
+      e.target ===
+      $('profileModal')
+    ){
+
+      closeProfile();
+    }
+  };
 
 
 
@@ -2461,104 +2604,160 @@ $('profileModal').onclick = e => {
    SAVE LECTURE
 ========================= */
 
-$('saveLecture').onclick = async () => {
+$('saveLecture').onclick =
+  async () => {
 
-  try{
+    try{
 
-    const lectureTitle =
-      $('lectureTitleInput')
-        .value
-        .trim();
-
-
-    const lectureUrl =
-      $('lectureUrlInput')
-        .value
-        .trim();
+      const titleInput =
+        $('lectureTitleInput');
 
 
-    const date =
-      $('lectureDateInput')
-        .value;
+      const dateInput =
+        $('lectureDateInput');
 
 
-    const time =
-      $('lectureTimeInput')
-        .value;
+      const timeInput =
+        $('lectureTimeInput');
 
 
-    if(!lectureTitle){
+      const urlInput =
+        $('lectureUrlInput');
 
-      throw new Error(
-        'اكتب اسم المحاضرة.'
+
+      const lectureTitle =
+        String(
+          titleInput.value || ''
+        ).trim();
+
+
+      const lectureUrl =
+        String(
+          urlInput.value || ''
+        ).trim();
+
+
+      /*
+        قراءة التاريخ مباشرة
+      */
+
+      let date =
+        String(
+          dateInput.value || ''
+        ).trim();
+
+
+      /*
+        احتياطي لو المتصفح لم يرجع value
+      */
+
+      if(
+        !date &&
+        dateInput.valueAsDate
+      ){
+
+        const d =
+          dateInput.valueAsDate;
+
+
+        date =
+          d.getUTCFullYear() +
+          '-' +
+          String(
+            d.getUTCMonth() + 1
+          ).padStart(2,'0') +
+          '-' +
+          String(
+            d.getUTCDate()
+          ).padStart(2,'0');
+      }
+
+
+      const time =
+        String(
+          timeInput.value || ''
+        ).trim();
+
+
+      if(!lectureTitle){
+
+        throw new Error(
+          'اكتب اسم المحاضرة.'
+        );
+      }
+
+
+      if(!date){
+
+        throw new Error(
+          'اختار تاريخ المحاضرة.'
+        );
+      }
+
+
+      if(!time){
+
+        throw new Error(
+          'اختار وقت المحاضرة.'
+        );
+      }
+
+
+      const scheduledAt =
+        `${date}T${time}:00+03:00`;
+
+
+      const result =
+        await api(
+          '/api/admin/settings',
+          {
+            method:'PUT',
+
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify({
+                lectureTitle:
+                  lectureTitle,
+
+                lectureUrl:
+                  lectureUrl,
+
+                scheduledAt:
+                  scheduledAt
+              })
+          }
+        );
+
+
+      setMsg(
+        $('lectureMsg'),
+        result.message ||
+        'تم حفظ الموعد بنجاح.',
+        true
+      );
+
+
+      await loadLecture();
+
+    }catch(e){
+
+      console.error(
+        'Save lecture error:',
+        e
+      );
+
+
+      setMsg(
+        $('lectureMsg'),
+        e.message ||
+        'فشل حفظ المحاضرة.'
       );
     }
-
-
-    if(!date){
-
-      throw new Error(
-        'اختار تاريخ المحاضرة.'
-      );
-    }
-
-
-    if(!time){
-
-      throw new Error(
-        'اختار وقت المحاضرة.'
-      );
-    }
-
-
-    /*
-      القاهرة في الوقت الحالي عند استخدام النظام ده
-      +03:00
-    */
-
-    const scheduledAt =
-      `${date}T${time}:00+03:00`;
-
-
-    const result =
-      await api(
-        '/api/admin/settings',
-        {
-          method:'PUT',
-
-          headers:{
-            'Content-Type':
-              'application/json'
-          },
-
-          body:
-            JSON.stringify({
-              lectureTitle,
-              lectureUrl,
-              scheduledAt
-            })
-        }
-      );
-
-
-    setMsg(
-      $('lectureMsg'),
-      result.message ||
-      'تم حفظ الموعد بنجاح.',
-      true
-    );
-
-
-    await loadLecture();
-
-  }catch(e){
-
-    setMsg(
-      $('lectureMsg'),
-      e.message
-    );
-  }
-};
+  };
 
 
 
@@ -2566,48 +2765,49 @@ $('saveLecture').onclick = async () => {
    CLEAR LECTURE
 ========================= */
 
-$('clearLecture').onclick = async () => {
+$('clearLecture').onclick =
+  async () => {
 
-  try{
+    try{
 
-    await api(
-      '/api/admin/settings',
-      {
-        method:'DELETE'
-      }
-    );
-
-
-    $('lectureTitleInput').value =
-      '';
-
-    $('lectureDateInput').value =
-      '';
-
-    $('lectureTimeInput').value =
-      '';
-
-    $('lectureUrlInput').value =
-      '';
+      await api(
+        '/api/admin/settings',
+        {
+          method:'DELETE'
+        }
+      );
 
 
-    setMsg(
-      $('lectureMsg'),
-      'تم مسح المحاضرة.',
-      true
-    );
+      $('lectureTitleInput').value =
+        '';
+
+      $('lectureDateInput').value =
+        '';
+
+      $('lectureTimeInput').value =
+        '';
+
+      $('lectureUrlInput').value =
+        '';
 
 
-    await loadLecture();
+      setMsg(
+        $('lectureMsg'),
+        'تم مسح المحاضرة.',
+        true
+      );
 
-  }catch(e){
 
-    setMsg(
-      $('lectureMsg'),
-      e.message
-    );
-  }
-};
+      await loadLecture();
+
+    }catch(e){
+
+      setMsg(
+        $('lectureMsg'),
+        e.message
+      );
+    }
+  };
 
 
 
@@ -2635,7 +2835,10 @@ async function loadGrades(){
         $('gradesBody').innerHTML =
           `
           <tr>
-            <td colspan="5" class="empty">
+            <td
+              colspan="5"
+              class="empty"
+            >
               اختر طالبًا لعرض درجاته.
             </td>
           </tr>
@@ -2660,49 +2863,56 @@ async function loadGrades(){
     }
 
 
-    const g =
+    const grades =
       d.grades || [];
 
 
     $('gradesBody').innerHTML =
-      g.length
+      grades.length
 
-      ? g.map(x => {
+      ? grades.map(
+          x => {
 
-          const pct =
-            x.total > 0
-              ? Math.round(
-                  x.score /
-                  x.total *
-                  100
-                )
-              : 0;
+            const pct =
+              x.total > 0
+                ? Math.round(
+                    x.score /
+                    x.total *
+                    100
+                  )
+                : 0;
 
 
-          return `
-            <tr>
+            return `
+              <tr>
 
-              <td>
-                ${esc(x.exam_name)}
-              </td>
+                <td>
+                  ${esc(
+                    x.exam_name
+                  )}
+                </td>
 
-              <td>
-                ${esc(x.lesson_name)}
-              </td>
+                <td>
+                  ${esc(
+                    x.lesson_name
+                  )}
+                </td>
 
-              <td>
-                <strong>
-                  ${x.score} / ${x.total}
-                </strong>
-              </td>
+                <td>
+                  <strong>
+                    ${x.score} / ${x.total}
+                  </strong>
+                </td>
 
-              <td>
-                ${pct}%
-              </td>
+                <td>
+                  ${pct}%
+                </td>
 
-              <td>
-                ${
-                  currentUser.role === 'admin'
+                <td>
+
+                  ${
+                    currentUser.role === 'admin'
+
                     ? `
                       <button
                         class="danger"
@@ -2712,18 +2922,23 @@ async function loadGrades(){
                         حذف
                       </button>
                     `
+
                     : '-'
-                }
-              </td>
+                  }
 
-            </tr>
-          `;
+                </td>
 
-        }).join('')
+              </tr>
+            `;
+          }
+        ).join('')
 
       : `
         <tr>
-          <td colspan="5" class="empty">
+          <td
+            colspan="5"
+            class="empty"
+          >
             لا توجد درجات.
           </td>
         </tr>
@@ -2734,7 +2949,10 @@ async function loadGrades(){
     $('gradesBody').innerHTML =
       `
       <tr>
-        <td colspan="5" class="empty">
+        <td
+          colspan="5"
+          class="empty"
+        >
           ${esc(e.message)}
         </td>
       </tr>
@@ -2749,71 +2967,84 @@ $('gradeStudent').onchange =
 
 
 
-$('addGrade').onclick = async () => {
+$('addGrade').onclick =
+  async () => {
 
-  try{
+    try{
 
-    const body = {
+      const body = {
 
-      userId:
-        $('gradeStudent').value,
+        userId:
+          $('gradeStudent').value,
 
-      examName:
-        $('examName').value.trim(),
+        examName:
+          $('examName')
+            .value
+            .trim(),
 
-      lessonName:
-        $('lessonName').value.trim(),
+        lessonName:
+          $('lessonName')
+            .value
+            .trim(),
 
-      score:
-        Number(
-          $('score').value
-        ),
+        score:
+          Number(
+            $('score').value
+          ),
 
-      total:
-        Number(
-          $('total').value
-        )
-
-    };
-
-
-    await api(
-      '/api/admin/grades',
-      {
-        method:'POST',
-        headers:{
-          'Content-Type':
-            'application/json'
-        },
-        body:
-          JSON.stringify(body)
-      }
-    );
+        total:
+          Number(
+            $('total').value
+          )
+      };
 
 
-    $('examName').value = '';
-    $('lessonName').value = '';
-    $('score').value = '';
-    $('total').value = '';
+      await api(
+        '/api/admin/grades',
+        {
+          method:'POST',
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify(body)
+        }
+      );
 
 
-    setMsg(
-      $('gradeMsg'),
-      'تمت إضافة الدرجة.',
-      true
-    );
+      $('examName').value =
+        '';
+
+      $('lessonName').value =
+        '';
+
+      $('score').value =
+        '';
+
+      $('total').value =
+        '';
 
 
-    await loadGrades();
+      setMsg(
+        $('gradeMsg'),
+        'تمت إضافة الدرجة.',
+        true
+      );
 
-  }catch(e){
 
-    setMsg(
-      $('gradeMsg'),
-      e.message
-    );
-  }
-};
+      await loadGrades();
+
+    }catch(e){
+
+      setMsg(
+        $('gradeMsg'),
+        e.message
+      );
+    }
+  };
 
 
 
@@ -2876,9 +3107,9 @@ function todayCairo(){
 
 
   const get =
-    t =>
+    type =>
       parts.find(
-        p => p.type === t
+        p => p.type === type
       )?.value || '';
 
 
@@ -2946,7 +3177,8 @@ function renderStudentAttendance(rows){
   $('studentAttendanceBody').innerHTML =
     list.length
 
-      ? list.map(x => `
+      ? list.map(
+          x => `
 
           <tr>
 
@@ -2957,24 +3189,34 @@ function renderStudentAttendance(rows){
             <td>
 
               <span
-                class="status ${attendanceClass(x.status)}"
+                class="status ${attendanceClass(
+                  x.status
+                )}"
               >
-                ${esc(x.status)}
+                ${esc(
+                  x.status
+                )}
               </span>
 
             </td>
 
             <td>
-              ${esc(x.method || '-')}
+              ${esc(
+                x.method || '-'
+              )}
             </td>
 
           </tr>
 
-        `).join('')
+        `
+        ).join('')
 
       : `
         <tr>
-          <td colspan="3" class="empty">
+          <td
+            colspan="3"
+            class="empty"
+          >
             لا يوجد سجل حضور.
           </td>
         </tr>
@@ -3041,8 +3283,7 @@ async function loadStudentAttendance(){
 
     setMsg(
       $('studentAttendanceMsg'),
-      error.message,
-      false
+      error.message
     );
   }
 }
@@ -3057,7 +3298,9 @@ async function loadAdminAttendance(){
       $('attendanceDate').value;
 
 
-    if(!date) return;
+    if(!date){
+      return;
+    }
 
 
     const d =
@@ -3074,13 +3317,16 @@ async function loadAdminAttendance(){
     $('adminAttendanceBody').innerHTML =
       rows.length
 
-      ? rows.map(row => `
+      ? rows.map(
+          row => `
 
           <tr>
 
             <td>
               <strong>
-                ${esc(row.fullName)}
+                ${esc(
+                  row.fullName
+                )}
               </strong>
             </td>
 
@@ -3099,9 +3345,13 @@ async function loadAdminAttendance(){
             <td>
 
               <span
-                class="status ${attendanceClass(row.status)}"
+                class="status ${attendanceClass(
+                  row.status
+                )}"
               >
-                ${esc(row.status)}
+                ${esc(
+                  row.status
+                )}
               </span>
 
             </td>
@@ -3115,7 +3365,9 @@ async function loadAdminAttendance(){
                   <button
                     class="approve-btn"
                     type="button"
-                    data-approve-user="${esc(row.userId)}"
+                    data-approve-user="${esc(
+                      row.userId
+                    )}"
                   >
                     ✅ اعتماد الحضور
                   </button>
@@ -3126,8 +3378,12 @@ async function loadAdminAttendance(){
                   <button
                     class="edit"
                     type="button"
-                    data-attendance-edit="${esc(row.userId)}"
-                    data-status="${esc(row.status)}"
+                    data-attendance-edit="${esc(
+                      row.userId
+                    )}"
+                    data-status="${esc(
+                      row.status
+                    )}"
                   >
                     تعديل
                   </button>
@@ -3139,11 +3395,15 @@ async function loadAdminAttendance(){
 
           </tr>
 
-        `).join('')
+        `
+        ).join('')
 
       : `
         <tr>
-          <td colspan="6" class="empty">
+          <td
+            colspan="6"
+            class="empty"
+          >
             لا يوجد طلاب.
           </td>
         </tr>
@@ -3153,8 +3413,7 @@ async function loadAdminAttendance(){
 
     setMsg(
       $('attendanceMsg'),
-      error.message,
-      false
+      error.message
     );
   }
 }
@@ -3219,10 +3478,10 @@ $('adminAttendanceBody').addEventListener(
 
         setMsg(
           $('attendanceMsg'),
-          error.message,
-          false
+          error.message
         );
       }
+
 
       return;
     }
@@ -3238,28 +3497,27 @@ $('adminAttendanceBody').addEventListener(
 
       const status =
         prompt(
-          'اكتب الحالة: حاضر أو غائب أو قيد المراجعة أو غير محدد',
+          'اكتب الحالة: حاضر أو غائب أو غير محدد',
           edit.dataset.status
         );
 
 
-      if(!status)
+      if(!status){
         return;
+      }
 
 
       if(
         ![
           'حاضر',
           'غائب',
-          'قيد المراجعة',
           'غير محدد'
         ].includes(status)
       ){
 
         setMsg(
           $('attendanceMsg'),
-          'الحالة غير صحيحة.',
-          false
+          'الحالة غير صحيحة.'
         );
 
         return;
@@ -3286,7 +3544,8 @@ $('adminAttendanceBody').addEventListener(
                 date:
                   $('attendanceDate').value,
 
-                status
+                status:
+                  status
               })
           }
         );
@@ -3305,8 +3564,7 @@ $('adminAttendanceBody').addEventListener(
 
         setMsg(
           $('attendanceMsg'),
-          error.message,
-          false
+          error.message
         );
       }
     }
@@ -3316,50 +3574,51 @@ $('adminAttendanceBody').addEventListener(
 
 
 /* =========================
-   STUDENT CHECK-IN
+   STUDENT CHECKIN
 ========================= */
 
-$('checkinBtn').onclick = async () => {
+$('checkinBtn').onclick =
+  async () => {
 
-  try{
+    try{
 
-    $('checkinBtn').disabled =
-      true;
+      $('checkinBtn').disabled =
+        true;
 
 
-    const d =
-      await api(
-        '/api/student/checkin',
-        {
-          method:'POST'
-        }
+      const d =
+        await api(
+          '/api/student/checkin',
+          {
+            method:'POST'
+          }
+        );
+
+
+      setMsg(
+        $('studentAttendanceMsg'),
+        d.message ||
+        'تم إرسال طلب الحضور.',
+        true
       );
 
 
-    setMsg(
-      $('studentAttendanceMsg'),
-      d.message ||
-      'تم إرسال طلب الحضور.',
-      true
-    );
+      await loadLecture();
+
+      await loadStudentAttendance();
+
+    }catch(error){
+
+      setMsg(
+        $('studentAttendanceMsg'),
+        error.message
+      );
 
 
-    await loadLecture();
-
-    await loadStudentAttendance();
-
-  }catch(error){
-
-    setMsg(
-      $('studentAttendanceMsg'),
-      error.message,
-      false
-    );
-
-    $('checkinBtn').disabled =
-      false;
-  }
-};
+      $('checkinBtn').disabled =
+        false;
+    }
+  };
 
 
 
@@ -3398,7 +3657,9 @@ document.addEventListener(
   'keydown',
   e => {
 
-    if(e.key === 'Escape'){
+    if(
+      e.key === 'Escape'
+    ){
 
       closeEdit();
 
@@ -3418,7 +3679,9 @@ document.addEventListener(
   try{
 
     const d =
-      await api('/api/me');
+      await api(
+        '/api/me'
+      );
 
 
     currentUser =
@@ -3492,6 +3755,11 @@ document.addEventListener(
     await loadGrades();
 
   }catch(e){
+
+    console.error(
+      'Dashboard start error:',
+      e
+    );
 
     location.replace(
       'index.html'
