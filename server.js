@@ -19,6 +19,7 @@ app.use('/api', (req, res, next) => {
 });
 
 const DB = () => env.DB;
+const RUNTIME_CODE_VERSION = '2026-09-29-secret-runtime-fix-2';
 const nowIso = () => new Date().toISOString();
 
 async function ensureUserEmailColumns() {
@@ -187,23 +188,23 @@ async function verifyEmailVerificationToken(
 
 function getRuntimeSecret(name) {
   try {
-    // Cloudflare Workers exposes bindings through the imported env object.
-    // Read the property directly; do not use hasOwnProperty because env is
-    // a runtime binding proxy rather than a normal object.
-    const runtimeValue =
-      env?.[name];
+    // Primary Cloudflare Workers runtime binding.
+    const runtimeValue = env?.[name];
 
     if (String(runtimeValue || '').trim()) {
       return String(runtimeValue).trim();
     }
 
-    // Fallback for Node.js compatibility mode.
+    // With nodejs_compat_populate_process_env, runtime bindings
+    // (including secrets) are also available through process.env.
     const processValue =
       globalThis?.process?.env?.[name];
 
-    return String(
-      processValue || ''
-    ).trim();
+    if (String(processValue || '').trim()) {
+      return String(processValue).trim();
+    }
+
+    return '';
   } catch {
     return '';
   }
@@ -967,6 +968,8 @@ app.get(
       ok: true,
       platform:
         'cloudflare-workers',
+      codeVersion:
+        RUNTIME_CODE_VERSION,
       message:
         'Worker is running'
     });
