@@ -1160,6 +1160,128 @@
 
   </div>
 
+  <!-- نافذة تأكيد الإيميل -->
+
+  <div
+    id="emailVerifyOverlay"
+    class="register-overlay"
+    aria-hidden="true"
+  >
+
+    <div
+      class="register-modal"
+      style="max-width:520px"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="emailVerifyTitle"
+    >
+
+      <div class="register-top">
+
+        <div>
+
+          <h2 id="emailVerifyTitle">
+            تأكيد الإيميل ✉
+          </h2>
+
+          <p>
+            بعد تسجيل الدخول لازم نأكد إن الإيميل بتاعك ملكك.
+          </p>
+
+        </div>
+
+      </div>
+
+      <form id="emailVerifyForm" novalidate>
+
+        <div class="field">
+
+          <label for="verificationEmail">
+            الإيميل
+          </label>
+
+          <div class="input-wrap">
+
+            <span class="input-icon">
+              @
+            </span>
+
+            <input
+              id="verificationEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="example@gmail.com"
+              required
+            >
+
+          </div>
+
+          <div
+            id="verificationEmailHint"
+            class="hint"
+          ></div>
+
+        </div>
+
+        <div
+          id="verificationCodeBox"
+          style="display:none"
+        >
+
+          <div class="field">
+
+            <label for="verificationCode">
+              كود التحقق
+            </label>
+
+            <div class="input-wrap">
+
+              <span class="input-icon">
+                #
+              </span>
+
+              <input
+                id="verificationCode"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                placeholder="اكتب 6 أرقام"
+              >
+
+            </div>
+
+          </div>
+
+          <button
+            id="verifyEmailCodeBtn"
+            class="primary-btn"
+            type="button"
+          >
+            تأكيد الكود ودخول ←
+          </button>
+
+        </div>
+
+        <div
+          id="emailVerifyMessage"
+          class="error"
+        ></div>
+
+        <button
+          id="sendEmailCodeBtn"
+          class="primary-btn"
+          type="submit"
+        >
+          إرسال كود التحقق
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
   <script>
 
     /* =========================
@@ -1229,6 +1351,33 @@
 
     const registerMessage =
       document.getElementById('registerMessage');
+
+    const emailVerifyOverlay =
+      document.getElementById('emailVerifyOverlay');
+
+    const emailVerifyForm =
+      document.getElementById('emailVerifyForm');
+
+    const verificationEmail =
+      document.getElementById('verificationEmail');
+
+    const verificationEmailHint =
+      document.getElementById('verificationEmailHint');
+
+    const verificationCodeBox =
+      document.getElementById('verificationCodeBox');
+
+    const verificationCode =
+      document.getElementById('verificationCode');
+
+    const sendEmailCodeBtn =
+      document.getElementById('sendEmailCodeBtn');
+
+    const verifyEmailCodeBtn =
+      document.getElementById('verifyEmailCodeBtn');
+
+    const emailVerifyMessage =
+      document.getElementById('emailVerifyMessage');
 
     const loginBtn =
       document.getElementById('loginBtn');
@@ -1374,6 +1523,178 @@
     }
 
 
+    let verificationCodeSent = false;
+
+    function openEmailVerification(data){
+
+      verificationCodeSent = false;
+
+      verificationCodeBox.style.display = 'none';
+
+      verificationEmail.disabled = false;
+      verificationEmail.value = '';
+
+      verificationCode.value = '';
+
+      sendEmailCodeBtn.disabled = false;
+      sendEmailCodeBtn.textContent =
+        'إرسال كود التحقق';
+
+      emailVerifyMessage.textContent = '';
+
+      verificationEmailHint.textContent =
+        data?.email
+          ? 'الإيميل المسجل على الحساب: ' + data.email
+          : 'اكتب الإيميل اللي هتستخدمه لتأكيد الحساب.';
+
+      emailVerifyOverlay.classList.add('open');
+      emailVerifyOverlay.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+
+      setTimeout(() => {
+        verificationEmail.focus();
+      }, 80);
+    }
+
+    emailVerifyForm.addEventListener(
+      'submit',
+      async (event) => {
+
+        event.preventDefault();
+
+        try{
+
+          const email =
+            verificationEmail.value
+              .trim()
+              .toLowerCase();
+
+          if(!email){
+
+            throw new Error(
+              'اكتب الإيميل.'
+            );
+
+          }
+
+          sendEmailCodeBtn.disabled = true;
+          sendEmailCodeBtn.textContent =
+            'جاري إرسال الكود...';
+
+          const data =
+            await postJson(
+              '/api/request-email-verification',
+              {
+                email
+              }
+            );
+
+          verificationCodeSent = true;
+
+          verificationEmail.disabled = true;
+
+          verificationCodeBox.style.display =
+            'block';
+
+          verificationEmailHint.textContent =
+            data.message ||
+            'الكود اتبعت على الإيميل.';
+
+          sendEmailCodeBtn.textContent =
+            'إعادة إرسال الكود';
+
+          verificationCode.focus();
+
+          emailVerifyMessage.textContent =
+            'تم إرسال الكود. اكتب الـ 6 أرقام اللي وصلتك على الإيميل.';
+          emailVerifyMessage.className =
+            'success';
+
+        }
+        catch(error){
+
+          emailVerifyMessage.textContent =
+            error.message ||
+            'فشل إرسال كود التحقق.';
+
+          emailVerifyMessage.className =
+            'error';
+
+          sendEmailCodeBtn.disabled = false;
+
+          sendEmailCodeBtn.textContent =
+            verificationCodeSent
+              ? 'إعادة إرسال الكود'
+              : 'إرسال كود التحقق';
+        }
+
+      }
+    );
+
+    verifyEmailCodeBtn.addEventListener(
+      'click',
+      async () => {
+
+        try{
+
+          const code =
+            verificationCode.value
+              .trim();
+
+          if(!/^\d{6}$/.test(code)){
+
+            throw new Error(
+              'اكتب الكود المكون من 6 أرقام.'
+            );
+
+          }
+
+          verifyEmailCodeBtn.disabled = true;
+          verifyEmailCodeBtn.textContent =
+            'جاري التأكيد...';
+
+          const data =
+            await postJson(
+              '/api/verify-email-code',
+              {
+                code
+              }
+            );
+
+          emailVerifyOverlay.classList.remove('open');
+          emailVerifyOverlay.setAttribute(
+            'aria-hidden',
+            'true'
+          );
+
+          goDashboard(
+            data.user
+          );
+
+        }
+        catch(error){
+
+          emailVerifyMessage.textContent =
+            error.message ||
+            'الكود غير صحيح.';
+
+          emailVerifyMessage.className =
+            'error';
+
+        }
+        finally{
+
+          verifyEmailCodeBtn.disabled = false;
+          verifyEmailCodeBtn.textContent =
+            'تأكيد الكود ودخول ←';
+
+        }
+
+      }
+    );
+
     function goDashboard(user){
 
       const target =
@@ -1437,6 +1758,14 @@
               }
             );
 
+          if(
+            data?.requiresEmailVerification
+          ){
+
+            openEmailVerification(data);
+
+            return;
+          }
 
           goDashboard(
             data.user
