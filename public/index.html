@@ -1230,6 +1230,125 @@
     const registerMessage =
       document.getElementById('registerMessage');
 
+    const loginBtn =
+      document.getElementById('loginBtn');
+
+    const registerBtn =
+      document.getElementById('registerBtn');
+
+    const openRegisterBtn =
+      document.getElementById('openRegister');
+
+    const closeRegisterBtn =
+      document.getElementById('closeRegister');
+
+    function setMessage(element, message, success = false){
+
+      if(!element){
+        return;
+      }
+
+      element.textContent =
+        String(message || '');
+
+      element.classList.toggle(
+        'success',
+        !!success
+      );
+    }
+
+    async function postJson(url, payload){
+
+      const response =
+        await fetch(
+          url,
+          {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            credentials:'include',
+            body:JSON.stringify(payload)
+          }
+        );
+
+      let data = {};
+
+      try{
+        data = await response.json();
+      }catch(_){}
+
+      if(!response.ok){
+        throw new Error(
+          data?.message ||
+          'حدث خطأ أثناء تنفيذ الطلب.'
+        );
+      }
+
+      return data;
+    }
+
+    function openRegisterModal(){
+
+      if(!registerOverlay){
+        return;
+      }
+
+      registerOverlay.classList.add('open');
+      registerOverlay.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+
+      document
+        .getElementById('fullName')
+        ?.focus();
+    }
+
+    function closeRegisterModal(){
+
+      if(!registerOverlay){
+        return;
+      }
+
+      registerOverlay.classList.remove('open');
+      registerOverlay.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+    }
+
+    openRegisterBtn?.addEventListener(
+      'click',
+      openRegisterModal
+    );
+
+    closeRegisterBtn?.addEventListener(
+      'click',
+      closeRegisterModal
+    );
+
+    registerOverlay?.addEventListener(
+      'click',
+      (event) => {
+        if(event.target === registerOverlay){
+          closeRegisterModal();
+        }
+      }
+    );
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if(
+          event.key === 'Escape' &&
+          registerOverlay?.classList.contains('open')
+        ){
+          closeRegisterModal();
+        }
+      }
+    );
+
     function goDashboard(user){
 
       const target =
