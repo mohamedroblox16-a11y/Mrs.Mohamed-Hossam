@@ -187,21 +187,19 @@ async function verifyEmailVerificationToken(
 
 function getRuntimeSecret(name) {
   try {
+    // Cloudflare Workers exposes bindings through the imported env object.
+    // Read the property directly; do not use hasOwnProperty because env is
+    // a runtime binding proxy rather than a normal object.
     const runtimeValue =
-      env &&
-      Object.prototype.hasOwnProperty.call(
-        env,
-        name
-      )
-        ? env[name]
-        : '';
+      env?.[name];
 
     if (String(runtimeValue || '').trim()) {
       return String(runtimeValue).trim();
     }
 
+    // Fallback for Node.js compatibility mode.
     const processValue =
-      globalThis?.process?.env?.[name] || '';
+      globalThis?.process?.env?.[name];
 
     return String(
       processValue || ''
