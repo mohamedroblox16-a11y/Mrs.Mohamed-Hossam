@@ -2155,14 +2155,11 @@ app.post(
         await sha256Hex(code);
 
       const codeMessage =
-        'كود تأكيد الإيميل لمنصة مستر محمد حسام
-
-' +
+        'كود تأكيد الإيميل لمنصة مستر محمد حسام' +
+        String.fromCharCode(10, 10) +
         'الكود: ' +
         code +
-        '
-
-' +
+        String.fromCharCode(10, 10) +
         'الكود صالح لمدة 10 دقائق.';
 
       await sendResendBatch(
