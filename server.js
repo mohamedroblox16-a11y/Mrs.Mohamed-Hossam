@@ -8,19 +8,33 @@ const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+/* =========================
+   Helpers
+========================= */
+
 const DB = () => env.DB;
-const nowIso = () => new Date().toISOString();
-const today = () => new Date().toISOString().slice(0, 10);
 
-const normalizeLogin = (v) =>
-  String(v ?? '').trim().toLowerCase();
+const nowIso = () =>
+  new Date().toISOString();
 
-const validUrl = (v) => {
-  if (!v) return true;
+const today = () =>
+  new Date().toISOString().slice(0, 10);
+
+const normalizeLogin = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+const validUrl = (value) => {
+  if (!value) return true;
 
   try {
-    const u = new URL(v);
-    return u.protocol === 'http:' || u.protocol === 'https:';
+    const url = new URL(value);
+
+    return (
+      url.protocol === 'http:' ||
+      url.protocol === 'https:'
+    );
   } catch {
     return false;
   }
@@ -42,49 +56,55 @@ function safeUser(user) {
   };
 }
 
+/* =========================
+   Admin
+========================= */
+
 const DEFAULT_ADMIN_LOGIN = 'admin';
 const DEFAULT_ADMIN_PASSWORD = '123456';
 
-const adminLogin = () =>
-  normalizeLogin(
-    env.ADMIN_LOGIN || DEFAULT_ADMIN_LOGIN
-  );
-
-const adminPassword = () =>
-  String(
-    env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
-  );
-
-function isAdminCredentials(login, password) {
-  return (
-    (login === DEFAULT_ADMIN_LOGIN &&
-      password === DEFAULT_ADMIN_PASSWORD) ||
-    (login === adminLogin() &&
-      password === adminPassword())
+function configuredAdminLogin() {
+  return normalizeLogin(
+    env.ADMIN_LOGIN ||
+    DEFAULT_ADMIN_LOGIN
   );
 }
 
-function setSessionCookie(
-  res,
-  value,
-  maxAge = 604800
+function configuredAdminPassword() {
+  return String(
+    env.ADMIN_PASSWORD ||
+    DEFAULT_ADMIN_PASSWORD
+  );
+}
+
+function isAdminCredentials(
+  login,
+  password
 ) {
-  res.setHeader(
-    'Set-Cookie',
-    `session=${encodeURIComponent(
-      value
-    )}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`
+  return (
+    (
+      login ===
+      DEFAULT_ADMIN_LOGIN &&
+      password ===
+      DEFAULT_ADMIN_PASSWORD
+    ) ||
+    (
+      login ===
+      configuredAdminLogin() &&
+      password ===
+      configuredAdminPassword()
+    )
   );
 }
 
 /* =========================
-   SESSION
+   Session
 ========================= */
 
 async function sign(value) {
   const secret = String(
     env.SESSION_SECRET ||
-      'mohamed-hossam-session-secret-2026'
+    'mohamed-hossam-session-secret-2026'
   );
 
   const key =
@@ -99,7 +119,7 @@ async function sign(value) {
       ['sign']
     );
 
-  const sig =
+  const signature =
     await crypto.subtle.sign(
       'HMAC',
       key,
@@ -107,59 +127,84 @@ async function sign(value) {
     );
 
   return Array.from(
-    new Uint8Array(sig)
+    new Uint8Array(signature)
   )
-    .map((b) =>
-      b.toString(16).padStart(2, '0')
+    .map((byte) =>
+      byte
+        .toString(16)
+        .padStart(2, '0')
     )
     .join('');
 }
 
 async function makeSession(userId) {
-  return `${userId}.${await sign(userId)}`;
+  return (
+    userId +
+    '.' +
+    await sign(userId)
+  );
 }
 
 async function verifySession(value) {
-  if (!value || !value.includes('.')) {
-    return null;
-  }
-
-  const [
-    id,
-    signature,
-    extra
-  ] = value.split('.');
-
   if (
-    extra ||
-    !id ||
-    !signature
+    !value ||
+    !value.includes('.')
   ) {
     return null;
   }
 
-  return signature ===
-    await sign(id)
-    ? id
-    : null;
+  const parts =
+    value.split('.');
+
+  if (
+    parts.length !== 2
+  ) {
+    return null;
+  }
+
+  const id = parts[0];
+  const signature = parts[1];
+
+  if (!id || !signature) {
+    return null;
+  }
+
+  const expected =
+    await sign(id);
+
+  if (
+    signature !== expected
+  ) {
+    return null;
+  }
+
+  return id;
 }
 
-function getCookie(req, name) {
+function getCookie(
+  req,
+  name
+) {
   const headers =
     req?.headers || {};
 
   let raw = '';
 
   try {
-    raw =
-      typeof headers.get ===
-      'function'
-        ? headers.get('cookie') ||
-          headers.get('Cookie') ||
-          ''
-        : headers.cookie ||
-          headers.Cookie ||
-          '';
+    if (
+      headers &&
+      typeof headers.get === 'function'
+    ) {
+      raw =
+        headers.get('cookie') ||
+        headers.get('Cookie') ||
+        '';
+    } else {
+      raw =
+        headers.cookie ||
+        headers.Cookie ||
+        '';
+    }
   } catch {
     raw = '';
   }
@@ -186,10 +231,26 @@ function getCookie(req, name) {
   return '';
 }
 
+function setSessionCookie(
+  res,
+  value,
+  maxAge = 604800
+) {
+  res.setHeader(
+    'Set-Cookie',
+    `session=${encodeURIComponent(
+      value
+    )}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`
+  );
+}
+
 async function currentUser(req) {
   const sessionId =
     await verifySession(
-      getCookie(req, 'session')
+      getCookie(
+        req,
+        'session'
+      )
     );
 
   if (!sessionId) {
@@ -204,27 +265,24 @@ async function currentUser(req) {
       .bind(sessionId)
       .first();
 
-  return user && user.active
+  return (
+    user &&
+    user.active
+  )
     ? user
     : null;
 }
 
 /* =========================
-   ADMIN ACCOUNT
+   Ensure Admin
 ========================= */
 
 async function ensureAdminAccount() {
   const login =
-    adminLogin();
+    configuredAdminLogin();
 
   const password =
-    adminPassword();
-
-  const passwordHash =
-    await bcrypt.hash(
-      password,
-      12
-    );
+    configuredAdminPassword();
 
   const existing =
     await DB()
@@ -234,10 +292,17 @@ async function ensureAdminAccount() {
       .bind(login)
       .first();
 
+  const passwordHash =
+    await bcrypt.hash(
+      password,
+      12
+    );
+
   if (existing) {
     await DB()
       .prepare(`
-        UPDATE users SET
+        UPDATE users
+        SET
           full_name = ?,
           grade = ?,
           subject = ?,
@@ -305,7 +370,7 @@ async function ensureAdminAccount() {
 }
 
 /* =========================
-   AUTH
+   Middleware
 ========================= */
 
 async function requireAuth(
@@ -318,22 +383,31 @@ async function requireAuth(
       await currentUser(req);
 
     if (!user) {
-      return res.status(401).json({
-        message:
-          'يجب تسجيل الدخول أولاً.'
-      });
+      return res
+        .status(401)
+        .json({
+          message:
+            'يجب تسجيل الدخول أولاً.'
+        });
     }
 
     req.user = user;
 
     return next();
-  } catch (error) {
-    console.error(error);
 
-    return res.status(500).json({
-      message:
-        'حدث خطأ أثناء التحقق من الحساب.'
-    });
+  } catch (error) {
+
+    console.error(
+      'Authentication error:',
+      error
+    );
+
+    return res
+      .status(500)
+      .json({
+        message:
+          'حدث خطأ أثناء التحقق من الحساب.'
+      });
   }
 }
 
@@ -347,57 +421,112 @@ async function requireAdmin(
       await currentUser(req);
 
     if (!user) {
-      return res.status(401).json({
-        message:
-          'يجب تسجيل الدخول أولاً.'
-      });
+      return res
+        .status(401)
+        .json({
+          message:
+            'يجب تسجيل الدخول أولاً.'
+        });
     }
 
     if (
       user.role !== 'admin'
     ) {
-      return res.status(403).json({
-        message:
-          'هذه الصفحة خاصة بالمدرس.'
-      });
+      return res
+        .status(403)
+        .json({
+          message:
+            'هذه الصفحة خاصة بالمدرس.'
+        });
     }
 
     req.user = user;
 
     return next();
-  } catch (error) {
-    console.error(error);
 
-    return res.status(500).json({
-      message:
-        'حدث خطأ أثناء التحقق من الصلاحيات.'
-    });
+  } catch (error) {
+
+    console.error(
+      'Admin authentication error:',
+      error
+    );
+
+    return res
+      .status(500)
+      .json({
+        message:
+          'حدث خطأ أثناء التحقق من الصلاحيات.'
+      });
   }
 }
 
 /* =========================
-   LECTURE STATE
+   Lecture Time
 ========================= */
 
-function lectureState(settings) {
-  if (!settings?.lecture_url) {
+function lectureState(
+  settings
+) {
+  if (
+    !settings?.lecture_url
+  ) {
     return {
       visible: false,
       reason: 'no-link'
     };
   }
 
-  if (!settings.scheduled_at) {
+  if (
+    !settings.scheduled_at
+  ) {
     return {
       visible: true,
       reason: 'always'
     };
   }
 
-  const scheduledTime =
-    new Date(
+  let rawDate =
+    String(
       settings.scheduled_at
-    ).getTime();
+    ).trim();
+
+  let scheduledTime;
+
+  /*
+    datetime-local بيبعت الوقت
+    من غير timezone.
+    
+    المنصة بتتعامل مع مواعيد
+    المحاضرات بتوقيت مصر UTC+03
+    في الفترة الحالية.
+  */
+
+  if (
+    !rawDate.endsWith('Z') &&
+    !/[+-]\d{2}:\d{2}$/.test(
+      rawDate
+    )
+  ) {
+
+    if (
+      rawDate.length === 16
+    ) {
+      rawDate += ':00';
+    }
+
+    scheduledTime =
+      new Date(
+        rawDate +
+        '+03:00'
+      ).getTime();
+
+  } else {
+
+    scheduledTime =
+      new Date(
+        rawDate
+      ).getTime();
+  }
 
   if (
     Number.isNaN(
@@ -406,9 +535,15 @@ function lectureState(settings) {
   ) {
     return {
       visible: true,
-      reason: 'invalid-schedule'
+      reason:
+        'invalid-schedule'
     };
   }
+
+  /*
+    الرابط يظهر قبل المحاضرة
+    بـ5 دقائق.
+  */
 
   const showAt =
     scheduledTime -
@@ -419,13 +554,17 @@ function lectureState(settings) {
 
   return {
     visible,
-    reason: visible
-      ? 'live-window'
-      : 'not-yet',
+
+    reason:
+      visible
+        ? 'live-window'
+        : 'not-yet',
+
     showAt:
       new Date(
         showAt
       ).toISOString(),
+
     scheduledAt:
       new Date(
         scheduledTime
@@ -434,7 +573,7 @@ function lectureState(settings) {
 }
 
 /* =========================
-   GRADES TABLE
+   Grades Table
 ========================= */
 
 async function ensureGradesTable() {
@@ -454,24 +593,26 @@ async function ensureGradesTable() {
 }
 
 /* =========================
-   HEALTH
+   Health
 ========================= */
 
 app.get(
   '/api/health',
   (req, res) => {
-    return res.json({
-      ok: true,
-      platform:
-        'cloudflare-workers',
-      message:
-        'Worker is running'
-    });
+    return res
+      .status(200)
+      .json({
+        ok: true,
+        platform:
+          'cloudflare-workers',
+        message:
+          'Worker is running'
+      });
   }
 );
 
 /* =========================
-   CURRENT USER
+   Current User
 ========================= */
 
 app.get(
@@ -480,19 +621,23 @@ app.get(
   (req, res) => {
     return res.json({
       user:
-        safeUser(req.user)
+        safeUser(
+          req.user
+        )
     });
   }
 );
 
 /* =========================
-   REGISTER
+   Register
 ========================= */
 
 app.post(
   '/api/register',
   async (req, res) => {
+
     try {
+
       const {
         fullName,
         login,
@@ -506,7 +651,8 @@ app.post(
         password,
         confirmPassword,
         passwordConfirm
-      } = req.body || {};
+      } =
+        req.body || {};
 
       const name =
         String(
@@ -534,8 +680,8 @@ app.post(
       const confirmation =
         String(
           confirmPassword ??
-            passwordConfirm ??
-            passwordText
+          passwordConfirm ??
+          passwordText
         );
 
       const nameParts =
@@ -546,10 +692,12 @@ app.post(
       if (
         nameParts.length !== 3
       ) {
-        return res.status(400).json({
-          message:
-            'اكتب اسمك ثلاثي.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'اكتب اسمك ثلاثي.'
+          });
       }
 
       if (
@@ -558,41 +706,49 @@ app.post(
         !subject ||
         !mode
       ) {
-        return res.status(400).json({
-          message:
-            'أكمل كل البيانات.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'أكمل كل البيانات.'
+          });
       }
 
       if (
         passwordText.length < 6
       ) {
-        return res.status(400).json({
-          message:
-            'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
+          });
       }
 
       if (
         passwordText !==
         confirmation
       ) {
-        return res.status(400).json({
-          message:
-            'تأكيد الباسورد غير مطابق.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'تأكيد الباسورد غير مطابق.'
+          });
       }
 
       if (
         userLogin ===
           DEFAULT_ADMIN_LOGIN ||
         userLogin ===
-          adminLogin()
+          configuredAdminLogin()
       ) {
-        return res.status(409).json({
-          message:
-            'اسم الدخول ده محجوز للمدرس.'
-        });
+        return res
+          .status(409)
+          .json({
+            message:
+              'اسم الدخول ده محجوز للمدرس.'
+          });
       }
 
       const existing =
@@ -604,10 +760,12 @@ app.post(
           .first();
 
       if (existing) {
-        return res.status(409).json({
-          message:
-            'هذا الرقم أو اليوزر مستخدم بالفعل.'
-        });
+        return res
+          .status(409)
+          .json({
+            message:
+              'هذا الرقم أو اليوزر مستخدم بالفعل.'
+          });
       }
 
       const passwordHash =
@@ -644,29 +802,40 @@ app.post(
         )
         .run();
 
-      return res.status(201).json({
-        message:
-          'تم إنشاء الحساب بنجاح.'
-      });
-    } catch (error) {
-      console.error(error);
+      return res
+        .status(201)
+        .json({
+          message:
+            'تم إنشاء الحساب بنجاح.'
+        });
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء إنشاء الحساب.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Register error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء إنشاء الحساب.'
+        });
     }
   }
 );
 
 /* =========================
-   LOGIN
+   Login
 ========================= */
 
 app.post(
   '/api/login',
   async (req, res) => {
+
     try {
+
       const login =
         normalizeLogin(
           req.body?.login ??
@@ -691,14 +860,17 @@ app.post(
           password
         )
       ) {
+
         const admin =
           await ensureAdminAccount();
 
         if (!admin) {
-          return res.status(500).json({
-            message:
-              'تعذر تجهيز حساب المدرس.'
-          });
+          return res
+            .status(500)
+            .json({
+              message:
+                'تعذر تجهيز حساب المدرس.'
+            });
         }
 
         setSessionCookie(
@@ -728,26 +900,30 @@ app.post(
         !user ||
         !user.active
       ) {
-        return res.status(401).json({
-          message:
-            'بيانات الدخول غير صحيحة.'
-        });
+        return res
+          .status(401)
+          .json({
+            message:
+              'بيانات الدخول غير صحيحة.'
+          });
       }
 
-      const ok =
+      const passwordMatches =
         await bcrypt.compare(
           password,
           String(
             user.password_hash ||
-              ''
+            ''
           )
         );
 
-      if (!ok) {
-        return res.status(401).json({
-          message:
-            'بيانات الدخول غير صحيحة.'
-        });
+      if (!passwordMatches) {
+        return res
+          .status(401)
+          .json({
+            message:
+              'بيانات الدخول غير صحيحة.'
+          });
       }
 
       setSessionCookie(
@@ -763,24 +939,32 @@ app.post(
         user:
           safeUser(user)
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تسجيل الدخول.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Login error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تسجيل الدخول.'
+        });
     }
   }
 );
 
 /* =========================
-   LOGOUT
+   Logout
 ========================= */
 
 app.post(
   '/api/logout',
   (req, res) => {
+
     setSessionCookie(
       res,
       '',
@@ -795,22 +979,26 @@ app.post(
 );
 
 /* =========================
-   STUDENT DASHBOARD
+   Student Dashboard
 ========================= */
 
 app.get(
   '/api/student/dashboard',
   requireAuth,
   async (req, res) => {
+
     try {
+
       if (
         req.user.role ===
         'admin'
       ) {
-        return res.status(403).json({
-          message:
-            'حساب المدرس لا يستخدم لوحة الطالب.'
-        });
+        return res
+          .status(403)
+          .json({
+            message:
+              'حساب المدرس لا يستخدم لوحة الطالب.'
+          });
       }
 
       const settings =
@@ -834,17 +1022,25 @@ app.get(
             WHERE user_id = ?
             ORDER BY date DESC
           `)
-          .bind(req.user.id)
+          .bind(
+            req.user.id
+          )
           .all();
 
       const state =
-        lectureState(settings);
+        lectureState(
+          settings
+        );
 
       return res.json({
+
         user:
-          safeUser(req.user),
+          safeUser(
+            req.user
+          ),
 
         lecture: {
+
           title:
             settings?.lecture_title ||
             'المحاضرة القادمة',
@@ -860,40 +1056,53 @@ app.get(
             '',
 
           state
+
         },
 
         attendance:
           attendance.results ||
           []
-      });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحميل بيانات الطالب.'
       });
+
+    } catch (error) {
+
+      console.error(
+        'Student dashboard error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحميل بيانات الطالب.'
+        });
     }
   }
 );
 
 /* =========================
-   STUDENT CHECKIN
+   Student Checkin
 ========================= */
 
 app.post(
   '/api/student/checkin',
   requireAuth,
   async (req, res) => {
+
     try {
+
       if (
         req.user.role !==
         'student'
       ) {
-        return res.status(400).json({
-          message:
-            'حساب المدرس لا يحتاج تسجيل حضور.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'حساب المدرس لا يحتاج تسجيل حضور.'
+          });
       }
 
       const settings =
@@ -904,16 +1113,20 @@ app.post(
           .first();
 
       const state =
-        lectureState(settings);
+        lectureState(
+          settings
+        );
 
       if (
         !state.visible ||
         !settings?.lecture_url
       ) {
-        return res.status(400).json({
-          message:
-            'تسجيل الحضور متاح قبل المحاضرة بخمس دقائق وحتى وقتها.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'تسجيل الحضور متاح قبل المحاضرة بخمس دقائق وحتى وقتها.'
+          });
       }
 
       const date =
@@ -967,26 +1180,35 @@ app.post(
         message:
           'تم تسجيل حضورك.'
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تسجيل الحضور.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Check-in error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تسجيل الحضور.'
+        });
     }
   }
 );
 
 /* =========================
-   ADMIN USERS
+   Admin Users
 ========================= */
 
 app.get(
   '/api/admin/users',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const result =
         await DB()
           .prepare(`
@@ -1002,31 +1224,43 @@ app.get(
           (
             result.results ||
             []
-          ).map(safeUser)
+          ).map(
+            safeUser
+          )
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحميل الطلاب.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Admin users error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحميل الطلاب.'
+        });
     }
   }
 );
 
 /* =========================
-   EDIT STUDENT
+   Edit Student
 ========================= */
 
 app.patch(
   '/api/admin/users/:id',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const id =
         String(
-          req.params.id || ''
+          req.params.id ||
+          ''
         ).trim();
 
       const student =
@@ -1042,47 +1276,49 @@ app.patch(
           .first();
 
       if (!student) {
-        return res.status(404).json({
-          message:
-            'الطالب غير موجود.'
-        });
+        return res
+          .status(404)
+          .json({
+            message:
+              'الطالب غير موجود.'
+          });
       }
 
       const fullName =
         String(
           req.body?.fullName ??
-            student.full_name
+          student.full_name
         ).trim();
 
       const login =
         normalizeLogin(
           req.body?.login ??
-            student.login
+          student.login
         );
 
       const grade =
         String(
           req.body?.grade ??
-            student.grade
+          student.grade
         ).trim();
 
       const subject =
         String(
           req.body?.subject ??
-            student.subject
+          student.subject
         ).trim();
 
       const mode =
         String(
           req.body?.mode ??
-            student.mode
+          student.mode
         ).trim();
 
       const active =
         Number(
           req.body?.active ??
-            student.active
-        )
+          student.active
+        ) === 1
           ? 1
           : 0;
 
@@ -1093,10 +1329,12 @@ app.patch(
         !subject ||
         !mode
       ) {
-        return res.status(400).json({
-          message:
-            'أكمل بيانات الطالب.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'أكمل بيانات الطالب.'
+          });
       }
 
       const duplicate =
@@ -1115,39 +1353,41 @@ app.patch(
           .first();
 
       if (duplicate) {
-        return res.status(409).json({
-          message:
-            'رقم التلفون أو يوزر ديسكورد مستخدم بالفعل.'
-        });
+        return res
+          .status(409)
+          .json({
+            message:
+              'رقم التلفون أو يوزر ديسكورد مستخدم بالفعل.'
+          });
       }
 
       let passwordHash =
         student.password_hash;
 
       if (
-        req.body?.password !==
-          undefined &&
-        String(
-          req.body.password
-        ).length > 0
+        typeof req.body?.password ===
+          'string' &&
+        req.body.password.trim()
+          .length > 0
       ) {
-        const password =
-          String(
-            req.body.password
-          );
+
+        const newPassword =
+          req.body.password.trim();
 
         if (
-          password.length < 6
+          newPassword.length < 6
         ) {
-          return res.status(400).json({
-            message:
-              'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
-          });
+          return res
+            .status(400)
+            .json({
+              message:
+                'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
+            });
         }
 
         passwordHash =
           await bcrypt.hash(
-            password,
+            newPassword,
             12
           );
       }
@@ -1192,29 +1432,39 @@ app.patch(
         user:
           safeUser(updated)
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تعديل بيانات الطالب.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Update student error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تعديل بيانات الطالب.'
+        });
     }
   }
 );
 
 /* =========================
-   DELETE STUDENT
+   Delete Student
 ========================= */
 
 app.delete(
   '/api/admin/users/:id',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const id =
         String(
-          req.params.id || ''
+          req.params.id ||
+          ''
         ).trim();
 
       const student =
@@ -1230,10 +1480,12 @@ app.delete(
           .first();
 
       if (!student) {
-        return res.status(404).json({
-          message:
-            'الطالب غير موجود.'
-        });
+        return res
+          .status(404)
+          .json({
+            message:
+              'الطالب غير موجود.'
+          });
       }
 
       await DB()
@@ -1265,34 +1517,45 @@ app.delete(
         message:
           'تم حذف الطالب.'
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء حذف الطالب.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Delete student error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء حذف الطالب.'
+        });
     }
   }
 );
 
 /* =========================
-   STUDENT GRADES
+   Student Grades
 ========================= */
 
 app.get(
   '/api/student/grades',
   requireAuth,
   async (req, res) => {
+
     try {
+
       if (
         req.user.role !==
         'student'
       ) {
-        return res.status(403).json({
-          message:
-            'هذا المسار خاص بالطلاب.'
-        });
+        return res
+          .status(403)
+          .json({
+            message:
+              'هذا المسار خاص بالطلاب.'
+          });
       }
 
       await ensureGradesTable();
@@ -1321,37 +1584,48 @@ app.get(
           result.results ||
           []
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحميل الدرجات.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Student grades error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحميل الدرجات.'
+        });
     }
   }
 );
 
 /* =========================
-   ADMIN GRADES
+   Admin Grades
 ========================= */
 
 app.get(
   '/api/admin/grades',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const userId =
         String(
           req.query?.userId ||
-            ''
+          ''
         ).trim();
 
       if (!userId) {
-        return res.status(400).json({
-          message:
-            'حدد الطالب أولاً.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'حدد الطالب أولاً.'
+          });
       }
 
       await ensureGradesTable();
@@ -1371,10 +1645,12 @@ app.get(
           .first();
 
       if (!student) {
-        return res.status(404).json({
-          message:
-            'الطالب غير موجود.'
-        });
+        return res
+          .status(404)
+          .json({
+            message:
+              'الطالب غير موجود.'
+          });
       }
 
       const result =
@@ -1396,51 +1672,64 @@ app.get(
           .all();
 
       return res.json({
+
         student: {
-          id: student.id,
+          id:
+            student.id,
+
           fullName:
             student.full_name
         },
+
         grades:
           result.results ||
           []
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحميل درجات الطالب.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Admin grades error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحميل درجات الطالب.'
+        });
     }
   }
 );
 
 /* =========================
-   ADD GRADE
+   Add Grade
 ========================= */
 
 app.post(
   '/api/admin/grades',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const userId =
         String(
           req.body?.userId ||
-            ''
+          ''
         ).trim();
 
       const examName =
         String(
           req.body?.examName ||
-            ''
+          ''
         ).trim();
 
       const lessonName =
         String(
           req.body?.lessonName ||
-            ''
+          ''
         ).trim();
 
       const score =
@@ -1458,10 +1747,12 @@ app.post(
         !examName ||
         !lessonName
       ) {
-        return res.status(400).json({
-          message:
-            'اختر الطالب واكتب بيانات الامتحان.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'اختر الطالب واكتب بيانات الامتحان.'
+          });
       }
 
       if (
@@ -1471,10 +1762,12 @@ app.post(
         score < 0 ||
         score > total
       ) {
-        return res.status(400).json({
-          message:
-            'الدرجة المدخلة غير صحيحة.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'الدرجة المدخلة غير صحيحة.'
+          });
       }
 
       const student =
@@ -1490,10 +1783,12 @@ app.post(
           .first();
 
       if (!student) {
-        return res.status(404).json({
-          message:
-            'الطالب غير موجود.'
-        });
+        return res
+          .status(404)
+          .json({
+            message:
+              'الطالب غير موجود.'
+          });
       }
 
       await ensureGradesTable();
@@ -1533,7 +1828,6 @@ app.post(
         .json({
           message:
             'تمت إضافة الدرجة للطالب بنجاح.',
-
           grade: {
             id,
             userId,
@@ -1544,32 +1838,41 @@ app.post(
             createdAt
           }
         });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء إضافة الدرجة.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Add grade error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء إضافة الدرجة.'
+        });
     }
   }
 );
 
 /* =========================
-   DELETE GRADE
+   Delete Grade
 ========================= */
 
 app.delete(
   '/api/admin/grades/:id',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       await ensureGradesTable();
 
       const id =
         String(
           req.params.id ||
-            ''
+          ''
         ).trim();
 
       const existing =
@@ -1581,10 +1884,12 @@ app.delete(
           .first();
 
       if (!existing) {
-        return res.status(404).json({
-          message:
-            'الدرجة غير موجودة.'
-        });
+        return res
+          .status(404)
+          .json({
+            message:
+              'الدرجة غير موجودة.'
+          });
       }
 
       await DB()
@@ -1598,30 +1903,39 @@ app.delete(
         message:
           'تم حذف الدرجة.'
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء حذف الدرجة.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Delete grade error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء حذف الدرجة.'
+        });
     }
   }
 );
 
 /* =========================
-   ADMIN ATTENDANCE
+   Admin Attendance
 ========================= */
 
 app.get(
   '/api/admin/attendance',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const date =
         String(
           req.query?.date ||
-            today()
+          today()
         );
 
       const users =
@@ -1652,15 +1966,15 @@ app.get(
           .bind(date)
           .all();
 
-      const map =
+      const statusMap =
         new Map(
           (
             attendance.results ||
             []
           ).map(
-            (r) => [
-              r.user_id,
-              r.status
+            row => [
+              row.user_id,
+              row.status
             ]
           )
         );
@@ -1670,17 +1984,29 @@ app.get(
           users.results ||
           []
         ).map(
-          (u) => ({
-            userId: u.id,
+          user => ({
+            userId:
+              user.id,
+
             fullName:
-              u.full_name,
-            login: u.login,
-            grade: u.grade,
+              user.full_name,
+
+            login:
+              user.login,
+
+            grade:
+              user.grade,
+
             subject:
-              u.subject,
-            mode: u.mode,
+              user.subject,
+
+            mode:
+              user.mode,
+
             status:
-              map.get(u.id) ||
+              statusMap.get(
+                user.id
+              ) ||
               'غير محدد'
           })
         );
@@ -1689,31 +2015,41 @@ app.get(
         date,
         rows
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحميل الحضور.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Attendance error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحميل الحضور.'
+        });
     }
   }
 );
 
 /* =========================
-   SET ATTENDANCE
+   Set Attendance
 ========================= */
 
 app.post(
   '/api/admin/attendance',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const {
         userId,
         date,
         status
-      } = req.body || {};
+      } =
+        req.body || {};
 
       if (
         !userId ||
@@ -1724,10 +2060,12 @@ app.post(
           'غير محدد'
         ].includes(status)
       ) {
-        return res.status(400).json({
-          message:
-            'بيانات الحضور غير صحيحة.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'بيانات الحضور غير صحيحة.'
+          });
       }
 
       const student =
@@ -1743,10 +2081,12 @@ app.post(
           .first();
 
       if (!student) {
-        return res.status(404).json({
-          message:
-            'الطالب غير موجود.'
-        });
+        return res
+          .status(404)
+          .json({
+            message:
+              'الطالب غير موجود.'
+          });
       }
 
       await DB()
@@ -1765,6 +2105,7 @@ app.post(
         status !==
         'غير محدد'
       ) {
+
         await DB()
           .prepare(`
             INSERT INTO attendance (
@@ -1786,32 +2127,42 @@ app.post(
             nowIso()
           )
           .run();
+
       }
 
       return res.json({
         message:
           'تم تحديث الحضور.'
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحديث الحضور.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Set attendance error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحديث الحضور.'
+        });
     }
   }
 );
 
 /* =========================
-   ADMIN SETTINGS
+   Lecture Settings
 ========================= */
 
 app.get(
   '/api/admin/settings',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const settings =
         await DB()
           .prepare(
@@ -1821,49 +2172,63 @@ app.get(
 
       return res.json({
         settings:
-          settings || {
+          settings ||
+          {
             lecture_title:
               'المحاضرة القادمة',
-            lecture_url: '',
-            scheduled_at: ''
+
+            lecture_url:
+              '',
+
+            scheduled_at:
+              ''
           }
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تحميل إعدادات المحاضرة.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Settings error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء تحميل إعدادات المحاضرة.'
+        });
     }
   }
 );
 
 /* =========================
-   SAVE LECTURE
+   Save Lecture
 ========================= */
 
 app.put(
   '/api/admin/settings',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       const lectureTitle =
         String(
           req.body?.lectureTitle ||
-            'المحاضرة القادمة'
+          'المحاضرة القادمة'
         ).trim();
 
       const lectureUrl =
         String(
           req.body?.lectureUrl ||
-            ''
+          ''
         ).trim();
 
       const scheduledAt =
         String(
           req.body?.scheduledAt ||
-            ''
+          ''
         ).trim();
 
       if (
@@ -1871,10 +2236,12 @@ app.put(
           lectureUrl
         )
       ) {
-        return res.status(400).json({
-          message:
-            'رابط المحاضرة غير صحيح.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'رابط المحاضرة غير صحيح.'
+          });
       }
 
       if (
@@ -1885,10 +2252,12 @@ app.put(
           ).getTime()
         )
       ) {
-        return res.status(400).json({
-          message:
-            'موعد المحاضرة غير صحيح.'
-        });
+        return res
+          .status(400)
+          .json({
+            message:
+              'موعد المحاضرة غير صحيح.'
+          });
       }
 
       await DB()
@@ -1924,26 +2293,35 @@ app.put(
         message:
           'تم تحديث المحاضرة والرابط.'
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء حفظ المحاضرة.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Save settings error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء حفظ المحاضرة.'
+        });
     }
   }
 );
 
 /* =========================
-   CLEAR LECTURE
+   Clear Lecture
 ========================= */
 
 app.delete(
   '/api/admin/settings',
   requireAdmin,
   async (req, res) => {
+
     try {
+
       await DB()
         .prepare(`
           INSERT INTO settings (
@@ -1964,8 +2342,10 @@ app.delete(
           DO UPDATE SET
             lecture_title =
               'المحاضرة القادمة',
-            lecture_url = '',
-            scheduled_at = '',
+            lecture_url =
+              '',
+            scheduled_at =
+              '',
             updated_at =
               excluded.updated_at
         `)
@@ -1978,13 +2358,20 @@ app.delete(
         message:
           'تم مسح المحاضرة الحالية.'
       });
-    } catch (error) {
-      console.error(error);
 
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء مسح المحاضرة.'
-      });
+    } catch (error) {
+
+      console.error(
+        'Clear settings error:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            'حدث خطأ أثناء مسح المحاضرة.'
+        });
     }
   }
 );
@@ -1996,15 +2383,18 @@ app.delete(
 app.use(
   '/api',
   (req, res) => {
-    return res.status(404).json({
-      message:
-        'المسار غير موجود.'
-    });
+
+    return res
+      .status(404)
+      .json({
+        message:
+          'المسار غير موجود.'
+      });
   }
 );
 
 /* =========================
-   ERROR HANDLER
+   Global Error
 ========================= */
 
 app.use(
@@ -2014,6 +2404,7 @@ app.use(
     res,
     next
   ) => {
+
     console.error(
       'Unhandled Express error:',
       error
@@ -2025,18 +2416,20 @@ app.use(
       return next(error);
     }
 
-    return res.status(500).json({
-      message:
-        'حدث خطأ داخلي في السيرفر.',
-      error:
-        error?.message ||
-        'Unknown error'
-    });
+    return res
+      .status(500)
+      .json({
+        message:
+          'حدث خطأ داخلي في السيرفر.',
+        error:
+          error?.message ||
+          'Unknown error'
+      });
   }
 );
 
 /* =========================
-   CLOUDFLARE WORKER
+   Cloudflare Worker
 ========================= */
 
 app.listen(3000);
