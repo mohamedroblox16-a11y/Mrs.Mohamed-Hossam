@@ -237,35 +237,6 @@ function setSessionCookie(
   );
 }
 
-function setEmailVerificationCookie(
-  req,
-  res,
-  value,
-  maxAge = 600
-) {
-  appendSetCookie(
-    res,
-    makeCookieString(
-      req,
-      'emailVerifyPending',
-      value,
-      maxAge
-    )
-  );
-}
-
-function clearEmailVerificationCookie(
-  req,
-  res
-) {
-  setEmailVerificationCookie(
-    req,
-    res,
-    '',
-    0
-  );
-}
-
 async function sign(value) {
   const secret = String(
     env.SESSION_SECRET ||
@@ -1424,89 +1395,6 @@ app.patch(
 );
 
 /* =========================
-   EMAIL CONFIG STATUS
-========================= */
-
-app.get(
-  '/api/admin/email-status',
-  requireAdmin,
-  async (req, res) => {
-    return res.json({
-      worker: 'mrs-mohamed-hossam',
-      resendApiKeyConfigured:
-        !!getRuntimeSecret('RESEND_API_KEY'),
-      resendFromEmailConfigured:
-        !!getRuntimeSecret('RESEND_FROM_EMAIL')
-    });
-  }
-);
-
-/* =========================
-   EMAIL CENTER
-========================= */
-
-app.get(
-  '/api/admin/email-students',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const result = await DB().prepare(
-        'SELECT id, full_name, login, email, grade, subject, mode, active FROM users WHERE role = ? ORDER BY full_name'
-      ).bind('student').all();
-
-      return res.json({
-        students: result.results || []
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        message: 'حدث خطأ أثناء تحميل قائمة الإيميلات.'
-      });
-    }
-  }
-);
-
-app.post(
-  '/api/admin/send-email',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const subject = String(req.body?.subject || '').trim();
-      const message = String(req.body?.message || '').trim();
-      const all = req.body?.all === true;
-      const userIds = Array.isArray(req.body?.userIds)
-        ? req.body.userIds.map((id) => String(id || '').trim()).filter(Boolean)
-        : [];
-
-      if (!subject) return res.status(400).json({ message: 'اكتب عنوان الرسالة.' });
-      if (!message) return res.status(400).json({ message: 'اكتب نص الرسالة.' });
-      if (!all && !userIds.length) {
-        return res.status(400).json({ message: 'اختار طالبًا واحدًا على الأقل أو ALL.' });
-      }
-
-      let recipients = [];
-
-      if (all) {
-        const result = await DB().prepare(
-          "SELECT id, full_name, email FROM users WHERE role = 'student' AND active = 1 AND TRIM(COALESCE(email, '')) != '' ORDER BY full_name"
-        ).all();
-        recipients = result.results || [];
-      } else {
-        const uniqueIds = [...new Set(userIds)];
-        const placeholders = uniqueIds.map(() => '?').join(', ');
-        const result = await DB().prepare(
-          "SELECT id, full_name, email FROM users WHERE role = 'student' AND active = 1 AND id IN (" + placeholders + ") AND TRIM(COALESCE(email, '')) != '' ORDER BY full_name"
-        ).bind(...uniqueIds).all();
-        recipients = result.results || [];
-      }
-
-      if (!recipients.length) {
-        return res.status(400).json({
-          message: 'مفيش طلاب نشطين عندهم إيميلات في الاختيار.'
-        });
-      }
-
-      const re/* =========================
    DELETE STUDENT
 ========================= */
 
