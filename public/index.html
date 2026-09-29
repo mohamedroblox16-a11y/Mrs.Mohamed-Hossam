@@ -975,6 +975,31 @@
 
           </div>
 
+          <div class="field full">
+
+            <label for="registerEmail">
+              الإيميل
+            </label>
+
+            <div class="input-wrap">
+
+              <span class="input-icon">
+                @
+              </span>
+
+              <input
+                id="registerEmail"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="example@gmail.com"
+                required
+              >
+
+            </div>
+
+          </div>
+
           <div class="field">
 
             <label for="grade">
@@ -1474,6 +1499,13 @@
               .trim();
 
 
+          const email =
+            document
+              .getElementById('registerEmail')
+              .value
+              .trim();
+
+
           const grade =
             document
               .getElementById('grade')
@@ -1510,6 +1542,7 @@
               {
                 fullName,
                 login,
+                email,
                 grade,
                 subject,
                 mode,
