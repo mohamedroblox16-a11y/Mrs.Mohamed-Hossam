@@ -22,267 +22,6 @@ const DB = () => env.DB;
 const RUNTIME_CODE_VERSION = '2026-09-29-secret-runtime-fix-2';
 const nowIso = () => new Date().toISOString();
 
-async function ensureUserEmailColumns() {
-  const columns = [
-    ['email', "ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''"],
-    ['email_verified', "ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0"],
-    ['email_verification_code_hash', "ALTER TABLE users ADD COLUMN email_verification_code_hash TEXT NOT NULL DEFAULT ''"],
-    ['email_verification_expires_at', "ALTER TABLE users ADD COLUMN email_verification_expires_at TEXT NOT NULL DEFAULT ''"],
-    ['email_verification_sent_at', "ALTER TABLE users ADD COLUMN email_verification_sent_at TEXT NOT NULL DEFAULT ''"]
-  ];
-
-  for (const [column, alterSql] of columns) {
-    try {
-      await DB()
-        .prepare('SELECT ' + column + ' FROM users LIMIT 1')
-        .first();
-    } catch {
-      await DB()
-        .prepare(alterSql)
-        .run();
-    }
-  }
-}
-
-function validEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    String(value || '').trim()
-  );
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-async function sha256Hex(value) {
-  const buffer =
-    await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(
-        String(value)
-      )
-    );
-
-  return Array.from(
-    new Uint8Array(buffer)
-  )
-    .map(
-      (b) =>
-        b.toString(16).padStart(2, '0')
-    )
-    .join('');
-}
-
-function generateEmailCode() {
-  const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-
-  return String(
-    array[0] % 1000000
-  ).padStart(6, '0');
-}
-
-function maskEmail(value) {
-  const email = String(value || '').trim();
-  const at = email.indexOf('@');
-
-  if (at <= 0) return '';
-
-  const local = email.slice(0, at);
-  const domain = email.slice(at + 1);
-
-  if (local.length <= 2) {
-    return '*'.repeat(local.length) + '@' + domain;
-  }
-
-  return (
-    local[0] +
-    '*'.repeat(
-      Math.max(1, local.length - 2)
-    ) +
-    local.slice(-1) +
-    '@' +
-    domain
-  );
-}
-
-async function makeEmailVerificationToken(
-  userId,
-  expiresAt
-) {
-  const payload =
-    String(userId) +
-    '|' +
-    String(expiresAt);
-
-  return (
-    payload +
-    '.' +
-    await sign(payload)
-  );
-}
-
-async function verifyEmailVerificationToken(
-  value
-) {
-  const raw =
-    String(value || '');
-
-  const lastDot =
-    raw.lastIndexOf('.');
-
-  if (lastDot <= 0) {
-    return null;
-  }
-
-  const payload =
-    raw.slice(0, lastDot);
-
-  const signature =
-    raw.slice(lastDot + 1);
-
-  if (!payload || !signature) {
-    return null;
-  }
-
-  if (
-    signature !==
-    await sign(payload)
-  ) {
-    return null;
-  }
-
-  const separator =
-    payload.lastIndexOf('|');
-
-  if (separator <= 0) {
-    return null;
-  }
-
-  const userId =
-    payload.slice(0, separator);
-
-  const expiresAt =
-    Number(
-      payload.slice(separator + 1)
-    );
-
-  if (
-    !userId ||
-    !Number.isFinite(expiresAt) ||
-    Date.now() > expiresAt
-  ) {
-    return null;
-  }
-
-  return {
-    userId,
-    expiresAt
-  };
-}
-
-function getRuntimeSecret(name) {
-  try {
-    if (name === 'RESEND_API_KEY') {
-      return String(env.RESEND_API_KEY || '').trim();
-    }
-
-    if (name === 'RESEND_FROM_EMAIL') {
-      return String(env.RESEND_FROM_EMAIL || '').trim();
-    }
-
-    return String(
-      env?.[name] ||
-      globalThis?.process?.env?.[name] ||
-      ''
-    ).trim();
-  } catch {
-    return '';
-  }
-}
-
-async function sendResendBatch(recipients, subject, message) {
-  const apiKey = getRuntimeSecret('RESEND_API_KEY');
-
-  const from =
-    getRuntimeSecret('RESEND_FROM_EMAIL') ||
-    'mrsmohamedteam@gmail.com';
-
-  if (!apiKey) {
-    throw new Error(
-      'RESEND_API_KEY غير متاح للـWorker المنشور. تأكد أنه Secret داخل Worker mrs-mohamed-hossam ثم اعمل Deploy.'
-    );
-  }
-
-  const uniqueEmails = [];
-  const seen = new Set();
-
-  for (const item of recipients || []) {
-    const email = String(item?.email || '').trim().toLowerCase();
-    if (!validEmail(email) || seen.has(email)) continue;
-    seen.add(email);
-    uniqueEmails.push(email);
-  }
-
-  if (!uniqueEmails.length) {
-    return { sentCount: 0, totalRecipients: 0 };
-  }
-
-  const html = `
-    <div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.9;color:#20253a">
-      ${escapeHtml(message).replace(/\r?\n/g, '<br>')}
-    </div>
-  `;
-
-  let sentCount = 0;
-
-  for (let i = 0; i < uniqueEmails.length; i += 100) {
-    const chunk = uniqueEmails.slice(i, i + 100);
-
-    const payload = chunk.map((email) => ({
-      from,
-      to: [email],
-      subject: String(subject || '').trim(),
-      html
-    }));
-
-    const response = await fetch('https://api.resend.com/emails/batch', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    let data = {};
-    try {
-      data = await response.json();
-    } catch {}
-
-    if (!response.ok) {
-      console.error('Resend error:', data);
-      throw new Error(
-        data?.message ||
-        data?.error ||
-        `فشل إرسال البريد من Resend (HTTP ${response.status}).`
-      );
-    }
-
-    sentCount += chunk.length;
-  }
-
-  return {
-    sentCount,
-    totalRecipients: uniqueEmails.length
-  };
-}
-
 const normalizeLogin = (v) =>
   String(v ?? '').trim().toLowerCase();
 
@@ -355,11 +94,6 @@ function safeUser(user) {
     id: user.id,
     fullName: user.full_name,
     login: user.login,
-    email: user.email || '',
-    emailVerified:
-      user.role === 'admin'
-        ? true
-        : !!user.email_verified,
     grade: user.grade,
     subject: user.subject,
     mode: user.mode,
@@ -673,7 +407,6 @@ function getCookie(
 async function currentUser(
   req
 ) {
-  await ensureUserEmailColumns();
 
   const sessionId =
     await verifySession(
@@ -993,8 +726,6 @@ app.post(
   '/api/register',
   async (req, res) => {
     try {
-      await ensureUserEmailColumns();
-
       const {
         fullName,
         login,
@@ -1002,7 +733,6 @@ app.post(
         phoneOrDiscord,
         phone,
         identifier,
-        email,
         grade,
         subject,
         mode,
@@ -1011,201 +741,59 @@ app.post(
         passwordConfirm
       } = req.body || {};
 
-      const name =
-        String(
-          fullName || ''
-        ).trim();
+      const name = String(fullName || '').trim();
+      const rawLogin = login ?? username ?? phoneOrDiscord ?? phone ?? identifier ?? '';
+      const userLogin = normalizeLogin(rawLogin);
+      const passwordText = String(password || '');
+      const confirmation = String(confirmPassword ?? passwordConfirm ?? passwordText);
 
-      const userEmail =
-        String(email || '')
-          .trim()
-          .toLowerCase();
-
-      const rawLogin =
-        login ??
-        username ??
-        phoneOrDiscord ??
-        phone ??
-        identifier ??
-        '';
-
-      const userLogin =
-        normalizeLogin(
-          rawLogin
-        );
-
-      const passwordText =
-        String(
-          password || ''
-        );
-
-      const confirmation =
-        String(
-          confirmPassword ??
-          passwordConfirm ??
-          passwordText
-        );
-
-      if (
-        name
-          .split(/\s+/)
-          .filter(Boolean)
-          .length !== 3
-      ) {
-        return res.status(400).json({
-          message:
-            'اكتب اسمك ثلاثي.'
-        });
+      if (name.split(/\s+/).filter(Boolean).length !== 3) {
+        return res.status(400).json({ message: 'اكتب اسمك ثلاثي.' });
       }
 
-      if (
-        !userLogin ||
-        !userEmail ||
-        !grade ||
-        !subject ||
-        !mode
-      ) {
-        return res.status(400).json({
-          message:
-            'أكمل كل البيانات، بما فيها الإيميل.'
-        });
+      if (!userLogin || !grade || !subject || !mode) {
+        return res.status(400).json({ message: 'أكمل كل البيانات المطلوبة.' });
       }
 
-      if (!validEmail(userEmail)) {
-        return res.status(400).json({
-          message:
-            'اكتب إيميل صحيح.'
-        });
+      if (passwordText.length < 6) {
+        return res.status(400).json({ message: 'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.' });
       }
 
-      if (
-        passwordText.length < 6
-      ) {
-        return res.status(400).json({
-          message:
-            'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
-        });
+      if (passwordText !== confirmation) {
+        return res.status(400).json({ message: 'تأكيد الباسورد غير مطابق.' });
       }
 
-      if (
-        passwordText !==
-        confirmation
-      ) {
-        return res.status(400).json({
-          message:
-            'تأكيد الباسورد غير مطابق.'
-        });
+      if (userLogin === DEFAULT_ADMIN_LOGIN || userLogin === adminLogin()) {
+        return res.status(409).json({ message: 'اسم الدخول ده محجوز للمدرس.' });
       }
 
-      if (
-        userLogin ===
-          DEFAULT_ADMIN_LOGIN ||
-        userLogin ===
-          adminLogin()
-      ) {
-        return res.status(409).json({
-          message:
-            'اسم الدخول ده محجوز للمدرس.'
-        });
-      }
-
-      const existing =
-        await DB()
-          .prepare(
-            'SELECT id FROM users WHERE login = ? LIMIT 1'
-          )
-          .bind(userLogin)
-          .first();
+      const existing = await DB().prepare(
+        'SELECT id FROM users WHERE login = ? LIMIT 1'
+      ).bind(userLogin).first();
 
       if (existing) {
-        return res.status(409).json({
-          message:
-            'هذا الرقم أو اليوزر مستخدم بالفعل.'
-        });
+        return res.status(409).json({ message: 'هذا الرقم أو اليوزر مستخدم بالفعل.' });
       }
 
-      const existingEmail =
-        await DB()
-          .prepare(
-            'SELECT id FROM users WHERE email = ? LIMIT 1'
-          )
-          .bind(userEmail)
-          .first();
+      const passwordHash = await bcrypt.hash(passwordText, 12);
 
-      if (existingEmail) {
-        return res.status(409).json({
-          message:
-            'الإيميل مستخدم بالفعل.'
-        });
-      }
+      await DB().prepare(
+        'INSERT INTO users (id, full_name, login, grade, subject, mode, role, active, created_at, password_hash) VALUES (?, ?, ?, ?, ?, ?, \'student\', 1, ?, ?)'
+      ).bind(
+        crypto.randomUUID(),
+        name,
+        userLogin,
+        String(grade),
+        String(subject),
+        String(mode),
+        nowIso(),
+        passwordHash
+      ).run();
 
-      const passwordHash =
-        await bcrypt.hash(
-          passwordText,
-          12
-        );
-
-      await DB()
-        .prepare(`
-          INSERT INTO users (
-            id,
-            full_name,
-            login,
-            email,
-            email_verified,
-            email_verification_code_hash,
-            email_verification_expires_at,
-            email_verification_sent_at,
-            grade,
-            subject,
-            mode,
-            role,
-            active,
-            created_at,
-            password_hash
-          )
-          VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            0,
-            '',
-            '',
-            '',
-            ?,
-            ?,
-            ?,
-            'student',
-            1,
-            ?,
-            ?
-          )
-        `)
-        .bind(
-          crypto.randomUUID(),
-          name,
-          userLogin,
-          userEmail,
-          String(grade),
-          String(subject),
-          String(mode),
-          nowIso(),
-          passwordHash
-        )
-        .run();
-
-      return res.status(201).json({
-        message:
-          'تم إنشاء الحساب بنجاح.'
-      });
+      return res.status(201).json({ message: 'تم إنشاء الحساب بنجاح.' });
     } catch (error) {
       console.error(error);
-
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء إنشاء الحساب.'
-      });
+      return res.status(500).json({ message: 'حدث خطأ أثناء إنشاء الحساب.' });
     }
   }
 );
@@ -1214,7 +802,6 @@ app.post(
   '/api/login',
   async (req, res) => {
     try {
-      await ensureUserEmailColumns();
 
       const login =
         normalizeLogin(
@@ -1785,231 +1372,53 @@ app.patch(
   requireAdmin,
   async (req, res) => {
     try {
-      const id =
-        String(
-          req.params.id ||
-          ''
-        ).trim();
+      const id = String(req.params.id || '').trim();
+      const student = await DB().prepare(
+        'SELECT * FROM users WHERE id = ? AND role = \'student\' LIMIT 1'
+      ).bind(id).first();
 
-      const student =
-        await DB()
-          .prepare(`
-            SELECT *
-            FROM users
-            WHERE id = ?
-              AND role = 'student'
-            LIMIT 1
-          `)
-          .bind(id)
-          .first();
+      if (!student) return res.status(404).json({ message: 'الطالب غير موجود.' });
 
-      if (!student) {
-        return res.status(404).json({
-          message:
-            'الطالب غير موجود.'
-        });
+      const fullName = String(req.body?.fullName ?? student.full_name).trim();
+      const login = normalizeLogin(req.body?.login ?? student.login);
+      const grade = String(req.body?.grade ?? student.grade).trim();
+      const subject = String(req.body?.subject ?? student.subject).trim();
+      const mode = String(req.body?.mode ?? student.mode).trim();
+      const active = Number(req.body?.active ?? student.active) ? 1 : 0;
+
+      if (!fullName || !login || !grade || !subject || !mode) {
+        return res.status(400).json({ message: 'أكمل بيانات الطالب.' });
       }
 
-      const fullName =
-        String(
-          req.body?.fullName ??
-          student.full_name
-        ).trim();
-
-      const login =
-        normalizeLogin(
-          req.body?.login ??
-          student.login
-        );
-
-      const grade =
-        String(
-          req.body?.grade ??
-          student.grade
-        ).trim();
-
-      const subject =
-        String(
-          req.body?.subject ??
-          student.subject
-        ).trim();
-
-      const mode =
-        String(
-          req.body?.mode ??
-          student.mode
-        ).trim();
-
-      const email =
-        String(
-          req.body?.email ??
-          student.email ??
-          ''
-        ).trim().toLowerCase();
-
-      const emailChanged =
-        email !==
-        String(
-          student.email || ''
-        ).trim().toLowerCase();
-
-      const active =
-        Number(
-          req.body?.active ??
-          student.active
-        )
-          ? 1
-          : 0;
-
-      if (
-        !fullName ||
-        !login ||
-        !email ||
-        !grade ||
-        !subject ||
-        !mode
-      ) {
-        return res.status(400).json({
-          message:
-            'أكمل بيانات الطالب والإيميل.'
-        });
-      }
-
-      if (!validEmail(email)) {
-        return res.status(400).json({
-          message:
-            'إيميل الطالب غير صحيح.'
-        });
-      }
-
-      const duplicate =
-        await DB()
-          .prepare(`
-            SELECT id
-            FROM users
-            WHERE login = ?
-              AND id != ?
-            LIMIT 1
-          `)
-          .bind(
-            login,
-            id
-          )
-          .first();
+      const duplicate = await DB().prepare(
+        'SELECT id FROM users WHERE login = ? AND id != ? LIMIT 1'
+      ).bind(login, id).first();
 
       if (duplicate) {
-        return res.status(409).json({
-          message:
-            'رقم التلفون أو يوزر ديسكورد مستخدم بالفعل.'
-        });
+        return res.status(409).json({ message: 'رقم التلفون أو يوزر ديسكورد مستخدم بالفعل.' });
       }
 
-      const duplicateEmail =
-        await DB()
-          .prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1')
-          .bind(
-            email,
-            id
-          )
-          .first();
-
-      if (duplicateEmail) {
-        return res.status(409).json({
-          message:
-            'الإيميل مستخدم بالفعل مع طالب آخر.'
-        });
-      }
-
-      let passwordHash =
-        student.password_hash;
-
-      if (
-        req.body?.password !==
-          undefined &&
-        String(
-          req.body.password
-        ).length > 0
-      ) {
-        const password =
-          String(
-            req.body.password
-          );
-
-        if (
-          password.length < 6
-        ) {
-          return res.status(400).json({
-            message:
-              'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.'
-          });
+      let passwordHash = student.password_hash;
+      if (req.body?.password !== undefined && String(req.body.password).length > 0) {
+        const password = String(req.body.password);
+        if (password.length < 6) {
+          return res.status(400).json({ message: 'الباسورد يجب أن يكون 6 أحرف أو أرقام على الأقل.' });
         }
-
-        passwordHash =
-          await bcrypt.hash(
-            password,
-            12
-          );
+        passwordHash = await bcrypt.hash(password, 12);
       }
 
-      await DB()
-        .prepare(`
-          UPDATE users SET
-            full_name = ?,
-            login = ?,
-            email = ?,
-            email_verified = CASE WHEN ? THEN 0 ELSE email_verified END,
-            email_verification_code_hash = CASE WHEN ? THEN '' ELSE email_verification_code_hash END,
-            email_verification_expires_at = CASE WHEN ? THEN '' ELSE email_verification_expires_at END,
-            email_verification_sent_at = CASE WHEN ? THEN '' ELSE email_verification_sent_at END,
-            grade = ?,
-            subject = ?,
-            mode = ?,
-            active = ?,
-            password_hash = ?
-          WHERE id = ?
-            AND role = 'student'
-        `)
-        .bind(
-          fullName,
-          login,
-          email,
-          emailChanged ? 1 : 0,
-          emailChanged ? 1 : 0,
-          emailChanged ? 1 : 0,
-          emailChanged ? 1 : 0,
-          grade,
-          subject,
-          mode,
-          active,
-          passwordHash,
-          id
-        )
-        .run();
+      await DB().prepare(
+        'UPDATE users SET full_name = ?, login = ?, grade = ?, subject = ?, mode = ?, active = ?, password_hash = ? WHERE id = ? AND role = \'student\''
+      ).bind(fullName, login, grade, subject, mode, active, passwordHash, id).run();
 
-      const updated =
-        await DB()
-          .prepare(
-            'SELECT * FROM users WHERE id = ? LIMIT 1'
-          )
-          .bind(id)
-          .first();
+      const updated = await DB().prepare(
+        'SELECT * FROM users WHERE id = ? LIMIT 1'
+      ).bind(id).first();
 
-      return res.json({
-        message:
-          'تم تعديل بيانات الطالب بنجاح.',
-
-        user:
-          safeUser(
-            updated
-          )
-      });
+      return res.json({ message: 'تم تعديل بيانات الطالب بنجاح.', user: safeUser(updated) });
     } catch (error) {
       console.error(error);
-
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء تعديل بيانات الطالب.'
-      });
+      return res.status(500).json({ message: 'حدث خطأ أثناء تعديل بيانات الطالب.' });
     }
   }
 );
@@ -2097,26 +1506,7 @@ app.post(
         });
       }
 
-      const result = await sendResendBatch(
-        recipients,
-        subject,
-        message
-      );
-
-      return res.json({
-        message: 'تم إرسال الرسالة إلى ' + result.sentCount + ' طالب.',
-        sentCount: result.sentCount,
-        totalRecipients: result.totalRecipients
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        message: error.message || 'حدث خطأ أثناء إرسال الرسائل.'
-      });
-    }
-  }
-);
-/* =========================
+      const re/* =========================
    DELETE STUDENT
 ========================= */
 
@@ -2885,135 +2275,19 @@ app.delete(
   requireAdmin,
   async (req, res) => {
     try {
-      const previousSettings =
-        await DB()
-          .prepare(
-            'SELECT * FROM settings WHERE id = 1 LIMIT 1'
-          )
-          .first();
+      await DB().prepare(
+        'UPDATE settings SET lecture_title = ?, lecture_url = ?, scheduled_at = ?, updated_at = ? WHERE id = 1'
+      ).bind(
+        'المحاضرة القادمة',
+        '',
+        '',
+        nowIso()
+      ).run();
 
-      await DB()
-        .prepare(`
-          INSERT INTO settings (
-            id,
-            lecture_title,
-            lecture_url,
-            scheduled_at,
-            updated_at
-          )
-          VALUES (
-            1,
-            'المحاضرة القادمة',
-            '',
-            '',
-            ?
-          )
-
-          ON CONFLICT(id)
-          DO UPDATE SET
-            lecture_title =
-              'المحاضرة القادمة',
-
-            lecture_url =
-              '',
-
-            scheduled_at =
-              '',
-
-            updated_at =
-              excluded.updated_at
-        `)
-        .bind(
-          nowIso()
-        )
-        .run();
-
-      let emailNotice = '';
-
-      const hadLecture =
-        !!(
-          previousSettings?.lecture_title ||
-          previousSettings?.lecture_url ||
-          previousSettings?.scheduled_at
-        );
-
-      if (hadLecture) {
-        try {
-          const students =
-            await DB()
-              .prepare(
-                "SELECT email FROM users WHERE role = 'student' AND active = 1 AND TRIM(COALESCE(email, '')) != ''"
-              )
-              .all();
-
-          let whenText = '';
-
-          if (previousSettings?.scheduled_at) {
-            const date =
-              new Date(
-                previousSettings.scheduled_at
-              );
-
-            if (!Number.isNaN(date.getTime())) {
-              whenText =
-                date.toLocaleString(
-                  'ar-EG',
-                  {
-                    timeZone:
-                      'Africa/Cairo',
-                    dateStyle:
-                      'full',
-                    timeStyle:
-                      'short'
-                  }
-                );
-            }
-          }
-
-          const message =
-            'تم إلغاء المحاضرة من منصة مستر محمد حسام.\n\n' +
-            'اسم المحاضرة: ' +
-            (previousSettings?.lecture_title || 'المحاضرة القادمة') +
-            (whenText
-              ? '\nالموعد الذي كان محددًا: ' + whenText
-              : '');
-
-          const sent =
-            await sendResendBatch(
-              students.results || [],
-              'تم إلغاء المحاضرة - منصة مستر محمد حسام',
-              message
-            );
-
-          if (sent.sentCount) {
-            emailNotice =
-              ' وتم إرسال إشعار الإلغاء إلى ' +
-              sent.sentCount +
-              ' طالب.';
-          }
-        } catch (emailError) {
-          console.error(
-            'Cancellation email error:',
-            emailError
-          );
-
-          emailNotice =
-            ' لكن تعذر إرسال إشعارات الإلغاء لأن إعدادات البريد غير مكتملة أو حدث خطأ في خدمة البريد.';
-        }
-      }
-
-      return res.json({
-        message:
-          'تم مسح المحاضرة الحالية.' +
-          emailNotice
-      });
+      return res.json({ message: 'تم مسح المحاضرة الحالية.' });
     } catch (error) {
       console.error(error);
-
-      return res.status(500).json({
-        message:
-          'حدث خطأ أثناء مسح المحاضرة.'
-      });
+      return res.status(500).json({ message: 'حدث خطأ أثناء مسح المحاضرة.' });
     }
   }
 );
