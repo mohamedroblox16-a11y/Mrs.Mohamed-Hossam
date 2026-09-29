@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   full_name TEXT NOT NULL,
   login TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL DEFAULT '',
 
   grade TEXT NOT NULL,
   subject TEXT NOT NULL,
