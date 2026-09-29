@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+.wrangler-runtime-secrets.json
+.env
+.env.*
+!.env.example
+.dev.vars
