@@ -185,12 +185,38 @@ async function verifyEmailVerificationToken(
   };
 }
 
-async function sendResendBatch(recipients, subject, message) {
-  const apiKey = String(env.RESEND_API_KEY || '').trim();
-  const from = String(env.RESEND_FROM_EMAIL || '').trim();
+function getRuntimeSecret(name) {
+  try {
+    const value =
+      env &&
+      Object.prototype.hasOwnProperty.call(
+        env,
+        name
+      )
+        ? env[name]
+        : '';
 
-  if (!apiKey) throw new Error('RESEND_API_KEY غير مضبوط في Cloudflare Secrets.');
-  if (!from) throw new Error('RESEND_FROM_EMAIL غير مضبوط في Cloudflare Secrets.');
+    return String(value || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+async function sendResendBatch(recipients, subject, message) {
+  const apiKey = getRuntimeSecret('RESEND_API_KEY');
+  const from = getRuntimeSecret('RESEND_FROM_EMAIL');
+
+  if (!apiKey) {
+    throw new Error(
+      'RESEND_API_KEY غير متاح للـWorker المنشور. تأكد أنه Secret داخل Worker mrs-mohamed-hossam ثم اعمل Deploy.'
+    );
+  }
+
+  if (!from) {
+    throw new Error(
+      'RESEND_FROM_EMAIL غير متاح للـWorker المنشور. أضفه كـSecret أو Variable داخل Worker mrs-mohamed-hossam.'
+    );
+  }
 
   const uniqueEmails = [];
   const seen = new Set();
@@ -2030,6 +2056,24 @@ app.patch(
           'حدث خطأ أثناء تعديل بيانات الطالب.'
       });
     }
+  }
+);
+
+/* =========================
+   EMAIL CONFIG STATUS
+========================= */
+
+app.get(
+  '/api/admin/email-status',
+  requireAdmin,
+  async (req, res) => {
+    return res.json({
+      worker: 'mrs-mohamed-hossam',
+      resendApiKeyConfigured:
+        !!getRuntimeSecret('RESEND_API_KEY'),
+      resendFromEmailConfigured:
+        !!getRuntimeSecret('RESEND_FROM_EMAIL')
+    });
   }
 );
 
