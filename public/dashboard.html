@@ -561,6 +561,43 @@ button{
 
 
 /* الرقم */
+.countdown-shine{
+  position:absolute;
+  inset:2px;
+  z-index:1;
+  border-radius:16px;
+  pointer-events:none;
+  overflow:hidden;
+  opacity:.78;
+}
+
+.countdown-shine::after{
+  content:"";
+  position:absolute;
+  top:-25%;
+  bottom:-25%;
+  left:-45%;
+  width:28%;
+  min-width:34px;
+  transform:skewX(-18deg);
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(140,85,255,0) 15%,
+    rgba(140,85,255,.55) 45%,
+    rgba(85,241,255,.72) 55%,
+    rgba(85,241,255,0) 85%,
+    transparent
+  );
+  filter:blur(3px);
+  animation:countdownBarShine 2.8s linear infinite;
+}
+
+@keyframes countdownBarShine{
+  0%{left:-45%}
+  100%{left:125%}
+}
+
 .countdown-box strong{
   position:relative;
 
@@ -1496,21 +1533,25 @@ button{
         >
 
           <div class="countdown-box">
+            <i class="countdown-shine" aria-hidden="true"></i>
             <strong id="daysValue">0</strong>
             <span>يوم</span>
           </div>
 
           <div class="countdown-box">
+            <i class="countdown-shine" aria-hidden="true"></i>
             <strong id="hoursValue">00</strong>
             <span>ساعة</span>
           </div>
 
           <div class="countdown-box">
+            <i class="countdown-shine" aria-hidden="true"></i>
             <strong id="minutesValue">00</strong>
             <span>دقيقة</span>
           </div>
 
           <div class="countdown-box">
+            <i class="countdown-shine" aria-hidden="true"></i>
             <strong id="secondsValue">00</strong>
             <span>ثانية</span>
           </div>
@@ -3376,6 +3417,14 @@ function renderStudents(
                 ✏️ تعديل
               </button>
 
+              <button
+                class="danger delete-student-btn"
+                data-delete-id="${esc(student.id)}"
+                type="button"
+              >
+                🗑️ مسح الحساب
+              </button>
+
             </div>
 
           </td>
@@ -3442,6 +3491,23 @@ $('studentsBody').onclick =
     }
 
 
+    const deleteButton =
+      event.target.closest(
+        '[data-delete-id]'
+      );
+
+    if(
+      deleteButton
+    ){
+
+      deleteStudent(
+        deleteButton.dataset.deleteId
+      );
+
+      return;
+    }
+
+
     const editButton =
       event.target.closest(
         '[data-edit-id]'
@@ -3457,6 +3523,60 @@ $('studentsBody').onclick =
       );
     }
   };
+
+
+async function deleteStudent(id){
+
+  const student =
+    students.find(
+      item =>
+        item.id === id
+    );
+
+  if(!student){
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      'هل أنت متأكد من مسح حساب الطالب "' +
+      (student.fullName || '') +
+      '"؟\n\nسيتم حذف بيانات الحساب والحضور والدرجات المرتبطة به.'
+    );
+
+  if(!confirmed){
+    return;
+  }
+
+  try{
+
+    const result =
+      await api(
+        '/api/admin/users/' +
+        encodeURIComponent(id),
+        {
+          method:'DELETE'
+        }
+      );
+
+    setMsg(
+      $('studentMsg'),
+      result.message ||
+        'تم حذف الحساب.',
+      true
+    );
+
+    await loadStudents();
+
+  }
+  catch(error){
+
+    setMsg(
+      $('studentMsg'),
+      error.message
+    );
+  }
+}
 
 
 /* =========================
