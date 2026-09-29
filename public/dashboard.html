@@ -3284,6 +3284,9 @@ function renderUser(){
   $('userLogin').textContent =
     currentUser.login || '-';
 
+  $('userEmail').textContent =
+    currentUser.email || 'غير مضاف';
+
   $('userGrade').textContent =
     currentUser.grade || '-';
 
@@ -3319,6 +3322,309 @@ function renderUser(){
       ? 'دي لوحة إدارة منصة مستر محمد حسام.'
       : 'من هنا تقدر تتابع المحاضرات وتشوف درجات امتحاناتك.';
 }
+
+
+let emailStudents = [];
+let emailAllSelected = false;
+const selectedEmailStudentIds = new Set();
+
+function filteredEmailStudents(){
+  const q =
+    String(
+      $('emailStudentSearch')?.value || ''
+    )
+      .trim()
+      .toLowerCase();
+
+  if(!q) return emailStudents;
+
+  return emailStudents.filter(
+    student =>
+      [
+        student.full_name,
+        student.email,
+        student.login,
+        student.grade,
+        student.subject
+      ]
+        .map(
+          value =>
+            String(
+              value || ''
+            ).toLowerCase()
+        )
+        .some(
+          value =>
+            value.includes(q)
+        )
+  );
+}
+
+function renderEmailStudents(){
+  const box =
+    $('emailStudentsList');
+
+  if(!box) return;
+
+  const rows =
+    filteredEmailStudents();
+
+  $('emailSelectedCount').textContent =
+    emailAllSelected
+      ? 'ALL — ' +
+        emailStudents.filter(
+          item =>
+            String(
+              item.email || ''
+            ).trim()
+        ).length +
+        ' محدد'
+      : selectedEmailStudentIds.size +
+        ' محدد';
+
+  if(!rows.length){
+    box.innerHTML =
+      '<div class="empty">مفيش طلاب مطابقين للبحث.</div>';
+    return;
+  }
+
+  box.innerHTML =
+    rows.map(
+      student => {
+
+        const hasEmail =
+          !!String(
+            student.email || ''
+          ).trim();
+
+        const checked =
+          hasEmail &&
+          (
+            emailAllSelected ||
+            selectedEmailStudentIds.has(
+              String(student.id)
+            )
+          );
+
+        return `
+          <label class="email-student-row">
+
+            <input
+              type="checkbox"
+              class="email-student-check"
+              data-email-student-id="${esc(student.id)}"
+              ${!hasEmail ? 'disabled' : ''}
+              ${checked ? 'checked' : ''}
+            >
+
+            <span class="email-student-main">
+              <strong>${esc(student.full_name)}</strong>
+              <small>${esc(student.login || '-')}</small>
+            </span>
+
+            <span class="email-student-email">
+              ${hasEmail ? esc(student.email) : 'مفيش إيميل'}
+            </span>
+
+          </label>
+        `;
+      }
+    ).join('');
+}
+
+async function loadEmailStudents(){
+  try{
+    const data =
+      await api(
+        '/api/admin/email-students'
+      );
+
+    emailStudents =
+      data.students || [];
+
+    renderEmailStudents();
+  }
+  catch(error){
+    $('emailStudentsList').innerHTML =
+      '<div class="empty">' +
+      esc(error.message) +
+      '</div>';
+  }
+}
+
+$('emailStudentSearch').addEventListener(
+  'input',
+  renderEmailStudents
+);
+
+$('emailSelectAll').onclick =
+  () => {
+
+    const available =
+      emailStudents.filter(
+        student =>
+          String(
+            student.email || ''
+          ).trim()
+      );
+
+    emailAllSelected =
+      available.length > 0;
+
+    selectedEmailStudentIds.clear();
+
+    renderEmailStudents();
+  };
+
+$('emailClearAll').onclick =
+  () => {
+    emailAllSelected = false;
+    selectedEmailStudentIds.clear();
+    renderEmailStudents();
+  };
+
+$('refreshEmailStudents').onclick =
+  loadEmailStudents;
+
+$('emailStudentsList').addEventListener(
+  'change',
+  event => {
+
+    const checkbox =
+      event.target.closest(
+        '[data-email-student-id]'
+      );
+
+    if(!checkbox) return;
+
+    const id =
+      String(
+        checkbox.dataset.emailStudentId
+      );
+
+    if(emailAllSelected){
+      emailAllSelected = false;
+
+      emailStudents.forEach(
+        student => {
+
+          if(
+            String(student.id) !== id &&
+            String(student.email || '').trim()
+          ){
+            selectedEmailStudentIds.add(
+              String(student.id)
+            );
+          }
+
+        }
+      );
+    }
+
+    if(checkbox.checked){
+      selectedEmailStudentIds.add(id);
+    }
+    else{
+      selectedEmailStudentIds.delete(id);
+    }
+
+    renderEmailStudents();
+  }
+);
+
+$('sendEmailBtn').onclick =
+  async () => {
+
+    try{
+
+      const subject =
+        $('emailSubject')
+          .value
+          .trim();
+
+      const message =
+        $('emailMessage')
+          .value
+          .trim();
+
+      if(!subject){
+        throw new Error(
+          'اكتب عنوان الرسالة.'
+        );
+      }
+
+      if(!message){
+        throw new Error(
+          'اكتب نص الرسالة.'
+        );
+      }
+
+      if(
+        !emailAllSelected &&
+        selectedEmailStudentIds.size === 0
+      ){
+        throw new Error(
+          'اختار طالبًا أو دوس ALL.'
+        );
+      }
+
+      $('sendEmailBtn').disabled =
+        true;
+
+      $('sendEmailBtn').textContent =
+        'جاري الإرسال...';
+
+      const result =
+        await api(
+          '/api/admin/send-email',
+          {
+            method:'POST',
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+            body:
+              JSON.stringify({
+                all:
+                  emailAllSelected,
+                userIds:
+                  [
+                    ...selectedEmailStudentIds
+                  ],
+                subject,
+                message
+              })
+          }
+        );
+
+      setMsg(
+        $('emailMsg'),
+        result.message ||
+        'تم إرسال الرسالة.',
+        true
+      );
+
+    }
+    catch(error){
+
+      setMsg(
+        $('emailMsg'),
+        error.message
+      );
+
+    }
+    finally{
+
+      $('sendEmailBtn').disabled =
+        false;
+
+      $('sendEmailBtn').textContent =
+        '✉ إرسال الرسالة';
+
+    }
+
+  };
+
 
 
 /* =========================
@@ -4989,6 +5295,9 @@ document.addEventListener(
       $('studentsCard').style.display =
         'block';
 
+      $('emailCenterCard').style.display =
+        'block';
+
       $('lectureAdmin').style.display =
         'block';
 
@@ -5032,6 +5341,7 @@ document.addEventListener(
     ){
 
       await loadStudents();
+      await loadEmailStudents();
       await loadAdminAttendance();
 
     }
