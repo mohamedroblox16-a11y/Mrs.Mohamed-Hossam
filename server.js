@@ -1580,6 +1580,13 @@ app.patch(
           student.mode
         ).trim();
 
+      const email =
+        String(
+          req.body?.email ??
+          student.email ??
+          ''
+        ).trim().toLowerCase();
+
       const active =
         Number(
           req.body?.active ??
@@ -1591,13 +1598,21 @@ app.patch(
       if (
         !fullName ||
         !login ||
+        !email ||
         !grade ||
         !subject ||
         !mode
       ) {
         return res.status(400).json({
           message:
-            'أكمل بيانات الطالب.'
+            'أكمل بيانات الطالب والإيميل.'
+        });
+      }
+
+      if (!validEmail(email)) {
+        return res.status(400).json({
+          message:
+            'إيميل الطالب غير صحيح.'
         });
       }
 
@@ -1620,6 +1635,22 @@ app.patch(
         return res.status(409).json({
           message:
             'رقم التلفون أو يوزر ديسكورد مستخدم بالفعل.'
+        });
+      }
+
+      const duplicateEmail =
+        await DB()
+          .prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1')
+          .bind(
+            email,
+            id
+          )
+          .first();
+
+      if (duplicateEmail) {
+        return res.status(409).json({
+          message:
+            'الإيميل مستخدم بالفعل مع طالب آخر.'
         });
       }
 
@@ -1659,6 +1690,7 @@ app.patch(
           UPDATE users SET
             full_name = ?,
             login = ?,
+            email = ?,
             grade = ?,
             subject = ?,
             mode = ?,
@@ -1670,6 +1702,7 @@ app.patch(
         .bind(
           fullName,
           login,
+          email,
           grade,
           subject,
           mode,
@@ -1707,6 +1740,90 @@ app.patch(
   }
 );
 
+/* =========================
+   EMAIL CENTER
+========================= */
+
+app.get(
+  '/api/admin/email-students',
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const result = await DB().prepare(
+        'SELECT id, full_name, login, email, grade, subject, mode, active FROM users WHERE role = ? ORDER BY full_name'
+      ).bind('student').all();
+
+      return res.json({
+        students: result.results || []
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        message: 'حدث خطأ أثناء تحميل قائمة الإيميلات.'
+      });
+    }
+  }
+);
+
+app.post(
+  '/api/admin/send-email',
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const subject = String(req.body?.subject || '').trim();
+      const message = String(req.body?.message || '').trim();
+      const all = req.body?.all === true;
+      const userIds = Array.isArray(req.body?.userIds)
+        ? req.body.userIds.map((id) => String(id || '').trim()).filter(Boolean)
+        : [];
+
+      if (!subject) return res.status(400).json({ message: 'اكتب عنوان الرسالة.' });
+      if (!message) return res.status(400).json({ message: 'اكتب نص الرسالة.' });
+      if (!all && !userIds.length) {
+        return res.status(400).json({ message: 'اختار طالبًا واحدًا على الأقل أو ALL.' });
+      }
+
+      let recipients = [];
+
+      if (all) {
+        const result = await DB().prepare(
+          "SELECT id, full_name, email FROM users WHERE role = 'student' AND active = 1 AND TRIM(COALESCE(email, '')) != '' ORDER BY full_name"
+        ).all();
+        recipients = result.results || [];
+      } else {
+        const uniqueIds = [...new Set(userIds)];
+        const placeholders = uniqueIds.map(() => '?').join(', ');
+        const result = await DB().prepare(
+          "SELECT id, full_name, email FROM users WHERE role = 'student' AND active = 1 AND id IN (" + placeholders + ") AND TRIM(COALESCE(email, '')) != '' ORDER BY full_name"
+        ).bind(...uniqueIds).all();
+        recipients = result.results || [];
+      }
+
+      if (!recipients.length) {
+        return res.status(400).json({
+          message: 'مفيش طلاب نشطين عندهم إيميلات في الاختيار.'
+        });
+      }
+
+      const result = await sendResendBatch(
+        recipients,
+        subject,
+        message
+      );
+
+      return res.json({
+        message: 'تم إرسال الرسالة إلى ' + result.sentCount + ' طالب.',
+        sentCount: result.sentCount,
+        totalRecipients: result.totalRecipients
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        message: error.message || 'حدث خطأ أثناء إرسال الرسائل.'
+      });
+    }
+  }
+);
 /* =========================
    DELETE STUDENT
 ========================= */
