@@ -21,11 +21,25 @@ app.use('/api', (req, res, next) => {
 const DB = () => env.DB;
 const nowIso = () => new Date().toISOString();
 
-async function ensureUserEmailColumn() {
-  try {
-    await DB().prepare('SELECT email FROM users LIMIT 1').first();
-  } catch {
-    await DB().prepare("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''").run();
+async function ensureUserEmailColumns() {
+  const columns = [
+    ['email', "ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''"],
+    ['email_verified', "ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0"],
+    ['email_verification_code_hash', "ALTER TABLE users ADD COLUMN email_verification_code_hash TEXT NOT NULL DEFAULT ''"],
+    ['email_verification_expires_at', "ALTER TABLE users ADD COLUMN email_verification_expires_at TEXT NOT NULL DEFAULT ''"],
+    ['email_verification_sent_at', "ALTER TABLE users ADD COLUMN email_verification_sent_at TEXT NOT NULL DEFAULT ''"]
+  ];
+
+  for (const [column, alterSql] of columns) {
+    try {
+      await DB()
+        .prepare('SELECT ' + column + ' FROM users LIMIT 1')
+        .first();
+    } catch {
+      await DB()
+        .prepare(alterSql)
+        .run();
+    }
   }
 }
 
@@ -42,6 +56,133 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+async function sha256Hex(value) {
+  const buffer =
+    await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(
+        String(value)
+      )
+    );
+
+  return Array.from(
+    new Uint8Array(buffer)
+  )
+    .map(
+      (b) =>
+        b.toString(16).padStart(2, '0')
+    )
+    .join('');
+}
+
+function generateEmailCode() {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+
+  return String(
+    array[0] % 1000000
+  ).padStart(6, '0');
+}
+
+function maskEmail(value) {
+  const email = String(value || '').trim();
+  const at = email.indexOf('@');
+
+  if (at <= 0) return '';
+
+  const local = email.slice(0, at);
+  const domain = email.slice(at + 1);
+
+  if (local.length <= 2) {
+    return '*'.repeat(local.length) + '@' + domain;
+  }
+
+  return (
+    local[0] +
+    '*'.repeat(
+      Math.max(1, local.length - 2)
+    ) +
+    local.slice(-1) +
+    '@' +
+    domain
+  );
+}
+
+async function makeEmailVerificationToken(
+  userId,
+  expiresAt
+) {
+  const payload =
+    String(userId) +
+    '|' +
+    String(expiresAt);
+
+  return (
+    payload +
+    '.' +
+    await sign(payload)
+  );
+}
+
+async function verifyEmailVerificationToken(
+  value
+) {
+  const raw =
+    String(value || '');
+
+  const lastDot =
+    raw.lastIndexOf('.');
+
+  if (lastDot <= 0) {
+    return null;
+  }
+
+  const payload =
+    raw.slice(0, lastDot);
+
+  const signature =
+    raw.slice(lastDot + 1);
+
+  if (!payload || !signature) {
+    return null;
+  }
+
+  if (
+    signature !==
+    await sign(payload)
+  ) {
+    return null;
+  }
+
+  const separator =
+    payload.lastIndexOf('|');
+
+  if (separator <= 0) {
+    return null;
+  }
+
+  const userId =
+    payload.slice(0, separator);
+
+  const expiresAt =
+    Number(
+      payload.slice(separator + 1)
+    );
+
+  if (
+    !userId ||
+    !Number.isFinite(expiresAt) ||
+    Date.now() > expiresAt
+  ) {
+    return null;
+  }
+
+  return {
+    userId,
+    expiresAt
+  };
 }
 
 async function sendResendBatch(recipients, subject, message) {
@@ -188,6 +329,10 @@ function safeUser(user) {
     fullName: user.full_name,
     login: user.login,
     email: user.email || '',
+    emailVerified:
+      user.role === 'admin'
+        ? true
+        : !!user.email_verified,
     grade: user.grade,
     subject: user.subject,
     mode: user.mode,
@@ -233,12 +378,7 @@ function isAdminCredentials(
   ويتفعل تلقائيًا على HTTPS.
 */
 
-function setSessionCookie(
-  req,
-  res,
-  value,
-  maxAge = 604800
-) {
+function isHttpsRequest(req) {
   let proto = '';
 
   try {
@@ -264,25 +404,104 @@ function setSessionCookie(
     proto = '';
   }
 
-  const isHttps =
+  return (
     proto === 'https' ||
     (
       typeof req?.protocol ===
       'string' &&
       req.protocol ===
       'https'
-    );
+    )
+  );
+}
 
-  const secure =
-    isHttps
-      ? '; Secure'
-      : '';
+function appendSetCookie(
+  res,
+  cookie
+) {
+  const existing =
+    res.getHeader('Set-Cookie');
+
+  const list =
+    Array.isArray(existing)
+      ? existing
+      : existing
+        ? [existing]
+        : [];
+
+  list.push(cookie);
 
   res.setHeader(
     'Set-Cookie',
-    `session=${encodeURIComponent(
-      value
-    )}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${maxAge}`
+    list
+  );
+}
+
+function makeCookieString(
+  req,
+  name,
+  value,
+  maxAge
+) {
+  const secure =
+    isHttpsRequest(req)
+      ? '; Secure'
+      : '';
+
+  return (
+    name +
+    '=' +
+    encodeURIComponent(value) +
+    '; Path=/; HttpOnly; SameSite=Lax' +
+    secure +
+    '; Max-Age=' +
+    maxAge
+  );
+}
+
+function setSessionCookie(
+  req,
+  res,
+  value,
+  maxAge = 604800
+) {
+  res.setHeader(
+    'Set-Cookie',
+    makeCookieString(
+      req,
+      'session',
+      value,
+      maxAge
+    )
+  );
+}
+
+function setEmailVerificationCookie(
+  req,
+  res,
+  value,
+  maxAge = 600
+) {
+  appendSetCookie(
+    res,
+    makeCookieString(
+      req,
+      'emailVerifyPending',
+      value,
+      maxAge
+    )
+  );
+}
+
+function clearEmailVerificationCookie(
+  req,
+  res
+) {
+  setEmailVerificationCookie(
+    req,
+    res,
+    '',
+    0
   );
 }
 
@@ -427,7 +646,7 @@ function getCookie(
 async function currentUser(
   req
 ) {
-  await ensureUserEmailColumn();
+  await ensureUserEmailColumns();
 
   const sessionId =
     await verifySession(
@@ -571,6 +790,18 @@ async function requireAuth(
       return res.status(401).json({
         message:
           'يجب تسجيل الدخول أولاً.'
+      });
+    }
+
+    if (
+      user.role === 'student' &&
+      !user.email_verified
+    ) {
+      return res.status(403).json({
+        message:
+          'يجب تأكيد الإيميل أولاً.',
+        emailVerificationRequired:
+          true
       });
     }
 
@@ -745,6 +976,8 @@ app.post(
   '/api/register',
   async (req, res) => {
     try {
+      await ensureUserEmailColumns();
+
       const {
         fullName,
         login,
@@ -902,6 +1135,10 @@ app.post(
             full_name,
             login,
             email,
+            email_verified,
+            email_verification_code_hash,
+            email_verification_expires_at,
+            email_verification_sent_at,
             grade,
             subject,
             mode,
@@ -915,6 +1152,10 @@ app.post(
             ?,
             ?,
             ?,
+            0,
+            '',
+            '',
+            '',
             ?,
             ?,
             ?,
@@ -956,6 +1197,8 @@ app.post(
   '/api/login',
   async (req, res) => {
     try {
+      await ensureUserEmailColumns();
+
       const login =
         normalizeLogin(
           req.body?.login ??
@@ -1042,21 +1285,57 @@ app.post(
         });
       }
 
-      setSessionCookie(
+      if (
+        Number(
+          user.email_verified || 0
+        ) === 1
+      ) {
+        setSessionCookie(
+          req,
+          res,
+          await makeSession(
+            user.id
+          )
+        );
+
+        return res.json({
+          message:
+            'تم تسجيل الدخول.',
+          user:
+            safeUser(
+              user
+            )
+        });
+      }
+
+      const pendingExpiresAt =
+        Date.now() +
+        10 * 60 * 1000;
+
+      const pendingToken =
+        await makeEmailVerificationToken(
+          user.id,
+          pendingExpiresAt
+        );
+
+      setEmailVerificationCookie(
         req,
         res,
-        await makeSession(
-          user.id
-        )
+        pendingToken,
+        600
       );
 
       return res.json({
         message:
-          'تم تسجيل الدخول.',
+          'لازم تأكد الإيميل قبل دخول الحساب.',
+        requiresEmailVerification:
+          true,
+        hasEmail:
+          validEmail(user.email),
+        email:
+          maskEmail(user.email || ''),
         user:
-          safeUser(
-            user
-          )
+          safeUser(user)
       });
     } catch (error) {
       console.error(error);
@@ -1587,6 +1866,12 @@ app.patch(
           ''
         ).trim().toLowerCase();
 
+      const emailChanged =
+        email !==
+        String(
+          student.email || ''
+        ).trim().toLowerCase();
+
       const active =
         Number(
           req.body?.active ??
@@ -1691,6 +1976,10 @@ app.patch(
             full_name = ?,
             login = ?,
             email = ?,
+            email_verified = CASE WHEN ? THEN 0 ELSE email_verified END,
+            email_verification_code_hash = CASE WHEN ? THEN '' ELSE email_verification_code_hash END,
+            email_verification_expires_at = CASE WHEN ? THEN '' ELSE email_verification_expires_at END,
+            email_verification_sent_at = CASE WHEN ? THEN '' ELSE email_verification_sent_at END,
             grade = ?,
             subject = ?,
             mode = ?,
@@ -1703,6 +1992,10 @@ app.patch(
           fullName,
           login,
           email,
+          emailChanged ? 1 : 0,
+          emailChanged ? 1 : 0,
+          emailChanged ? 1 : 0,
+          emailChanged ? 1 : 0,
           grade,
           subject,
           mode,
@@ -1735,6 +2028,314 @@ app.patch(
       return res.status(500).json({
         message:
           'حدث خطأ أثناء تعديل بيانات الطالب.'
+      });
+    }
+  }
+);
+
+/* =========================
+   EMAIL VERIFICATION
+========================= */
+
+app.post(
+  '/api/request-email-verification',
+  async (req, res) => {
+    try {
+      await ensureUserEmailColumns();
+
+      const pending =
+        await verifyEmailVerificationToken(
+          getCookie(
+            req,
+            'emailVerifyPending'
+          )
+        );
+
+      if (!pending) {
+        return res.status(401).json({
+          message:
+            'جلسة التحقق انتهت. سجل دخولك من جديد.'
+        });
+      }
+
+      const user =
+        await DB()
+          .prepare(
+            'SELECT * FROM users WHERE id = ? LIMIT 1'
+          )
+          .bind(pending.userId)
+          .first();
+
+      if (
+        !user ||
+        !user.active ||
+        user.role !== 'student'
+      ) {
+        return res.status(401).json({
+          message:
+            'الحساب غير متاح للتحقق.'
+        });
+      }
+
+      const email =
+        String(
+          req.body?.email ||
+          ''
+        ).trim().toLowerCase();
+
+      if (!validEmail(email)) {
+        return res.status(400).json({
+          message:
+            'اكتب إيميل صحيح.'
+        });
+      }
+
+      const existingEmail =
+        String(
+          user.email || ''
+        ).trim().toLowerCase();
+
+      if (
+        existingEmail &&
+        existingEmail !== email
+      ) {
+        return res.status(400).json({
+          message:
+            'الإيميل لازم يكون نفس الإيميل المسجل للحساب.'
+        });
+      }
+
+      if (!existingEmail) {
+        const duplicate =
+          await DB()
+            .prepare(
+              'SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1'
+            )
+            .bind(
+              email,
+              user.id
+            )
+            .first();
+
+        if (duplicate) {
+          return res.status(409).json({
+            message:
+              'الإيميل مستخدم بالفعل مع حساب آخر.'
+          });
+        }
+      }
+
+      if (
+        user.email_verification_sent_at
+      ) {
+        const sentAt =
+          new Date(
+            user.email_verification_sent_at
+          ).getTime();
+
+        if (
+          Number.isFinite(sentAt) &&
+          Date.now() - sentAt < 60 * 1000
+        ) {
+          return res.status(429).json({
+            message:
+              'استنى دقيقة قبل ما تطلب كود جديد.'
+          });
+        }
+      }
+
+      const code =
+        generateEmailCode();
+
+      const expiresAt =
+        Date.now() +
+        10 * 60 * 1000;
+
+      const codeHash =
+        await sha256Hex(code);
+
+      const codeMessage =
+        'كود تأكيد الإيميل لمنصة مستر محمد حسام
+
+' +
+        'الكود: ' +
+        code +
+        '
+
+' +
+        'الكود صالح لمدة 10 دقائق.';
+
+      await sendResendBatch(
+        [{ email }],
+        'كود تأكيد الإيميل - منصة مستر محمد حسام',
+        codeMessage
+      );
+
+      await DB()
+        .prepare(
+          'UPDATE users SET email = ?, email_verified = 0, email_verification_code_hash = ?, email_verification_expires_at = ?, email_verification_sent_at = ? WHERE id = ? AND role = \'student\''
+        )
+        .bind(
+          email,
+          codeHash,
+          new Date(expiresAt).toISOString(),
+          nowIso(),
+          user.id
+        )
+        .run();
+
+      return res.json({
+        message:
+          'تم إرسال كود التحقق على الإيميل.',
+        email:
+          maskEmail(email)
+      });
+    } catch (error) {
+      console.error(
+        'Email verification send error:',
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          error.message ||
+          'حدث خطأ أثناء إرسال كود التحقق.'
+      });
+    }
+  }
+);
+
+app.post(
+  '/api/verify-email-code',
+  async (req, res) => {
+    try {
+      await ensureUserEmailColumns();
+
+      const pending =
+        await verifyEmailVerificationToken(
+          getCookie(
+            req,
+            'emailVerifyPending'
+          )
+        );
+
+      if (!pending) {
+        return res.status(401).json({
+          message:
+            'جلسة التحقق انتهت. سجل دخولك من جديد.'
+        });
+      }
+
+      const code =
+        String(
+          req.body?.code ||
+          ''
+        ).trim();
+
+      if (!/^\d{6}$/.test(code)) {
+        return res.status(400).json({
+          message:
+            'اكتب الكود المكون من 6 أرقام.'
+        });
+      }
+
+      const user =
+        await DB()
+          .prepare(
+            'SELECT * FROM users WHERE id = ? LIMIT 1'
+          )
+          .bind(pending.userId)
+          .first();
+
+      if (
+        !user ||
+        !user.active ||
+        user.role !== 'student'
+      ) {
+        return res.status(401).json({
+          message:
+            'الحساب غير متاح للتحقق.'
+        });
+      }
+
+      const expiresAt =
+        new Date(
+          user.email_verification_expires_at || ''
+        ).getTime();
+
+      if (
+        !user.email_verification_code_hash ||
+        !Number.isFinite(expiresAt) ||
+        Date.now() > expiresAt
+      ) {
+        return res.status(400).json({
+          message:
+            'الكود انتهت صلاحيته. اطلب كود جديد.'
+        });
+      }
+
+      const codeHash =
+        await sha256Hex(code);
+
+      if (
+        codeHash !==
+        user.email_verification_code_hash
+      ) {
+        return res.status(400).json({
+          message:
+            'الكود غير صحيح.'
+        });
+      }
+
+      await DB()
+        .prepare(
+          'UPDATE users SET email_verified = 1, email_verification_code_hash = \'\', email_verification_expires_at = \'\', email_verification_sent_at = \'\' WHERE id = ?'
+        )
+        .bind(
+          user.id
+        )
+        .run();
+
+      const verifiedUser =
+        await DB()
+          .prepare(
+            'SELECT * FROM users WHERE id = ? LIMIT 1'
+          )
+          .bind(
+            user.id
+          )
+          .first();
+
+      setSessionCookie(
+        req,
+        res,
+        await makeSession(
+          user.id
+        )
+      );
+
+      clearEmailVerificationCookie(
+        req,
+        res
+      );
+
+      return res.json({
+        message:
+          'تم تأكيد الإيميل وتسجيل الدخول.',
+        user:
+          safeUser(
+            verifiedUser
+          )
+      });
+    } catch (error) {
+      console.error(
+        'Email verification error:',
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          'حدث خطأ أثناء تأكيد الإيميل.'
       });
     }
   }
