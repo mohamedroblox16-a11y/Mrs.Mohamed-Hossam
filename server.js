@@ -2593,6 +2593,13 @@ app.delete(
   requireAdmin,
   async (req, res) => {
     try {
+      const previousSettings =
+        await DB()
+          .prepare(
+            'SELECT * FROM settings WHERE id = 1 LIMIT 1'
+          )
+          .first();
+
       await DB()
         .prepare(`
           INSERT INTO settings (
@@ -2629,9 +2636,84 @@ app.delete(
         )
         .run();
 
+      let emailNotice = '';
+
+      const hadLecture =
+        !!(
+          previousSettings?.lecture_title ||
+          previousSettings?.lecture_url ||
+          previousSettings?.scheduled_at
+        );
+
+      if (hadLecture) {
+        try {
+          const students =
+            await DB()
+              .prepare(
+                "SELECT email FROM users WHERE role = 'student' AND active = 1 AND TRIM(COALESCE(email, '')) != ''"
+              )
+              .all();
+
+          let whenText = '';
+
+          if (previousSettings?.scheduled_at) {
+            const date =
+              new Date(
+                previousSettings.scheduled_at
+              );
+
+            if (!Number.isNaN(date.getTime())) {
+              whenText =
+                date.toLocaleString(
+                  'ar-EG',
+                  {
+                    timeZone:
+                      'Africa/Cairo',
+                    dateStyle:
+                      'full',
+                    timeStyle:
+                      'short'
+                  }
+                );
+            }
+          }
+
+          const message =
+            'تم إلغاء المحاضرة من منصة مستر محمد حسام.\n\n' +
+            'اسم المحاضرة: ' +
+            (previousSettings?.lecture_title || 'المحاضرة القادمة') +
+            (whenText
+              ? '\nالموعد الذي كان محددًا: ' + whenText
+              : '');
+
+          const sent =
+            await sendResendBatch(
+              students.results || [],
+              'تم إلغاء المحاضرة - منصة مستر محمد حسام',
+              message
+            );
+
+          if (sent.sentCount) {
+            emailNotice =
+              ' وتم إرسال إشعار الإلغاء إلى ' +
+              sent.sentCount +
+              ' طالب.';
+          }
+        } catch (emailError) {
+          console.error(
+            'Cancellation email error:',
+            emailError
+          );
+
+          emailNotice =
+            ' لكن تعذر إرسال إشعارات الإلغاء لأن إعدادات البريد غير مكتملة أو حدث خطأ في خدمة البريد.';
+        }
+      }
+
       return res.json({
         message:
-          'تم مسح المحاضرة الحالية.'
+          'تم مسح المحاضرة الحالية.' +
+          emailNotice
       });
     } catch (error) {
       console.error(error);
