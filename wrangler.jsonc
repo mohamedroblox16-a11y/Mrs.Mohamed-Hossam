@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "mr-mohamed-hossam-platform",
+  "name": "mrs-mohamed-hossam",
   "main": "server.js",
   "compatibility_date": "2026-09-28",
   "compatibility_flags": [
