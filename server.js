@@ -21,20 +21,6 @@ app.use('/api', (req, res, next) => {
 const DB = () => env.DB;
 const nowIso = () => new Date().toISOString();
 
-function today() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Africa/Cairo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(new Date());
-
-  const get = (type) =>
-    parts.find((part) => part.type === type)?.value || '';
-
-  return `${get('year')}-${get('month')}-${get('day')}`;
-}
-
 const normalizeLogin = (v) =>
   String(v ?? '').trim().toLowerCase();
 
@@ -52,17 +38,31 @@ const validUrl = (v) => {
   }
 };
 
+function today() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+
+  const get = (type) =>
+    parts.find(
+      (part) => part.type === type
+    )?.value || '';
+
+  return (
+    `${get('year')}-` +
+    `${get('month')}-` +
+    `${get('day')}`
+  );
+}
+
 function normalizeLectureDateTime(value) {
   const raw = String(value || '').trim();
 
   if (!raw) return '';
 
-  /*
-    datetime-local بيبعت:
-    2026-09-30T18:30
-
-    بنعتبره توقيت القاهرة +03:00
-  */
   if (
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)
   ) {
@@ -116,7 +116,10 @@ const adminPassword = () =>
     DEFAULT_ADMIN_PASSWORD
   );
 
-function isAdminCredentials(login, password) {
+function isAdminCredentials(
+  login,
+  password
+) {
   return (
     (
       login === DEFAULT_ADMIN_LOGIN &&
@@ -129,14 +132,62 @@ function isAdminCredentials(login, password) {
   );
 }
 
+/*
+  إصلاح مشكلة تسجيل الدخول:
+  Secure لا يتفعل على localhost HTTP
+  ويتفعل تلقائيًا على HTTPS.
+*/
+
 function setSessionCookie(
+  req,
   res,
   value,
   maxAge = 604800
 ) {
+  let proto = '';
+
+  try {
+    if (
+      typeof req?.headers?.get ===
+      'function'
+    ) {
+      proto =
+        req.headers.get(
+          'x-forwarded-proto'
+        ) ||
+        req.headers.get(
+          'X-Forwarded-Proto'
+        ) ||
+        '';
+    } else {
+      proto =
+        req?.headers?.[
+          'x-forwarded-proto'
+        ] || '';
+    }
+  } catch {
+    proto = '';
+  }
+
+  const isHttps =
+    proto === 'https' ||
+    (
+      typeof req?.protocol ===
+      'string' &&
+      req.protocol ===
+      'https'
+    );
+
+  const secure =
+    isHttps
+      ? '; Secure'
+      : '';
+
   res.setHeader(
     'Set-Cookie',
-    `session=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`
+    `session=${encodeURIComponent(
+      value
+    )}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${maxAge}`
   );
 }
 
@@ -149,7 +200,9 @@ async function sign(value) {
   const key =
     await crypto.subtle.importKey(
       'raw',
-      new TextEncoder().encode(secret),
+      new TextEncoder().encode(
+        secret
+      ),
       {
         name: 'HMAC',
         hash: 'SHA-256'
@@ -162,23 +215,34 @@ async function sign(value) {
     await crypto.subtle.sign(
       'HMAC',
       key,
-      new TextEncoder().encode(value)
+      new TextEncoder().encode(
+        value
+      )
     );
 
   return Array.from(
     new Uint8Array(sig)
   )
-    .map((b) =>
-      b.toString(16).padStart(2, '0')
+    .map(
+      (b) =>
+        b.toString(16)
+          .padStart(2, '0')
     )
     .join('');
 }
 
-async function makeSession(userId) {
-  return `${userId}.${await sign(userId)}`;
+async function makeSession(
+  userId
+) {
+  return (
+    `${userId}.` +
+    `${await sign(userId)}`
+  );
 }
 
-async function verifySession(value) {
+async function verifySession(
+  value
+) {
   if (
     !value ||
     !value.includes('.')
@@ -200,37 +264,56 @@ async function verifySession(value) {
     return null;
   }
 
-  return signature ===
+  return (
+    signature ===
     await sign(id)
+  )
     ? id
     : null;
 }
 
-function getCookie(req, name) {
-  const headers = req?.headers || {};
+function getCookie(
+  req,
+  name
+) {
+  const headers =
+    req?.headers || {};
+
   let raw = '';
 
   try {
     raw =
-      typeof headers.get === 'function'
-        ? headers.get('cookie') ||
-          headers.get('Cookie') ||
-          ''
-        : headers.cookie ||
-          headers.Cookie ||
-          '';
+      typeof headers.get ===
+      'function'
+        ? (
+            headers.get(
+              'cookie'
+            ) ||
+            headers.get(
+              'Cookie'
+            ) ||
+            ''
+          )
+        : (
+            headers.cookie ||
+            headers.Cookie ||
+            ''
+          );
   } catch {
     raw = '';
   }
 
   for (
-    const part
-    of String(raw).split(';')
+    const part of
+    String(raw).split(';')
   ) {
     const [
       key,
       ...rest
-    ] = part.trim().split('=');
+    ] =
+      part
+        .trim()
+        .split('=');
 
     if (key === name) {
       try {
@@ -246,10 +329,15 @@ function getCookie(req, name) {
   return '';
 }
 
-async function currentUser(req) {
+async function currentUser(
+  req
+) {
   const sessionId =
     await verifySession(
-      getCookie(req, 'session')
+      getCookie(
+        req,
+        'session'
+      )
     );
 
   if (!sessionId) {
@@ -264,9 +352,11 @@ async function currentUser(req) {
       .bind(sessionId)
       .first();
 
-  return user && user.active
-    ? user
-    : null;
+  return (
+    user && user.active
+      ? user
+      : null
+  );
 }
 
 async function ensureAdminAccount() {
@@ -416,7 +506,9 @@ async function requireAdmin(
       });
     }
 
-    if (user.role !== 'admin') {
+    if (
+      user.role !== 'admin'
+    ) {
       return res.status(403).json({
         message:
           'هذه الصفحة خاصة بالمدرس.'
@@ -436,15 +528,21 @@ async function requireAdmin(
   }
 }
 
-function lectureState(settings) {
-  if (!settings?.lecture_url) {
+function lectureState(
+  settings
+) {
+  if (
+    !settings?.lecture_url
+  ) {
     return {
       visible: false,
       reason: 'no-link'
     };
   }
 
-  if (!settings.scheduled_at) {
+  if (
+    !settings.scheduled_at
+  ) {
     return {
       visible: true,
       reason: 'always'
@@ -463,7 +561,8 @@ function lectureState(settings) {
   ) {
     return {
       visible: true,
-      reason: 'invalid-schedule'
+      reason:
+        'invalid-schedule'
     };
   }
 
@@ -472,7 +571,8 @@ function lectureState(settings) {
     5 * 60 * 1000;
 
   const visible =
-    Date.now() >= showAt;
+    Date.now() >=
+    showAt;
 
   return {
     visible,
@@ -537,7 +637,9 @@ app.get(
   (req, res) => {
     return res.json({
       user:
-        safeUser(req.user)
+        safeUser(
+          req.user
+        )
     });
   }
 );
@@ -760,6 +862,7 @@ app.post(
         }
 
         setSessionCookie(
+          req,
           res,
           await makeSession(
             admin.id
@@ -770,7 +873,9 @@ app.post(
           message:
             'تم تسجيل دخول المدرس.',
           user:
-            safeUser(admin)
+            safeUser(
+              admin
+            )
         });
       }
 
@@ -809,6 +914,7 @@ app.post(
       }
 
       setSessionCookie(
+        req,
         res,
         await makeSession(
           user.id
@@ -819,7 +925,9 @@ app.post(
         message:
           'تم تسجيل الدخول.',
         user:
-          safeUser(user)
+          safeUser(
+            user
+          )
       });
     } catch (error) {
       console.error(error);
@@ -836,6 +944,7 @@ app.post(
   '/api/logout',
   (req, res) => {
     setSessionCookie(
+      req,
       res,
       '',
       0
@@ -1064,7 +1173,9 @@ app.get(
       return res.json({
         users:
           (result.results || [])
-            .map(safeUser)
+            .map(
+              safeUser
+            )
       });
     } catch (error) {
       console.error(error);
@@ -1088,7 +1199,8 @@ app.get(
     try {
       const id =
         String(
-          req.params.id || ''
+          req.params.id ||
+          ''
         ).trim();
 
       const student =
@@ -1155,10 +1267,12 @@ app.get(
           .all();
 
       const grades =
-        gradesResult.results || [];
+        gradesResult.results ||
+        [];
 
       const attendance =
-        attendanceResult.results || [];
+        attendanceResult.results ||
+        [];
 
       const present =
         attendance.filter(
@@ -1207,27 +1321,37 @@ app.get(
               (
                 totalScore /
                 totalMax
-              ) * 100
+              ) *
+              100
             )
           : 0;
 
       return res.json({
         profile: {
-          id: student.id,
+          id:
+            student.id,
+
           fullName:
             student.full_name,
+
           login:
             student.login,
+
           grade:
             student.grade,
+
           subject:
             student.subject,
+
           mode:
             student.mode,
+
           role:
             student.role,
+
           active:
             !!student.active,
+
           createdAt:
             student.created_at
         },
@@ -1274,7 +1398,8 @@ app.patch(
     try {
       const id =
         String(
-          req.params.id || ''
+          req.params.id ||
+          ''
         ).trim();
 
       const student =
@@ -1436,8 +1561,11 @@ app.patch(
       return res.json({
         message:
           'تم تعديل بيانات الطالب بنجاح.',
+
         user:
-          safeUser(updated)
+          safeUser(
+            updated
+          )
       });
     } catch (error) {
       console.error(error);
@@ -1461,7 +1589,8 @@ app.delete(
     try {
       const id =
         String(
-          req.params.id || ''
+          req.params.id ||
+          ''
         ).trim();
 
       const student =
@@ -1812,7 +1941,8 @@ app.delete(
 
       const id =
         String(
-          req.params.id || ''
+          req.params.id ||
+          ''
         ).trim();
 
       const existing =
@@ -1901,9 +2031,9 @@ app.get(
             attendance.results ||
             []
           ).map(
-            (r) => [
-              r.user_id,
-              r.status
+            (row) => [
+              row.user_id,
+              row.status
             ]
           )
         );
@@ -1913,27 +2043,29 @@ app.get(
           users.results ||
           []
         ).map(
-          (u) => ({
+          (user) => ({
             userId:
-              u.id,
+              user.id,
 
             fullName:
-              u.full_name,
+              user.full_name,
 
             login:
-              u.login,
+              user.login,
 
             grade:
-              u.grade,
+              user.grade,
 
             subject:
-              u.subject,
+              user.subject,
 
             mode:
-              u.mode,
+              user.mode,
 
             status:
-              map.get(u.id) ||
+              map.get(
+                user.id
+              ) ||
               'غير محدد'
           })
         );
@@ -2122,9 +2254,6 @@ app.put(
           ''
         ).trim();
 
-      /*
-        الرابط اختياري
-      */
       if (
         lectureUrl &&
         !validUrl(lectureUrl)
@@ -2135,11 +2264,6 @@ app.put(
         });
       }
 
-      /*
-        تحويل datetime-local
-        إلى ISO ثابت
-        بتوقيت القاهرة
-      */
       const scheduledAt =
         normalizeLectureDateTime(
           rawScheduledAt
