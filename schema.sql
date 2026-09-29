@@ -2,11 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   full_name TEXT NOT NULL,
   login TEXT NOT NULL UNIQUE,
-  email TEXT NOT NULL DEFAULT '',
-  email_verified INTEGER NOT NULL DEFAULT 0,
-  email_verification_code_hash TEXT NOT NULL DEFAULT '',
-  email_verification_expires_at TEXT NOT NULL DEFAULT '',
-  email_verification_sent_at TEXT NOT NULL DEFAULT '',
+
   grade TEXT NOT NULL,
   subject TEXT NOT NULL,
   mode TEXT NOT NULL,
