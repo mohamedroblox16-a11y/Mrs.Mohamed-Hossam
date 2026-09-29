@@ -752,6 +752,7 @@ app.post(
         phoneOrDiscord,
         phone,
         identifier,
+        email,
         grade,
         subject,
         mode,
@@ -764,6 +765,11 @@ app.post(
         String(
           fullName || ''
         ).trim();
+
+      const userEmail =
+        String(email || '')
+          .trim()
+          .toLowerCase();
 
       const rawLogin =
         login ??
@@ -804,13 +810,21 @@ app.post(
 
       if (
         !userLogin ||
+        !userEmail ||
         !grade ||
         !subject ||
         !mode
       ) {
         return res.status(400).json({
           message:
-            'أكمل كل البيانات.'
+            'أكمل كل البيانات، بما فيها الإيميل.'
+        });
+      }
+
+      if (!validEmail(userEmail)) {
+        return res.status(400).json({
+          message:
+            'اكتب إيميل صحيح.'
         });
       }
 
@@ -860,6 +874,21 @@ app.post(
         });
       }
 
+      const existingEmail =
+        await DB()
+          .prepare(
+            'SELECT id FROM users WHERE email = ? LIMIT 1'
+          )
+          .bind(userEmail)
+          .first();
+
+      if (existingEmail) {
+        return res.status(409).json({
+          message:
+            'الإيميل مستخدم بالفعل.'
+        });
+      }
+
       const passwordHash =
         await bcrypt.hash(
           passwordText,
@@ -872,6 +901,7 @@ app.post(
             id,
             full_name,
             login,
+            email,
             grade,
             subject,
             mode,
@@ -881,6 +911,7 @@ app.post(
             password_hash
           )
           VALUES (
+            ?,
             ?,
             ?,
             ?,
@@ -897,6 +928,7 @@ app.post(
           crypto.randomUUID(),
           name,
           userLogin,
+          userEmail,
           String(grade),
           String(subject),
           String(mode),
