@@ -1293,6 +1293,98 @@ button{
     font-size:23px;
   }
 }
+.email-selection-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:15px 0 10px;
+  color:var(--muted);
+}
+
+.email-students-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:360px;
+  overflow:auto;
+  padding:4px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--soft);
+}
+
+.email-student-row{
+  display:grid;
+  grid-template-columns:auto minmax(180px,1fr) minmax(180px,1.2fr);
+  align-items:center;
+  gap:12px;
+  padding:13px;
+  border-radius:13px;
+  border:1px solid transparent;
+  background:var(--card);
+  cursor:pointer;
+}
+
+.email-student-row:hover{
+  border-color:var(--purple);
+}
+
+.email-student-row input{
+  width:18px;
+  height:18px;
+  accent-color:var(--purple);
+}
+
+.email-student-main{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.email-student-main small{
+  color:var(--muted);
+}
+
+.email-student-email{
+  color:var(--text);
+  direction:ltr;
+  text-align:left;
+  word-break:break-word;
+}
+
+.email-compose{
+  margin-top:16px;
+}
+
+.email-compose textarea{
+  width:100%;
+  resize:vertical;
+  min-height:180px;
+  border:1px solid var(--line);
+  background:var(--field);
+  color:var(--text);
+  border-radius:14px;
+  padding:14px;
+  outline:none;
+  font:inherit;
+}
+
+.email-compose textarea:focus{
+  border-color:var(--purple);
+  box-shadow:0 0 0 4px rgba(140,85,255,.10);
+}
+
+@media(max-width:700px){
+  .email-student-row{
+    grid-template-columns:auto 1fr;
+  }
+
+  .email-student-email{
+    grid-column:2;
+  }
+}
+
 </style>
 </head>
 
@@ -1423,6 +1515,11 @@ button{
     <div class="info">
       <small>التليفون / ديسكورد</small>
       <strong id="userLogin">-</strong>
+    </div>
+
+    <div class="info">
+      <small>الإيميل</small>
+      <strong id="userEmail">-</strong>
     </div>
 
     <div class="info">
@@ -1718,6 +1815,73 @@ button{
     </table>
 
   </div>
+
+</section>
+
+
+<!-- مركز الإيميلات -->
+
+<section id="emailCenterCard" class="card full" style="display:none">
+
+  <div class="title">
+    <h2>مركز الإيميلات</h2>
+    <span>اختار طالب أو ALL وابعت رسالة</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <input
+        id="emailStudentSearch"
+        type="search"
+        placeholder="Search بالاسم أو الإيميل أو الرقم أو الديسكورد"
+      >
+    </div>
+
+    <div class="btn-row">
+      <button id="emailSelectAll" class="primary" type="button">ALL</button>
+      <button id="emailClearAll" class="refresh" type="button">إلغاء التحديد</button>
+      <button id="refreshEmailStudents" class="refresh" type="button">↻ تحديث</button>
+    </div>
+  </div>
+
+  <div class="email-selection-head">
+    <strong>الطلاب والإيميلات</strong>
+    <span id="emailSelectedCount">0 محدد</span>
+  </div>
+
+  <div id="emailStudentsList" class="email-students-list">
+    جاري تحميل الإيميلات...
+  </div>
+
+  <div class="form-grid email-compose">
+
+    <div class="field full-field">
+      <label for="emailSubject">عنوان الرسالة</label>
+      <input
+        id="emailSubject"
+        type="text"
+        placeholder="مثال: مهم بخصوص المحاضرة"
+      >
+    </div>
+
+    <div class="field full-field">
+      <label for="emailMessage">الرسالة</label>
+      <textarea
+        id="emailMessage"
+        rows="8"
+        placeholder="اكتب الرسالة هنا..."
+      ></textarea>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button id="sendEmailBtn" class="primary" type="button">
+      ✉ إرسال الرسالة
+    </button>
+  </div>
+
+  <div id="emailMsg" class="msg"></div>
 
 </section>
 
