@@ -19,8 +19,20 @@ app.use('/api', (req, res, next) => {
 });
 
 const DB = () => env.DB;
-const RUNTIME_CODE_VERSION = '2026-09-29-secret-runtime-fix-2';
+const RUNTIME_CODE_VERSION = '2026-09-29-email-display-only';
 const nowIso = () => new Date().toISOString();
+
+async function ensureUserEmailColumn() {
+  try {
+    await DB()
+      .prepare('SELECT email FROM users LIMIT 1')
+      .first();
+  } catch {
+    await DB()
+      .prepare("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+      .run();
+  }
+}
 
 const normalizeLogin = (v) =>
   String(v ?? '').trim().toLowerCase();
@@ -94,6 +106,7 @@ function safeUser(user) {
     id: user.id,
     fullName: user.full_name,
     login: user.login,
+    email: user.email || '',
     grade: user.grade,
     subject: user.subject,
     mode: user.mode,
@@ -697,6 +710,8 @@ app.post(
   '/api/register',
   async (req, res) => {
     try {
+      await ensureUserEmailColumn();
+
       const {
         fullName,
         login,
@@ -704,6 +719,7 @@ app.post(
         phoneOrDiscord,
         phone,
         identifier,
+        email,
         grade,
         subject,
         mode,
@@ -722,8 +738,12 @@ app.post(
         return res.status(400).json({ message: 'اكتب اسمك ثلاثي.' });
       }
 
-      if (!userLogin || !grade || !subject || !mode) {
-        return res.status(400).json({ message: 'أكمل كل البيانات المطلوبة.' });
+      if (!userLogin || !userEmail || !grade || !subject || !mode) {
+        return res.status(400).json({ message: 'أكمل كل البيانات المطلوبة، بما فيها الإيميل.' });
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+        return res.status(400).json({ message: 'اكتب إيميل صحيح.' });
       }
 
       if (passwordText.length < 6) {
@@ -746,14 +766,27 @@ app.post(
         return res.status(409).json({ message: 'هذا الرقم أو اليوزر مستخدم بالفعل.' });
       }
 
+      const existingEmail =
+        await DB()
+          .prepare('SELECT id FROM users WHERE email = ? LIMIT 1')
+          .bind(userEmail)
+          .first();
+
+      if (existingEmail) {
+        return res.status(409).json({
+          message: 'الإيميل مستخدم بالفعل.'
+        });
+      }
+
       const passwordHash = await bcrypt.hash(passwordText, 12);
 
       await DB().prepare(
-        'INSERT INTO users (id, full_name, login, grade, subject, mode, role, active, created_at, password_hash) VALUES (?, ?, ?, ?, ?, ?, \'student\', 1, ?, ?)'
+        'INSERT INTO users (id, full_name, login, email, grade, subject, mode, role, active, created_at, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?, \'student\', 1, ?, ?)'
       ).bind(
         crypto.randomUUID(),
         name,
         userLogin,
+        userEmail,
         String(grade),
         String(subject),
         String(mode),
@@ -1107,6 +1140,8 @@ app.get(
   requireAdmin,
   async (req, res) => {
     try {
+      await ensureUserEmailColumn();
+
       const result =
         await DB()
           .prepare(`
@@ -1150,6 +1185,8 @@ app.get(
           ''
         ).trim();
 
+      await ensureUserEmailColumn();
+
       const student =
         await DB()
           .prepare(`
@@ -1157,11 +1194,13 @@ app.get(
               id,
               full_name,
               login,
+              email,
               grade,
               subject,
               mode,
               role,
               active,
+              email,
               created_at
             FROM users
             WHERE id = ?
@@ -1357,8 +1396,12 @@ app.patch(
       const mode = String(req.body?.mode ?? student.mode).trim();
       const active = Number(req.body?.active ?? student.active) ? 1 : 0;
 
-      if (!fullName || !login || !grade || !subject || !mode) {
-        return res.status(400).json({ message: 'أكمل بيانات الطالب.' });
+      if (!fullName || !login || !email || !grade || !subject || !mode) {
+        return res.status(400).json({ message: 'أكمل بيانات الطالب والإيميل.' });
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ message: 'إيميل الطالب غير صحيح.' });
       }
 
       const duplicate = await DB().prepare(
