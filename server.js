@@ -204,17 +204,14 @@ function getRuntimeSecret(name) {
 
 async function sendResendBatch(recipients, subject, message) {
   const apiKey = getRuntimeSecret('RESEND_API_KEY');
-  const from = getRuntimeSecret('RESEND_FROM_EMAIL');
+
+  const from =
+    getRuntimeSecret('RESEND_FROM_EMAIL') ||
+    'mrsmohamedteam@gmail.com';
 
   if (!apiKey) {
     throw new Error(
       'RESEND_API_KEY غير متاح للـWorker المنشور. تأكد أنه Secret داخل Worker mrs-mohamed-hossam ثم اعمل Deploy.'
-    );
-  }
-
-  if (!from) {
-    throw new Error(
-      'RESEND_FROM_EMAIL غير متاح للـWorker المنشور. أضفه كـSecret أو Variable داخل Worker mrs-mohamed-hossam.'
     );
   }
 
