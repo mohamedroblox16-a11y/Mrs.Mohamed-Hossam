@@ -4,8 +4,7 @@
   "main": "server.js",
   "compatibility_date": "2026-09-28",
   "compatibility_flags": [
-    "nodejs_compat",
-    "nodejs_compat_populate_process_env"
+    "nodejs_compat"
   ],
   "assets": {
     "directory": "./public/",
