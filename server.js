@@ -21,6 +21,100 @@ app.use('/api', (req, res, next) => {
 const DB = () => env.DB;
 const nowIso = () => new Date().toISOString();
 
+async function ensureUserEmailColumn() {
+  try {
+    await DB().prepare('SELECT email FROM users LIMIT 1').first();
+  } catch {
+    await DB().prepare("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''").run();
+  }
+}
+
+function validEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    String(value || '').trim()
+  );
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function sendResendBatch(recipients, subject, message) {
+  const apiKey = String(env.RESEND_API_KEY || '').trim();
+  const from = String(env.RESEND_FROM_EMAIL || '').trim();
+
+  if (!apiKey) throw new Error('RESEND_API_KEY غير مضبوط في Cloudflare Secrets.');
+  if (!from) throw new Error('RESEND_FROM_EMAIL غير مضبوط في Cloudflare Secrets.');
+
+  const uniqueEmails = [];
+  const seen = new Set();
+
+  for (const item of recipients || []) {
+    const email = String(item?.email || '').trim().toLowerCase();
+    if (!validEmail(email) || seen.has(email)) continue;
+    seen.add(email);
+    uniqueEmails.push(email);
+  }
+
+  if (!uniqueEmails.length) {
+    return { sentCount: 0, totalRecipients: 0 };
+  }
+
+  const html = `
+    <div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.9;color:#20253a">
+      ${escapeHtml(message).replace(/\r?\n/g, '<br>')}
+    </div>
+  `;
+
+  let sentCount = 0;
+
+  for (let i = 0; i < uniqueEmails.length; i += 100) {
+    const chunk = uniqueEmails.slice(i, i + 100);
+
+    const payload = chunk.map((email) => ({
+      from,
+      to: [email],
+      subject: String(subject || '').trim(),
+      html
+    }));
+
+    const response = await fetch('https://api.resend.com/emails/batch', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {}
+
+    if (!response.ok) {
+      console.error('Resend error:', data);
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        `فشل إرسال البريد من Resend (HTTP ${response.status}).`
+      );
+    }
+
+    sentCount += chunk.length;
+  }
+
+  return {
+    sentCount,
+    totalRecipients: uniqueEmails.length
+  };
+}
+
 const normalizeLogin = (v) =>
   String(v ?? '').trim().toLowerCase();
 
@@ -93,6 +187,7 @@ function safeUser(user) {
     id: user.id,
     fullName: user.full_name,
     login: user.login,
+    email: user.email || '',
     grade: user.grade,
     subject: user.subject,
     mode: user.mode,
@@ -332,6 +427,8 @@ function getCookie(
 async function currentUser(
   req
 ) {
+  await ensureUserEmailColumn();
+
   const sessionId =
     await verifySession(
       getCookie(
