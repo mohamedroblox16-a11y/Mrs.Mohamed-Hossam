@@ -9,32 +9,41 @@
 :root{
   --p:#1769ff;
   --p2:#5d42ff;
+  --purple:#9b5cff;
   --text:#17233a;
   --muted:#6d7a92;
-  --bg:#f4f7fb;
   --card:#fff;
   --line:#e3e9f3;
   --ok:#0da36b;
   --bad:#e5484d;
-  --shadow:0 18px 55px rgba(20,45,90,.1)
+  --shadow:0 18px 55px rgba(20,45,90,.1);
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
   min-height:100vh;
   font-family:Arial,"Segoe UI",Tahoma,sans-serif;
   background:linear-gradient(180deg,#f8fbff,#f2f6fb);
-  color:var(--text)
+  color:var(--text);
 }
 
-button,input,select{font:inherit}
-button{cursor:pointer}
+button,
+input,
+select{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
 
 .page{
   width:min(1350px,calc(100% - 28px));
-  margin:14px auto 40px
+  margin:14px auto 40px;
 }
 
 .topbar{
@@ -49,28 +58,28 @@ button{cursor:pointer}
   box-shadow:0 12px 35px rgba(20,45,90,.07);
   position:sticky;
   top:12px;
-  z-index:30
+  z-index:30;
 }
 
 .brand{
   display:flex;
   align-items:center;
   gap:12px;
-  font-weight:900
+  font-weight:900;
 }
 
 .brand-img{
   width:52px;
   height:52px;
   border-radius:16px;
-  overflow:hidden
+  overflow:hidden;
 }
 
 .brand-img img{
   width:100%;
   height:100%;
   object-fit:cover;
-  display:block
+  display:block;
 }
 
 .brand small{
@@ -78,13 +87,13 @@ button{cursor:pointer}
   margin-top:4px;
   color:var(--muted);
   font-size:12px;
-  font-weight:500
+  font-weight:500;
 }
 
 .actions{
   display:flex;
   gap:8px;
-  align-items:center
+  align-items:center;
 }
 
 .icon-btn,
@@ -93,18 +102,18 @@ button{cursor:pointer}
   height:48px;
   border:1px solid var(--line);
   border-radius:15px;
-  background:#fff
+  background:#fff;
 }
 
 .icon-btn{
   padding:0;
-  overflow:hidden
+  overflow:hidden;
 }
 
 .icon-btn img{
   width:100%;
   height:100%;
-  object-fit:cover
+  object-fit:cover;
 }
 
 .logout{
@@ -114,7 +123,7 @@ button{cursor:pointer}
   background:#fff4f5;
   color:#d63d45;
   padding:0 15px;
-  font-weight:900
+  font-weight:900;
 }
 
 .welcome{
@@ -123,18 +132,18 @@ button{cursor:pointer}
   border-radius:28px;
   color:#fff;
   background:linear-gradient(135deg,#1769ff,#5d42ff);
-  box-shadow:0 22px 60px rgba(23,105,255,.2)
+  box-shadow:0 22px 60px rgba(23,105,255,.2);
 }
 
 .welcome h1{
   margin:0 0 8px;
-  font-size:34px
+  font-size:34px;
 }
 
 .welcome p{
   margin:0;
   opacity:.92;
-  line-height:1.8
+  line-height:1.8;
 }
 
 .badge{
@@ -144,14 +153,14 @@ button{cursor:pointer}
   border-radius:999px;
   background:rgba(255,255,255,.15);
   font-size:13px;
-  font-weight:800
+  font-weight:800;
 }
 
 .stats{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:15px;
-  margin-top:18px
+  margin-top:18px;
 }
 
 .stat{
@@ -159,25 +168,25 @@ button{cursor:pointer}
   border:1px solid var(--line);
   border-radius:22px;
   padding:20px;
-  box-shadow:var(--shadow)
+  box-shadow:var(--shadow);
 }
 
 .stat small{
   display:block;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .stat strong{
   display:block;
   font-size:31px;
-  margin-top:8px
+  margin-top:8px;
 }
 
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:18px;
-  margin-top:18px
+  margin-top:18px;
 }
 
 .card{
@@ -185,11 +194,11 @@ button{cursor:pointer}
   border:1px solid var(--line);
   border-radius:24px;
   padding:24px;
-  box-shadow:var(--shadow)
+  box-shadow:var(--shadow);
 }
 
 .full{
-  grid-column:1/-1
+  grid-column:1/-1;
 }
 
 .title{
@@ -197,64 +206,198 @@ button{cursor:pointer}
   justify-content:space-between;
   gap:12px;
   align-items:center;
-  margin-bottom:18px
+  margin-bottom:18px;
 }
 
 .title h2{
   margin:0;
-  font-size:21px
+  font-size:21px;
 }
 
 .title span{
   font-size:13px;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .profile-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px
+  gap:12px;
 }
 
 .info{
   border:1px solid var(--line);
   background:#f9fbff;
   border-radius:16px;
-  padding:14px
+  padding:14px;
 }
 
 .info small{
   display:block;
   color:var(--muted);
-  margin-bottom:6px
+  margin-bottom:6px;
+}
+
+.lecture-shell{
+  position:relative;
+  padding:2px;
+  border-radius:21px;
+  overflow:hidden;
+}
+
+.lecture-shell::before{
+  content:"";
+  position:absolute;
+  inset:-80%;
+  background:conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 70deg,
+    #7c3cff 110deg,
+    #b36cff 155deg,
+    #7c3cff 200deg,
+    transparent 240deg,
+    transparent 360deg
+  );
+  opacity:0;
+  animation:rotateBorder 4s linear infinite;
+  transition:opacity .3s ease;
+}
+
+.lecture-shell.countdown-active::before{
+  opacity:1;
+}
+
+@keyframes rotateBorder{
+  from{
+    transform:rotate(0deg);
+  }
+  to{
+    transform:rotate(360deg);
+  }
 }
 
 .lecture{
-  border:1px dashed #b8c9e8;
+  position:relative;
+  z-index:1;
+  border:1px solid #b8c9e8;
   background:#f8fbff;
-  border-radius:18px;
-  padding:18px
+  border-radius:19px;
+  padding:18px;
+}
+
+.lecture-shell.countdown-active .lecture{
+  border-color:#8c55ff;
+  box-shadow:
+    0 0 15px rgba(144,78,255,.35),
+    0 0 35px rgba(144,78,255,.18);
+  animation:purplePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes purplePulse{
+  0%,100%{
+    box-shadow:
+      0 0 12px rgba(144,78,255,.25),
+      0 0 28px rgba(144,78,255,.12);
+  }
+  50%{
+    box-shadow:
+      0 0 22px rgba(144,78,255,.55),
+      0 0 48px rgba(144,78,255,.25);
+  }
 }
 
 .lecture h3{
-  margin:0 0 10px
+  margin:0 0 10px;
 }
 
 .lecture p{
   margin:7px 0;
   color:var(--muted);
-  line-height:1.8
+  line-height:1.8;
+}
+
+.countdown-label{
+  margin-top:16px;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:800;
+}
+
+.countdown{
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+  font-weight:900;
+}
+
+.countdown-box{
+  min-width:74px;
+  padding:10px 12px;
+  text-align:center;
+  border-radius:14px;
+  border:1px solid #d9c8ff;
+  background:linear-gradient(
+    180deg,
+    rgba(149,92,255,.13),
+    rgba(149,92,255,.05)
+  );
+  color:#7c3cff;
+  box-shadow:
+    inset 0 0 14px rgba(149,92,255,.08),
+    0 0 12px rgba(149,92,255,.10);
+}
+
+.countdown-box strong{
+  display:block;
+  font-size:25px;
+  line-height:1;
+}
+
+.countdown-box span{
+  display:block;
+  margin-top:5px;
+  font-size:11px;
+  color:#8a72b7;
+}
+
+.lecture-shell.countdown-active .countdown-box{
+  animation:countGlow 1.4s ease-in-out infinite;
+}
+
+@keyframes countGlow{
+  0%,100%{
+    box-shadow:
+      0 0 7px rgba(149,92,255,.18),
+      inset 0 0 10px rgba(149,92,255,.07);
+  }
+  50%{
+    box-shadow:
+      0 0 18px rgba(149,92,255,.45),
+      inset 0 0 16px rgba(149,92,255,.12);
+  }
+}
+
+.countdown-ended{
+  margin-top:14px;
+  padding:12px;
+  border-radius:14px;
+  background:#e8f8f1;
+  color:#087e56;
+  font-weight:900;
 }
 
 .lecture-link{
   display:none;
-  margin-top:12px;
+  margin-top:14px;
   padding:11px 16px;
   border-radius:12px;
   background:linear-gradient(135deg,var(--p),var(--p2));
   color:#fff;
   text-decoration:none;
-  font-weight:900
+  font-weight:900;
 }
 
 .admin-box{
@@ -262,24 +405,24 @@ button{cursor:pointer}
   padding:18px;
   border:1px solid var(--line);
   border-radius:18px;
-  background:#fafcff
+  background:#fafcff;
 }
 
 .form-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px
+  gap:12px;
 }
 
 .full-field{
-  grid-column:1/-1
+  grid-column:1/-1;
 }
 
 .field label{
   display:block;
   margin-bottom:7px;
   font-size:13px;
-  font-weight:800
+  font-weight:800;
 }
 
 .field input,
@@ -291,14 +434,27 @@ button{cursor:pointer}
   padding:13px;
   background:#fff;
   color:var(--text);
-  outline:0
+  outline:0;
+}
+
+.field input:focus,
+.field select:focus,
+.search input:focus{
+  border-color:#8b63ff;
+  box-shadow:0 0 0 3px rgba(139,99,255,.12);
+}
+
+.hint{
+  font-size:11px;
+  margin-top:6px;
+  color:var(--muted);
 }
 
 .btn-row{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
-  margin-top:14px
+  margin-top:14px;
 }
 
 .primary,
@@ -310,33 +466,33 @@ button{cursor:pointer}
   border:0;
   border-radius:13px;
   padding:11px 15px;
-  font-weight:900
+  font-weight:900;
 }
 
 .primary{
   background:linear-gradient(135deg,var(--p),var(--p2));
-  color:#fff
+  color:#fff;
 }
 
 .danger{
   background:#fff0f1;
-  color:#d94148
+  color:#d94148;
 }
 
 .secondary,
 .refresh{
   background:#eef2f7;
-  color:#49566f
+  color:#49566f;
 }
 
 .edit{
   background:#eaf2ff;
-  color:#1458d8
+  color:#1458d8;
 }
 
 .profile-btn{
   background:#e8f8f1;
-  color:#087e56
+  color:#087e56;
 }
 
 .msg{
@@ -344,71 +500,76 @@ button{cursor:pointer}
   min-height:20px;
   margin-top:10px;
   font-size:13px;
-  font-weight:800
+  font-weight:800;
 }
 
-.success{color:var(--ok)}
-.error{color:var(--bad)}
+.success{
+  color:var(--ok);
+}
+
+.error{
+  color:var(--bad);
+}
 
 .toolbar{
   display:flex;
   gap:10px;
   align-items:center;
   flex-wrap:wrap;
-  margin-bottom:15px
+  margin-bottom:15px;
 }
 
 .search{
   flex:1;
-  min-width:240px
+  min-width:240px;
 }
 
 .table-wrap{
-  overflow:auto
+  overflow:auto;
 }
 
 .table{
   width:100%;
   border-collapse:collapse;
-  min-width:900px
+  min-width:900px;
 }
 
 .table.small{
-  min-width:650px
+  min-width:650px;
 }
 
 .table th,
 .table td{
   padding:13px 11px;
   border-bottom:1px solid var(--line);
-  text-align:right
+  text-align:right;
 }
 
 .table th{
   font-size:13px;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .status{
   padding:7px 10px;
   border-radius:999px;
   font-size:12px;
-  font-weight:900
+  font-weight:900;
 }
 
 .active{
   background:#e8f8f1;
-  color:#087e56
+  color:#087e56;
 }
 
 .inactive{
   background:#fff0f1;
-  color:#d94148
+  color:#d94148;
 }
 
 .pending{
   background:#fff7df;
-  color:#a26b00
+  color:#a26b00;
 }
 
 .modal{
@@ -420,11 +581,11 @@ button{cursor:pointer}
   padding:18px;
   background:rgba(4,13,31,.62);
   backdrop-filter:blur(8px);
-  z-index:100
+  z-index:100;
 }
 
 .modal.open{
-  display:flex
+  display:flex;
 }
 
 .modal-box{
@@ -434,7 +595,7 @@ button{cursor:pointer}
   background:#fff;
   border-radius:25px;
   padding:25px;
-  box-shadow:0 35px 90px rgba(0,0,0,.25)
+  box-shadow:0 35px 90px rgba(0,0,0,.25);
 }
 
 .modal-head{
@@ -442,11 +603,11 @@ button{cursor:pointer}
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  margin-bottom:18px
+  margin-bottom:18px;
 }
 
 .modal-head h2{
-  margin:0
+  margin:0;
 }
 
 .close{
@@ -455,32 +616,32 @@ button{cursor:pointer}
   border:1px solid var(--line);
   border-radius:12px;
   background:#f7f9fc;
-  font-size:22px
+  font-size:22px;
 }
 
 .profile-stats{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:12px;
-  margin-top:18px
+  margin-top:18px;
 }
 
 .profile-stat{
   background:#f8fbff;
   border:1px solid var(--line);
   border-radius:18px;
-  padding:18px
+  padding:18px;
 }
 
 .profile-stat small{
   display:block;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .profile-stat strong{
   display:block;
   font-size:27px;
-  margin-top:7px
+  margin-top:7px;
 }
 
 .approve-btn{
@@ -489,7 +650,7 @@ button{cursor:pointer}
   padding:9px 12px;
   background:#e8f8f1;
   color:#087e56;
-  font-weight:900
+  font-weight:900;
 }
 
 .dark{
@@ -497,11 +658,11 @@ button{cursor:pointer}
   --muted:#a7b3ca;
   --card:#101b2d;
   --line:#2a3953;
-  background:linear-gradient(180deg,#07111f,#0d1727)
+  background:linear-gradient(180deg,#07111f,#0d1727);
 }
 
 .dark .topbar{
-  background:rgba(15,27,45,.94)
+  background:rgba(15,27,45,.94);
 }
 
 .dark .icon-btn,
@@ -510,13 +671,13 @@ button{cursor:pointer}
 .dark .secondary{
   background:#16243a;
   color:#fff;
-  border-color:#33445f
+  border-color:#33445f;
 }
 
 .dark .logout{
   background:#30181b;
   color:#ff858b;
-  border-color:#5a2a2f
+  border-color:#5a2a2f;
 }
 
 .dark .info,
@@ -529,77 +690,95 @@ button{cursor:pointer}
 .dark .profile-stat{
   background:#0d1829;
   color:#fff;
-  border-color:#30415e
+  border-color:#30415e;
+}
+
+.dark .lecture-shell.countdown-active .lecture{
+  background:#0d1829;
 }
 
 .dark .close{
   background:#16243a;
   color:#fff;
-  border-color:#30415e
+  border-color:#30415e;
 }
 
 .dark .edit{
   background:#122542;
-  color:#84aeff
+  color:#84aeff;
 }
 
 .dark .danger{
   background:#301a1d;
-  color:#ff858b
+  color:#ff858b;
+}
+
+.dark .countdown-box{
+  background:rgba(149,92,255,.09);
+  border-color:#5d43a2;
+  color:#b994ff;
 }
 
 @media(max-width:1100px){
   .stats,
   .profile-stats{
-    grid-template-columns:repeat(2,1fr)
+    grid-template-columns:repeat(2,1fr);
   }
 
   .grid{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 }
 
 @media(max-width:700px){
   .page{
-    width:calc(100% - 16px)
+    width:calc(100% - 16px);
   }
 
   .brand-img,
   .icon-btn,
   .theme-btn{
     width:44px;
-    height:44px
+    height:44px;
   }
 
   .logout{
     width:44px;
     height:44px;
     padding:0;
-    font-size:0
+    font-size:0;
   }
 
   .logout:after{
     content:"↪";
-    font-size:20px
+    font-size:20px;
   }
 
   .welcome{
-    padding:24px
+    padding:24px;
   }
 
   .welcome h1{
-    font-size:27px
+    font-size:27px;
   }
 
   .stats,
   .profile-grid,
   .profile-stats,
   .form-grid{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
   .full-field{
-    grid-column:auto
+    grid-column:auto;
+  }
+
+  .countdown-box{
+    min-width:64px;
+  }
+
+  .countdown-box strong{
+    font-size:21px;
   }
 }
 </style>
@@ -612,6 +791,7 @@ button{cursor:pointer}
 <header class="topbar">
 
   <div class="brand">
+
     <div class="brand-img">
       <img src="Mrs.jpg" alt="مستر محمد حسام">
     </div>
@@ -620,6 +800,7 @@ button{cursor:pointer}
       منصة مستر محمد حسام
       <small>لوحة التحكم</small>
     </div>
+
   </div>
 
   <div class="actions">
@@ -628,11 +809,19 @@ button{cursor:pointer}
       <img src="Mrs.jpg" alt="مستر محمد حسام">
     </button>
 
-    <button id="themeBtn" class="theme-btn" type="button">
+    <button
+      id="themeBtn"
+      class="theme-btn"
+      type="button"
+    >
       🌙
     </button>
 
-    <button id="logoutBtn" class="logout" type="button">
+    <button
+      id="logoutBtn"
+      class="logout"
+      type="button"
+    >
       خروج
     </button>
 
@@ -651,14 +840,21 @@ button{cursor:pointer}
     جاري تحميل البيانات...
   </p>
 
-  <span id="roleBadge" class="badge">
+  <span
+    id="roleBadge"
+    class="badge"
+  >
     حساب طالب
   </span>
 
 </section>
 
 
-<section id="adminStats" class="stats" style="display:none">
+<section
+  id="adminStats"
+  class="stats"
+  style="display:none"
+>
 
   <div class="stat">
     <small>إجمالي الطلاب</small>
@@ -685,6 +881,8 @@ button{cursor:pointer}
 
 <main class="grid">
 
+
+<!-- ACCOUNT -->
 
 <section class="card">
 
@@ -730,39 +928,104 @@ button{cursor:pointer}
 </section>
 
 
+<!-- LECTURE -->
 
 <section class="card">
 
   <div class="title">
+
     <h2>المحاضرة القادمة</h2>
-    <span>موعد المحاضرة</span>
-  </div>
 
-  <div class="lecture">
-
-    <h3 id="lectureTitle">
-      المحاضرة القادمة
-    </h3>
-
-    <p id="lectureDate">
-      لم يتم تحديد موعد المحاضرة.
-    </p>
-
-    <p id="lectureInfo">
-      سيظهر رابط المحاضرة قبل الموعد بخمس دقائق.
-    </p>
-
-    <a
-      id="lectureLink"
-      class="lecture-link"
-      target="_blank"
-      rel="noopener"
-    >
-      دخول المحاضرة
-    </a>
+    <span>
+      موعد المحاضرة
+    </span>
 
   </div>
 
+
+  <div
+    id="lectureShell"
+    class="lecture-shell"
+  >
+
+    <div class="lecture">
+
+      <h3 id="lectureTitle">
+        المحاضرة القادمة
+      </h3>
+
+      <p id="lectureDate">
+        لم يتم تحديد موعد المحاضرة.
+      </p>
+
+      <p id="lectureInfo">
+        سيتم عرض تفاصيل المحاضرة هنا.
+      </p>
+
+
+      <div
+        id="countdownArea"
+        style="display:none"
+      >
+
+        <div class="countdown-label">
+          يبدأ الدرس بعد:
+        </div>
+
+        <div
+          id="countdown"
+          class="countdown"
+        >
+
+          <div class="countdown-box">
+            <strong id="daysValue">0</strong>
+            <span>يوم</span>
+          </div>
+
+          <div class="countdown-box">
+            <strong id="hoursValue">00</strong>
+            <span>ساعة</span>
+          </div>
+
+          <div class="countdown-box">
+            <strong id="minutesValue">00</strong>
+            <span>دقيقة</span>
+          </div>
+
+          <div class="countdown-box">
+            <strong id="secondsValue">00</strong>
+            <span>ثانية</span>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="countdownEnded"
+        class="countdown-ended"
+        style="display:none"
+      >
+        المحاضرة بدأت بالفعل.
+      </div>
+
+
+      <a
+        id="lectureLink"
+        class="lecture-link"
+        target="_blank"
+        rel="noopener"
+      >
+        دخول المحاضرة
+      </a>
+
+    </div>
+
+  </div>
+
+
+  <!-- ADMIN LECTURE SETTINGS -->
 
   <div
     id="lectureAdmin"
@@ -772,32 +1035,71 @@ button{cursor:pointer}
 
     <div class="form-grid">
 
+
       <div class="field full-field">
-        <label>اسم المحاضرة</label>
-        <input id="lectureTitleInput" type="text">
+
+        <label>
+          اسم المحاضرة
+        </label>
+
+        <input
+          id="lectureTitleInput"
+          type="text"
+          placeholder="المحاضرة الأولى"
+        >
+
       </div>
 
 
       <div class="field">
-        <label>تاريخ المحاضرة</label>
-        <input id="lectureDateInput" type="date">
+
+        <label>
+          تاريخ المحاضرة
+        </label>
+
+        <input
+          id="lectureDateInput"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="2026-09-29"
+        >
+
+        <div class="hint">
+          اكتب بالشكل: 2026-09-29 أو 29/09/2026
+        </div>
+
       </div>
 
 
       <div class="field">
-        <label>وقت المحاضرة</label>
-        <input id="lectureTimeInput" type="time">
+
+        <label>
+          وقت المحاضرة
+        </label>
+
+        <input
+          id="lectureTimeInput"
+          type="time"
+        >
+
       </div>
 
 
       <div class="field full-field">
-        <label>رابط المحاضرة</label>
+
+        <label>
+          رابط المحاضرة
+        </label>
+
         <input
           id="lectureUrlInput"
           type="url"
           placeholder="https://..."
         >
+
       </div>
+
 
     </div>
 
@@ -823,13 +1125,17 @@ button{cursor:pointer}
     </div>
 
 
-    <div id="lectureMsg" class="msg"></div>
+    <div
+      id="lectureMsg"
+      class="msg"
+    ></div>
 
   </div>
 
 </section>
 
 
+<!-- STUDENTS -->
 
 <section
   id="studentsCard"
@@ -842,13 +1148,16 @@ button{cursor:pointer}
     <span>إدارة الطلاب</span>
   </div>
 
+
   <div class="toolbar">
 
     <div class="search">
+
       <input
         id="studentSearch"
         placeholder="ابحث بالاسم أو الرقم أو الديسكورد"
       >
+
     </div>
 
     <button
@@ -861,6 +1170,7 @@ button{cursor:pointer}
 
   </div>
 
+
   <div class="table-wrap">
 
     <table class="table">
@@ -868,6 +1178,7 @@ button{cursor:pointer}
       <thead>
 
         <tr>
+
           <th>الاسم</th>
           <th>التسجيل</th>
           <th>السنة</th>
@@ -875,6 +1186,7 @@ button{cursor:pointer}
           <th>الاشتراك</th>
           <th>الحالة</th>
           <th>الإجراء</th>
+
         </tr>
 
       </thead>
@@ -882,7 +1194,10 @@ button{cursor:pointer}
       <tbody id="studentsBody">
 
         <tr>
-          <td colspan="7" class="empty">
+          <td
+            colspan="7"
+            class="empty"
+          >
             جاري التحميل...
           </td>
         </tr>
@@ -896,12 +1211,20 @@ button{cursor:pointer}
 </section>
 
 
+<!-- GRADES -->
 
 <section class="card full">
 
   <div class="title">
-    <h2>درجات امتحانات الحصص</h2>
-    <span id="gradesSubtitle">درجاتك</span>
+
+    <h2>
+      درجات امتحانات الحصص
+    </h2>
+
+    <span id="gradesSubtitle">
+      درجاتك
+    </span>
+
   </div>
 
 
@@ -929,34 +1252,46 @@ button{cursor:pointer}
 
 
       <div class="field">
+
         <label>اسم الامتحان</label>
+
         <input id="examName">
+
       </div>
 
 
       <div class="field">
+
         <label>اسم الحصة</label>
+
         <input id="lessonName">
+
       </div>
 
 
       <div class="field">
+
         <label>الدرجة</label>
+
         <input
           id="score"
           type="number"
           min="0"
         >
+
       </div>
 
 
       <div class="field">
+
         <label>من</label>
+
         <input
           id="total"
           type="number"
           min="1"
         >
+
       </div>
 
     </div>
@@ -975,7 +1310,10 @@ button{cursor:pointer}
     </div>
 
 
-    <div id="gradeMsg" class="msg"></div>
+    <div
+      id="gradeMsg"
+      class="msg"
+    ></div>
 
   </div>
 
@@ -987,11 +1325,13 @@ button{cursor:pointer}
       <thead>
 
         <tr>
+
           <th>الامتحان</th>
           <th>الحصة</th>
           <th>الدرجة</th>
           <th>النسبة</th>
           <th>الإجراء</th>
+
         </tr>
 
       </thead>
@@ -1005,6 +1345,7 @@ button{cursor:pointer}
 </section>
 
 
+<!-- ATTENDANCE -->
 
 <section
   id="attendanceCard"
@@ -1013,10 +1354,15 @@ button{cursor:pointer}
 >
 
   <div class="title">
-    <h2>الحضور والغياب</h2>
+
+    <h2>
+      الحضور والغياب
+    </h2>
+
     <span>
       الطالب يطلب حضور والمدير يعتمد الطلب
     </span>
+
   </div>
 
 
@@ -1076,9 +1422,11 @@ button{cursor:pointer}
         <thead>
 
           <tr>
+
             <th>التاريخ</th>
             <th>الحالة</th>
             <th>الطريقة</th>
+
           </tr>
 
         </thead>
@@ -1086,9 +1434,14 @@ button{cursor:pointer}
         <tbody id="studentAttendanceBody">
 
           <tr>
-            <td colspan="3" class="empty">
+
+            <td
+              colspan="3"
+              class="empty"
+            >
               لا يوجد سجل حضور.
             </td>
+
           </tr>
 
         </tbody>
@@ -1098,7 +1451,6 @@ button{cursor:pointer}
     </div>
 
   </div>
-
 
 
   <div
@@ -1113,7 +1465,9 @@ button{cursor:pointer}
         style="min-width:220px"
       >
 
-        <label>تاريخ الحضور</label>
+        <label>
+          تاريخ الحضور
+        </label>
 
         <input
           id="attendanceDate"
@@ -1121,6 +1475,7 @@ button{cursor:pointer}
         >
 
       </div>
+
 
       <button
         id="loadAttendance"
@@ -1140,12 +1495,14 @@ button{cursor:pointer}
         <thead>
 
           <tr>
+
             <th>الاسم</th>
             <th>السنة</th>
             <th>المادة</th>
             <th>الاشتراك</th>
             <th>الحالة</th>
             <th>الإجراء</th>
+
           </tr>
 
         </thead>
@@ -1153,9 +1510,14 @@ button{cursor:pointer}
         <tbody id="adminAttendanceBody">
 
           <tr>
-            <td colspan="6" class="empty">
+
+            <td
+              colspan="6"
+              class="empty"
+            >
               اختر التاريخ واضغط تحميل.
             </td>
+
           </tr>
 
         </tbody>
@@ -1174,16 +1536,17 @@ button{cursor:pointer}
 
 </section>
 
-
 </main>
 
 </div>
 
 
+<!-- EDIT MODAL -->
 
-<!-- Edit Student Modal -->
-
-<div id="editModal" class="modal">
+<div
+  id="editModal"
+  class="modal"
+>
 
   <div
     class="modal-box"
@@ -1192,7 +1555,9 @@ button{cursor:pointer}
 
     <div class="modal-head">
 
-      <h2>تعديل الطالب</h2>
+      <h2>
+        تعديل الطالب
+      </h2>
 
       <button
         id="closeEdit"
@@ -1216,6 +1581,7 @@ button{cursor:pointer}
       <div class="field full-field">
 
         <label>الاسم</label>
+
         <input id="editName">
 
       </div>
@@ -1223,7 +1589,10 @@ button{cursor:pointer}
 
       <div class="field full-field">
 
-        <label>رقم التلفون / ديسكورد</label>
+        <label>
+          رقم التلفون / ديسكورد
+        </label>
+
         <input id="editLogin">
 
       </div>
@@ -1231,13 +1600,23 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>السنة</label>
+        <label>
+          السنة
+        </label>
 
         <select id="editGrade">
 
-          <option>أولى إعدادي</option>
-          <option>ثانية إعدادي</option>
-          <option>ثالثة إعدادي</option>
+          <option>
+            أولى إعدادي
+          </option>
+
+          <option>
+            ثانية إعدادي
+          </option>
+
+          <option>
+            ثالثة إعدادي
+          </option>
 
         </select>
 
@@ -1246,12 +1625,19 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>المادة</label>
+        <label>
+          المادة
+        </label>
 
         <select id="editSubject">
 
-          <option>رياضيات</option>
-          <option>دراسات اجتماعية</option>
+          <option>
+            رياضيات
+          </option>
+
+          <option>
+            دراسات اجتماعية
+          </option>
 
         </select>
 
@@ -1260,12 +1646,19 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>الاشتراك</label>
+        <label>
+          الاشتراك
+        </label>
 
         <select id="editMode">
 
-          <option>خصوصي</option>
-          <option>مجموعة</option>
+          <option>
+            خصوصي
+          </option>
+
+          <option>
+            مجموعة
+          </option>
 
         </select>
 
@@ -1274,12 +1667,19 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>الحالة</label>
+        <label>
+          الحالة
+        </label>
 
         <select id="editActive">
 
-          <option value="1">نشط</option>
-          <option value="0">غير نشط</option>
+          <option value="1">
+            نشط
+          </option>
+
+          <option value="0">
+            غير نشط
+          </option>
 
         </select>
 
@@ -1333,16 +1733,20 @@ button{cursor:pointer}
 </div>
 
 
+<!-- PROFILE MODAL -->
 
-<!-- Student Profile Modal -->
-
-<div id="profileModal" class="modal">
+<div
+  id="profileModal"
+  class="modal"
+>
 
   <div class="modal-box">
 
     <div class="modal-head">
 
-      <h2>بروفايل الطالب</h2>
+      <h2>
+        بروفايل الطالب
+      </h2>
 
       <button
         id="closeProfile"
@@ -1418,7 +1822,11 @@ button{cursor:pointer}
     <div class="admin-box">
 
       <div class="title">
-        <h2>درجات الطالب</h2>
+
+        <h2>
+          درجات الطالب
+        </h2>
+
       </div>
 
       <div class="table-wrap">
@@ -1428,10 +1836,12 @@ button{cursor:pointer}
           <thead>
 
             <tr>
+
               <th>الامتحان</th>
               <th>الحصة</th>
               <th>الدرجة</th>
               <th>النسبة</th>
+
             </tr>
 
           </thead>
@@ -1448,7 +1858,11 @@ button{cursor:pointer}
     <div class="admin-box">
 
       <div class="title">
-        <h2>الحضور والغياب</h2>
+
+        <h2>
+          الحضور والغياب
+        </h2>
+
       </div>
 
       <div class="table-wrap">
@@ -1458,9 +1872,11 @@ button{cursor:pointer}
           <thead>
 
             <tr>
+
               <th>التاريخ</th>
               <th>الحالة</th>
               <th>الطريقة</th>
+
             </tr>
 
           </thead>
@@ -1478,13 +1894,14 @@ button{cursor:pointer}
 </div>
 
 
-
 <script>
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+  document.getElementById(id);
 
 let currentUser = null;
 let students = [];
+let countdownTimer = null;
 
 
 /* =========================
@@ -1492,43 +1909,54 @@ let students = [];
 ========================= */
 
 function esc(v){
+
   return String(v ?? '')
     .replaceAll('&','&amp;')
     .replaceAll('<','&lt;')
     .replaceAll('>','&gt;')
     .replaceAll('"','&quot;')
     .replaceAll("'","&#039;");
+
 }
 
 
 function setMsg(el,text,ok=false){
-  el.textContent = text || '';
-  el.className = 'msg ' + (ok ? 'success' : 'error');
+
+  el.textContent =
+    text || '';
+
+  el.className =
+    'msg ' +
+    (ok ? 'success' : 'error');
+
 }
 
 
 function cacheSafeUrl(url){
+
   return url +
     (url.includes('?') ? '&' : '?') +
     '_=' +
     Date.now();
+
 }
 
 
 async function api(url,opt={}){
 
-  const r = await fetch(
-    cacheSafeUrl(url),
-    {
-      cache:'no-store',
-      credentials:'include',
-      ...opt,
-      headers:{
-        'Cache-Control':'no-cache',
-        ...(opt.headers || {})
+  const r =
+    await fetch(
+      cacheSafeUrl(url),
+      {
+        cache:'no-store',
+        credentials:'include',
+        ...opt,
+        headers:{
+          'Cache-Control':'no-cache',
+          ...(opt.headers || {})
+        }
       }
-    }
-  );
+    );
 
   let d = {};
 
@@ -1537,14 +1965,16 @@ async function api(url,opt={}){
   }catch{}
 
   if(!r.ok){
+
     throw new Error(
-      d.message || 'حدث خطأ.'
+      d.message ||
+      'حدث خطأ.'
     );
+
   }
 
   return d;
 }
-
 
 
 /* =========================
@@ -1554,7 +1984,8 @@ async function api(url,opt={}){
 function dark(){
 
   const on =
-    localStorage.getItem('theme') === 'dark';
+    localStorage.getItem('theme')
+    === 'dark';
 
   document.body.classList.toggle(
     'dark',
@@ -1563,6 +1994,7 @@ function dark(){
 
   $('themeBtn').textContent =
     on ? '☀️' : '🌙';
+
 }
 
 dark();
@@ -1578,27 +2010,142 @@ $('themeBtn').onclick = () => {
   );
 
   dark();
+
 };
 
 
+/* =========================
+   CAIRO DATE
+========================= */
+
+function todayCairo(){
+
+  const parts =
+    new Intl.DateTimeFormat(
+      'en-CA',
+      {
+        timeZone:'Africa/Cairo',
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit'
+      }
+    ).formatToParts(
+      new Date()
+    );
+
+  const get =
+    type =>
+      parts.find(
+        p => p.type === type
+      )?.value || '';
+
+  return (
+    get('year') +
+    '-' +
+    get('month') +
+    '-' +
+    get('day')
+  );
+
+}
+
 
 /* =========================
-   LECTURE
+   DATE NORMALIZER
+========================= */
+
+function normalizeDateInput(value){
+
+  let v =
+    String(value || '')
+      .trim();
+
+  if(!v){
+    return '';
+  }
+
+  /* YYYY-MM-DD */
+  if(
+    /^\d{4}-\d{1,2}-\d{1,2}$/.test(v)
+  ){
+
+    const [y,m,d] =
+      v.split('-');
+
+    return (
+      y.padStart(4,'0') +
+      '-' +
+      m.padStart(2,'0') +
+      '-' +
+      d.padStart(2,'0')
+    );
+  }
+
+  /* DD/MM/YYYY */
+  if(
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v)
+  ){
+
+    const [d,m,y] =
+      v.split('/');
+
+    return (
+      y +
+      '-' +
+      m.padStart(2,'0') +
+      '-' +
+      d.padStart(2,'0')
+    );
+  }
+
+  /* DD-MM-YYYY */
+  if(
+    /^\d{1,2}-\d{1,2}-\d{4}$/.test(v)
+  ){
+
+    const [d,m,y] =
+      v.split('-');
+
+    return (
+      y +
+      '-' +
+      m.padStart(2,'0') +
+      '-' +
+      d.padStart(2,'0')
+    );
+  }
+
+  return '';
+}
+
+
+/* =========================
+   DATE DISPLAY
 ========================= */
 
 function formatDate(v){
 
   if(!v){
+
     return 'لم يتم تحديد موعد المحاضرة.';
+
   }
 
-  const d = new Date(v);
+  const d =
+    new Date(v);
 
-  if(Number.isNaN(d.getTime())){
+  if(
+    Number.isNaN(
+      d.getTime()
+    )
+  ){
+
     return 'الموعد: ' + v;
+
   }
 
-  return 'الموعد: ' +
+  return (
+    'الموعد: ' +
     d.toLocaleString(
       'ar-EG',
       {
@@ -1606,9 +2153,15 @@ function formatDate(v){
         dateStyle:'full',
         timeStyle:'short'
       }
-    );
+    )
+  );
+
 }
 
+
+/* =========================
+   SCHEDULE TIME
+========================= */
 
 function scheduledMillis(v){
 
@@ -1619,49 +2172,52 @@ function scheduledMillis(v){
   const raw =
     String(v).trim();
 
-
   if(
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/
       .test(raw)
   ){
 
-    const d =
-      new Date(
-        raw + ':00+03:00'
-      );
+    return new Date(
+      raw + ':00+03:00'
+    ).getTime();
 
-    return d.getTime();
   }
 
-
   return new Date(raw).getTime();
+
 }
 
+
+/* =========================
+   GET PARTS
+========================= */
 
 function getCairoDateTimeParts(v){
 
   if(!v){
+
     return {
       date:'',
       time:''
     };
-  }
 
+  }
 
   const d =
     new Date(v);
 
-
   if(
-    Number.isNaN(d.getTime())
+    Number.isNaN(
+      d.getTime()
+    )
   ){
 
     return {
       date:'',
       time:''
     };
-  }
 
+  }
 
   const parts =
     new Intl.DateTimeFormat(
@@ -1677,24 +2233,201 @@ function getCairoDateTimeParts(v){
       }
     ).formatToParts(d);
 
-
   const get =
     type =>
       parts.find(
         x => x.type === type
       )?.value || '';
 
-
   return {
     date:
-      `${get('year')}-${get('month')}-${get('day')}`,
+      get('year') +
+      '-' +
+      get('month') +
+      '-' +
+      get('day'),
 
     time:
-      `${get('hour')}:${get('minute')}`
+      get('hour') +
+      ':' +
+      get('minute')
   };
+
 }
 
 
+/* =========================
+   COUNTDOWN
+========================= */
+
+function stopCountdown(){
+
+  if(countdownTimer){
+
+    clearInterval(
+      countdownTimer
+    );
+
+    countdownTimer = null;
+
+  }
+
+}
+
+
+function pad2(number){
+
+  return String(
+    number
+  ).padStart(2,'0');
+
+}
+
+
+function startCountdown(
+  scheduledAt
+){
+
+  stopCountdown();
+
+
+  const area =
+    $('countdownArea');
+
+  const end =
+    $('countdownEnded');
+
+  const shell =
+    $('lectureShell');
+
+
+  area.style.display =
+    'none';
+
+  end.style.display =
+    'none';
+
+  shell.classList.remove(
+    'countdown-active'
+  );
+
+
+  const target =
+    scheduledMillis(
+      scheduledAt
+    );
+
+
+  if(
+    Number.isNaN(target)
+  ){
+
+    return;
+
+  }
+
+
+  function update(){
+
+    const now =
+      Date.now();
+
+    const diff =
+      target - now;
+
+
+    if(diff <= 0){
+
+      stopCountdown();
+
+      area.style.display =
+        'none';
+
+      end.style.display =
+        'block';
+
+      shell.classList.remove(
+        'countdown-active'
+      );
+
+      return;
+
+    }
+
+
+    const totalSeconds =
+      Math.floor(
+        diff / 1000
+      );
+
+
+    const days =
+      Math.floor(
+        totalSeconds /
+        86400
+      );
+
+
+    const hours =
+      Math.floor(
+        (totalSeconds %
+        86400) /
+        3600
+      );
+
+
+    const minutes =
+      Math.floor(
+        (totalSeconds %
+        3600) /
+        60
+      );
+
+
+    const seconds =
+      totalSeconds % 60;
+
+
+    $('daysValue').textContent =
+      days;
+
+
+    $('hoursValue').textContent =
+      pad2(hours);
+
+
+    $('minutesValue').textContent =
+      pad2(minutes);
+
+
+    $('secondsValue').textContent =
+      pad2(seconds);
+
+
+    area.style.display =
+      'block';
+
+    shell.classList.add(
+      'countdown-active'
+    );
+
+  }
+
+
+  update();
+
+  countdownTimer =
+    setInterval(
+      update,
+      1000
+    );
+
+}
+
+
+/* =========================
+   STUDENT LINK
+========================= */
 
 function showStudentLecture(
   url,
@@ -1705,15 +2438,18 @@ function showStudentLecture(
     'none';
 
   $('lectureLink')
-    .removeAttribute('href');
+    .removeAttribute(
+      'href'
+    );
 
 
   if(!url){
 
     $('lectureInfo').textContent =
-      'سيظهر رابط المحاضرة قبل الموعد بخمس دقائق.';
+      'لم يتم إضافة رابط المحاضرة.';
 
     return;
+
   }
 
 
@@ -1728,9 +2464,10 @@ function showStudentLecture(
   ){
 
     $('lectureInfo').textContent =
-      'سيظهر رابط المحاضرة قبل الموعد بخمس دقائق.';
+      'موعد المحاضرة غير صحيح.';
 
     return;
+
   }
 
 
@@ -1762,13 +2499,19 @@ function showStudentLecture(
         )
       );
 
-
     $('lectureInfo').textContent =
-      `رابط المحاضرة هيظهر قبل الموعد بـ5 دقائق. متبقي تقريبًا ${mins} دقيقة.`;
+      'رابط المحاضرة هيظهر قبل الموعد بـ5 دقائق. متبقي تقريبًا ' +
+      mins +
+      ' دقيقة.';
+
   }
+
 }
 
 
+/* =========================
+   LOAD LECTURE
+========================= */
 
 async function loadLecture(){
 
@@ -1813,6 +2556,7 @@ async function loadLecture(){
 
       $('lectureLink').href =
         s.lecture_url;
+
     }
 
 
@@ -1827,7 +2571,8 @@ async function loadLecture(){
 
 
     $('lectureDateInput').value =
-      parts.date || '';
+      parts.date ||
+      todayCairo();
 
 
     $('lectureTimeInput').value =
@@ -1836,6 +2581,11 @@ async function loadLecture(){
 
     $('lectureUrlInput').value =
       s.lecture_url || '';
+
+
+    startCountdown(
+      s.scheduled_at
+    );
 
   }else{
 
@@ -1864,9 +2614,15 @@ async function loadLecture(){
       l.url,
       l.scheduledAt
     );
-  }
-}
 
+
+    startCountdown(
+      l.scheduledAt
+    );
+
+  }
+
+}
 
 
 /* =========================
@@ -1904,26 +2660,32 @@ function renderUser(){
 
 
   $('roleBadge').textContent =
-    admin ? 'حساب مدير' : 'حساب طالب';
+    admin
+      ? 'حساب مدير'
+      : 'حساب طالب';
 
 
   $('roleCount').textContent =
-    admin ? 'مدير' : 'طالب';
+    admin
+      ? 'مدير'
+      : 'طالب';
 
 
   $('welcomeTitle').textContent =
-    `أهلاً بيك يا ${
+    'أهلاً بيك يا ' +
+    (
       currentUser.fullName ||
       'صديقي'
-    } 👋`;
+    ) +
+    ' 👋';
 
 
   $('welcomeText').textContent =
     admin
       ? 'دي لوحة إدارة منصة مستر محمد حسام.'
       : 'من هنا تقدر تتابع المحاضرات وتشوف درجات امتحاناتك.';
-}
 
+}
 
 
 /* =========================
@@ -1942,9 +2704,9 @@ async function loadStudents(){
 
     students =
       (d.users || [])
-        .filter(
-          x => x.role !== 'admin'
-        );
+      .filter(
+        x => x.role !== 'admin'
+      );
 
 
     $('studentsCount').textContent =
@@ -1974,21 +2736,24 @@ async function loadStudents(){
     $('studentsBody').innerHTML =
       `
       <tr>
-        <td colspan="7" class="empty">
+        <td
+          colspan="7"
+          class="empty"
+        >
           ${esc(e.message)}
         </td>
       </tr>
       `;
-  }
-}
 
+  }
+
+}
 
 
 function fillGradeStudents(){
 
   const s =
     $('gradeStudent');
-
 
   const old =
     s.value;
@@ -2006,16 +2771,16 @@ function fillGradeStudents(){
           'option'
         );
 
-
       o.value =
         u.id;
 
-
       o.textContent =
-        `${u.fullName} - ${u.login}`;
-
+        u.fullName +
+        ' - ' +
+        u.login;
 
       s.appendChild(o);
+
     }
   );
 
@@ -2027,9 +2792,10 @@ function fillGradeStudents(){
   ){
 
     s.value = old;
-  }
-}
 
+  }
+
+}
 
 
 function renderStudents(list){
@@ -2039,13 +2805,17 @@ function renderStudents(list){
     $('studentsBody').innerHTML =
       `
       <tr>
-        <td colspan="7" class="empty">
+        <td
+          colspan="7"
+          class="empty"
+        >
           لا يوجد طلاب.
         </td>
       </tr>
       `;
 
     return;
+
   }
 
 
@@ -2127,10 +2897,10 @@ function renderStudents(list){
 
       </tr>
 
-    `
+      `
     ).join('');
-}
 
+}
 
 
 $('studentSearch').oninput =
@@ -2138,9 +2908,9 @@ $('studentSearch').oninput =
 
     const q =
       $('studentSearch')
-        .value
-        .trim()
-        .toLowerCase();
+      .value
+      .trim()
+      .toLowerCase();
 
 
     renderStudents(
@@ -2160,12 +2930,12 @@ $('studentSearch').oninput =
               .includes(q)
           )
     );
+
   };
 
 
 $('refreshStudents').onclick =
   loadStudents;
-
 
 
 $('studentsBody').onclick =
@@ -2184,6 +2954,7 @@ $('studentsBody').onclick =
       );
 
       return;
+
     }
 
 
@@ -2198,9 +2969,10 @@ $('studentsBody').onclick =
       openEdit(
         b.dataset.editId
       );
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
@@ -2215,36 +2987,33 @@ function openEdit(id){
     );
 
 
-  if(!u) return;
+  if(!u){
+    return;
+  }
 
 
   $('editId').value =
     u.id;
 
-
   $('editName').value =
     u.fullName || '';
-
 
   $('editLogin').value =
     u.login || '';
 
-
   $('editGrade').value =
     u.grade || '';
-
 
   $('editSubject').value =
     u.subject || '';
 
-
   $('editMode').value =
     u.mode || '';
 
-
   $('editActive').value =
-    u.active ? '1' : '0';
-
+    u.active
+      ? '1'
+      : '0';
 
   $('editPassword').value =
     '';
@@ -2257,15 +3026,20 @@ function openEdit(id){
 
 
   $('editModal')
-    .classList.add('open');
-}
+    .classList.add(
+      'open'
+    );
 
+}
 
 
 function closeEdit(){
 
   $('editModal')
-    .classList.remove('open');
+    .classList.remove(
+      'open'
+    );
+
 }
 
 
@@ -2286,9 +3060,10 @@ $('editModal').onclick =
     ){
 
       closeEdit();
-    }
-  };
 
+    }
+
+  };
 
 
 $('saveEdit').onclick =
@@ -2304,13 +3079,13 @@ $('saveEdit').onclick =
 
         fullName:
           $('editName')
-            .value
-            .trim(),
+          .value
+          .trim(),
 
         login:
           $('editLogin')
-            .value
-            .trim(),
+          .value
+          .trim(),
 
         grade:
           $('editGrade').value,
@@ -2325,6 +3100,7 @@ $('saveEdit').onclick =
           Number(
             $('editActive').value
           )
+
       };
 
 
@@ -2334,6 +3110,7 @@ $('saveEdit').onclick =
 
         body.password =
           $('editPassword').value;
+
       }
 
 
@@ -2342,12 +3119,10 @@ $('saveEdit').onclick =
         encodeURIComponent(id),
         {
           method:'PATCH',
-
           headers:{
             'Content-Type':
               'application/json'
           },
-
           body:
             JSON.stringify(body)
         }
@@ -2375,9 +3150,10 @@ $('saveEdit').onclick =
         $('editMsg'),
         e.message
       );
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
@@ -2453,60 +3229,59 @@ async function openProfile(id){
 
     $('profileGradesBody').innerHTML =
       grades.length
+        ? grades.map(
+            g => {
 
-      ? grades.map(
-          g => {
-
-            const pct =
-              g.total > 0
-                ? Math.round(
-                    g.score /
-                    g.total *
-                    100
-                  )
-                : 0;
+              const pct =
+                g.total > 0
+                  ? Math.round(
+                      g.score /
+                      g.total *
+                      100
+                    )
+                  : 0;
 
 
-            return `
-              <tr>
+              return `
+                <tr>
 
-                <td>
-                  ${esc(
-                    g.exam_name
-                  )}
-                </td>
+                  <td>
+                    ${esc(
+                      g.exam_name
+                    )}
+                  </td>
 
-                <td>
-                  ${esc(
-                    g.lesson_name
-                  )}
-                </td>
+                  <td>
+                    ${esc(
+                      g.lesson_name
+                    )}
+                  </td>
 
-                <td>
-                  <strong>
-                    ${g.score} / ${g.total}
-                  </strong>
-                </td>
+                  <td>
+                    <strong>
+                      ${g.score} / ${g.total}
+                    </strong>
+                  </td>
 
-                <td>
-                  ${pct}%
-                </td>
+                  <td>
+                    ${pct}%
+                  </td>
 
-              </tr>
-            `;
-          }
-        ).join('')
+                </tr>
+              `;
 
-      : `
-        <tr>
-          <td
-            colspan="4"
-            class="empty"
-          >
-            لا توجد درجات.
-          </td>
-        </tr>
-      `;
+            }
+          ).join('')
+        : `
+          <tr>
+            <td
+              colspan="4"
+              class="empty"
+            >
+              لا توجد درجات.
+            </td>
+          </tr>
+        `;
 
 
     const attendance =
@@ -2515,70 +3290,78 @@ async function openProfile(id){
 
     $('profileAttendanceBody').innerHTML =
       attendance.length
+        ? attendance.map(
+            x => `
 
-      ? attendance.map(
-          x => `
+            <tr>
 
+              <td>
+                ${esc(x.date)}
+              </td>
+
+              <td>
+
+                <span
+                  class="status ${
+                    x.status === 'حاضر'
+                      ? 'active'
+                      : x.status === 'غائب'
+                        ? 'inactive'
+                        : 'pending'
+                  }"
+                >
+                  ${esc(x.status)}
+                </span>
+
+              </td>
+
+              <td>
+                ${esc(
+                  x.method || '-'
+                )}
+              </td>
+
+            </tr>
+
+          `
+          ).join('')
+        : `
           <tr>
 
-            <td>
-              ${esc(x.date)}
-            </td>
-
-            <td>
-
-              <span
-                class="status ${
-                  x.status === 'حاضر'
-                    ? 'active'
-                    : x.status === 'غائب'
-                      ? 'inactive'
-                      : 'pending'
-                }"
-              >
-                ${esc(x.status)}
-              </span>
-
-            </td>
-
-            <td>
-              ${esc(
-                x.method || '-'
-              )}
+            <td
+              colspan="3"
+              class="empty"
+            >
+              لا يوجد سجل حضور.
             </td>
 
           </tr>
-
-        `
-        ).join('')
-
-      : `
-        <tr>
-          <td
-            colspan="3"
-            class="empty"
-          >
-            لا يوجد سجل حضور.
-          </td>
-        </tr>
-      `;
+        `;
 
 
     $('profileModal')
-      .classList.add('open');
+      .classList.add(
+        'open'
+      );
 
   }catch(e){
 
-    alert(e.message);
-  }
-}
+    alert(
+      e.message
+    );
 
+  }
+
+}
 
 
 function closeProfile(){
 
   $('profileModal')
-    .classList.remove('open');
+    .classList.remove(
+      'open'
+    );
+
 }
 
 
@@ -2595,9 +3378,10 @@ $('profileModal').onclick =
     ){
 
       closeProfile();
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
@@ -2609,73 +3393,55 @@ $('saveLecture').onclick =
 
     try{
 
-      const titleInput =
-        $('lectureTitleInput');
-
-
-      const dateInput =
-        $('lectureDateInput');
-
-
-      const timeInput =
-        $('lectureTimeInput');
-
-
-      const urlInput =
-        $('lectureUrlInput');
-
-
       const lectureTitle =
         String(
-          titleInput.value || ''
+          $('lectureTitleInput').value ||
+          ''
         ).trim();
 
 
       const lectureUrl =
         String(
-          urlInput.value || ''
+          $('lectureUrlInput').value ||
+          ''
         ).trim();
 
 
       /*
-        قراءة التاريخ مباشرة
+        التاريخ بقى TEXT
+        ومش معتمد على type=date
       */
 
-      let date =
+      let rawDate =
         String(
-          dateInput.value || ''
+          $('lectureDateInput').value ||
+          ''
         ).trim();
 
 
       /*
-        احتياطي لو المتصفح لم يرجع value
+        لو المستخدم سايب التاريخ فاضي
+        ناخد تاريخ النهارده
       */
 
-      if(
-        !date &&
-        dateInput.valueAsDate
-      ){
+      if(!rawDate){
 
-        const d =
-          dateInput.valueAsDate;
+        rawDate =
+          todayCairo();
 
-
-        date =
-          d.getUTCFullYear() +
-          '-' +
-          String(
-            d.getUTCMonth() + 1
-          ).padStart(2,'0') +
-          '-' +
-          String(
-            d.getUTCDate()
-          ).padStart(2,'0');
       }
+
+
+      const date =
+        normalizeDateInput(
+          rawDate
+        );
 
 
       const time =
         String(
-          timeInput.value || ''
+          $('lectureTimeInput').value ||
+          ''
         ).trim();
 
 
@@ -2684,14 +3450,16 @@ $('saveLecture').onclick =
         throw new Error(
           'اكتب اسم المحاضرة.'
         );
+
       }
 
 
       if(!date){
 
         throw new Error(
-          'اختار تاريخ المحاضرة.'
+          'اكتب التاريخ بالشكل 2026-09-29.'
         );
+
       }
 
 
@@ -2700,11 +3468,27 @@ $('saveLecture').onclick =
         throw new Error(
           'اختار وقت المحاضرة.'
         );
+
       }
 
 
       const scheduledAt =
-        `${date}T${time}:00+03:00`;
+        date +
+        'T' +
+        time +
+        ':00+03:00';
+
+
+      console.log(
+        'SAVED LECTURE:',
+        {
+          lectureTitle,
+          lectureUrl,
+          date,
+          time,
+          scheduledAt
+        }
+      );
 
 
       const result =
@@ -2720,6 +3504,7 @@ $('saveLecture').onclick =
 
             body:
               JSON.stringify({
+
                 lectureTitle:
                   lectureTitle,
 
@@ -2728,9 +3513,14 @@ $('saveLecture').onclick =
 
                 scheduledAt:
                   scheduledAt
+
               })
           }
         );
+
+
+      $('lectureDateInput').value =
+        date;
 
 
       setMsg(
@@ -2746,7 +3536,7 @@ $('saveLecture').onclick =
     }catch(e){
 
       console.error(
-        'Save lecture error:',
+        'Lecture Save Error:',
         e
       );
 
@@ -2756,9 +3546,10 @@ $('saveLecture').onclick =
         e.message ||
         'فشل حفظ المحاضرة.'
       );
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
@@ -2782,7 +3573,7 @@ $('clearLecture').onclick =
         '';
 
       $('lectureDateInput').value =
-        '';
+        todayCairo();
 
       $('lectureTimeInput').value =
         '';
@@ -2806,9 +3597,10 @@ $('clearLecture').onclick =
         $('lectureMsg'),
         e.message
       );
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
@@ -2835,16 +3627,19 @@ async function loadGrades(){
         $('gradesBody').innerHTML =
           `
           <tr>
+
             <td
               colspan="5"
               class="empty"
             >
               اختر طالبًا لعرض درجاته.
             </td>
+
           </tr>
           `;
 
         return;
+
       }
 
 
@@ -2860,6 +3655,7 @@ async function loadGrades(){
         await api(
           '/api/student/grades'
         );
+
     }
 
 
@@ -2869,102 +3665,103 @@ async function loadGrades(){
 
     $('gradesBody').innerHTML =
       grades.length
+        ? grades.map(
+            x => {
 
-      ? grades.map(
-          x => {
-
-            const pct =
-              x.total > 0
-                ? Math.round(
-                    x.score /
-                    x.total *
-                    100
-                  )
-                : 0;
+              const pct =
+                x.total > 0
+                  ? Math.round(
+                      x.score /
+                      x.total *
+                      100
+                    )
+                  : 0;
 
 
-            return `
-              <tr>
+              return `
+                <tr>
 
-                <td>
-                  ${esc(
-                    x.exam_name
-                  )}
-                </td>
+                  <td>
+                    ${esc(
+                      x.exam_name
+                    )}
+                  </td>
 
-                <td>
-                  ${esc(
-                    x.lesson_name
-                  )}
-                </td>
+                  <td>
+                    ${esc(
+                      x.lesson_name
+                    )}
+                  </td>
 
-                <td>
-                  <strong>
-                    ${x.score} / ${x.total}
-                  </strong>
-                </td>
+                  <td>
+                    <strong>
+                      ${x.score} / ${x.total}
+                    </strong>
+                  </td>
 
-                <td>
-                  ${pct}%
-                </td>
+                  <td>
+                    ${pct}%
+                  </td>
 
-                <td>
+                  <td>
 
-                  ${
-                    currentUser.role === 'admin'
+                    ${
+                      currentUser.role === 'admin'
+                        ? `
+                          <button
+                            class="danger"
+                            data-delete-grade="${esc(x.id)}"
+                            type="button"
+                          >
+                            حذف
+                          </button>
+                        `
+                        : '-'
+                    }
 
-                    ? `
-                      <button
-                        class="danger"
-                        data-delete-grade="${esc(x.id)}"
-                        type="button"
-                      >
-                        حذف
-                      </button>
-                    `
+                  </td>
 
-                    : '-'
-                  }
+                </tr>
+              `;
 
-                </td>
+            }
+          ).join('')
+        : `
+          <tr>
 
-              </tr>
-            `;
-          }
-        ).join('')
+            <td
+              colspan="5"
+              class="empty"
+            >
+              لا توجد درجات.
+            </td>
 
-      : `
-        <tr>
-          <td
-            colspan="5"
-            class="empty"
-          >
-            لا توجد درجات.
-          </td>
-        </tr>
-      `;
+          </tr>
+        `;
 
   }catch(e){
 
     $('gradesBody').innerHTML =
       `
       <tr>
+
         <td
           colspan="5"
           class="empty"
         >
           ${esc(e.message)}
         </td>
+
       </tr>
       `;
-  }
-}
 
+  }
+
+}
 
 
 $('gradeStudent').onchange =
   loadGrades;
-
 
 
 $('addGrade').onclick =
@@ -2978,14 +3775,10 @@ $('addGrade').onclick =
           $('gradeStudent').value,
 
         examName:
-          $('examName')
-            .value
-            .trim(),
+          $('examName').value.trim(),
 
         lessonName:
-          $('lessonName')
-            .value
-            .trim(),
+          $('lessonName').value.trim(),
 
         score:
           Number(
@@ -2996,6 +3789,7 @@ $('addGrade').onclick =
           Number(
             $('total').value
           )
+
       };
 
 
@@ -3015,17 +3809,10 @@ $('addGrade').onclick =
       );
 
 
-      $('examName').value =
-        '';
-
-      $('lessonName').value =
-        '';
-
-      $('score').value =
-        '';
-
-      $('total').value =
-        '';
+      $('examName').value = '';
+      $('lessonName').value = '';
+      $('score').value = '';
+      $('total').value = '';
 
 
       setMsg(
@@ -3043,9 +3830,10 @@ $('addGrade').onclick =
         $('gradeMsg'),
         e.message
       );
-    }
-  };
 
+    }
+
+  };
 
 
 $('gradesBody').onclick =
@@ -3057,7 +3845,9 @@ $('gradesBody').onclick =
       );
 
 
-    if(!b) return;
+    if(!b){
+      return;
+    }
 
 
     try{
@@ -3081,57 +3871,45 @@ $('gradesBody').onclick =
         $('gradeMsg'),
         err.message
       );
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
    ATTENDANCE
 ========================= */
 
-function todayCairo(){
-
-  const parts =
-    new Intl.DateTimeFormat(
-      'en-CA',
-      {
-        timeZone:'Africa/Cairo',
-        year:'numeric',
-        month:'2-digit',
-        day:'2-digit'
-      }
-    ).formatToParts(
-      new Date()
-    );
-
-
-  const get =
-    type =>
-      parts.find(
-        p => p.type === type
-      )?.value || '';
-
-
-  return `${get('year')}-${get('month')}-${get('day')}`;
-}
-
-
-
 function attendanceClass(status){
 
-  if(status === 'حاضر')
+  if(
+    status === 'حاضر'
+  ){
+
     return 'active';
 
-  if(status === 'غائب')
+  }
+
+  if(
+    status === 'غائب'
+  ){
+
     return 'inactive';
 
-  if(status === 'قيد المراجعة')
+  }
+
+  if(
+    status === 'قيد المراجعة'
+  ){
+
     return 'pending';
 
-  return '';
-}
+  }
 
+  return '';
+
+}
 
 
 function renderStudentAttendance(rows){
@@ -3193,9 +3971,7 @@ function renderStudentAttendance(rows){
                   x.status
                 )}"
               >
-                ${esc(
-                  x.status
-                )}
+                ${esc(x.status)}
               </span>
 
             </td>
@@ -3213,12 +3989,14 @@ function renderStudentAttendance(rows){
 
       : `
         <tr>
+
           <td
             colspan="3"
             class="empty"
           >
             لا يوجد سجل حضور.
           </td>
+
         </tr>
       `;
 
@@ -3234,7 +4012,8 @@ function renderStudentAttendance(rows){
 
 
   if(
-    row?.status === 'قيد المراجعة'
+    row?.status ===
+    'قيد المراجعة'
   ){
 
     $('checkinBtn').disabled =
@@ -3244,7 +4023,8 @@ function renderStudentAttendance(rows){
       'طلبك قيد المراجعة';
 
   }else if(
-    row?.status === 'حاضر'
+    row?.status ===
+    'حاضر'
   ){
 
     $('checkinBtn').disabled =
@@ -3260,9 +4040,10 @@ function renderStudentAttendance(rows){
 
     $('checkinBtn').textContent =
       'طلب تسجيل حضوري اليوم';
-  }
-}
 
+  }
+
+}
 
 
 async function loadStudentAttendance(){
@@ -3285,9 +4066,10 @@ async function loadStudentAttendance(){
       $('studentAttendanceMsg'),
       error.message
     );
-  }
-}
 
+  }
+
+}
 
 
 async function loadAdminAttendance(){
@@ -3317,97 +4099,96 @@ async function loadAdminAttendance(){
     $('adminAttendanceBody').innerHTML =
       rows.length
 
-      ? rows.map(
-          row => `
+        ? rows.map(
+            row => `
 
+            <tr>
+
+              <td>
+                <strong>
+                  ${esc(row.fullName)}
+                </strong>
+              </td>
+
+              <td>
+                ${esc(row.grade)}
+              </td>
+
+              <td>
+                ${esc(row.subject)}
+              </td>
+
+              <td>
+                ${esc(row.mode)}
+              </td>
+
+              <td>
+
+                <span
+                  class="status ${attendanceClass(
+                    row.status
+                  )}"
+                >
+                  ${esc(
+                    row.status
+                  )}
+                </span>
+
+              </td>
+
+              <td>
+
+                ${
+                  row.status ===
+                  'قيد المراجعة'
+
+                  ? `
+                    <button
+                      class="approve-btn"
+                      type="button"
+                      data-approve-user="${esc(
+                        row.userId
+                      )}"
+                    >
+                      ✅ اعتماد الحضور
+                    </button>
+                  `
+
+                  : `
+                    <button
+                      class="edit"
+                      type="button"
+                      data-attendance-edit="${esc(
+                        row.userId
+                      )}"
+                      data-status="${esc(
+                        row.status
+                      )}"
+                    >
+                      تعديل
+                    </button>
+                  `
+                }
+
+              </td>
+
+            </tr>
+
+          `
+          ).join('')
+
+        : `
           <tr>
 
-            <td>
-              <strong>
-                ${esc(
-                  row.fullName
-                )}
-              </strong>
-            </td>
-
-            <td>
-              ${esc(row.grade)}
-            </td>
-
-            <td>
-              ${esc(row.subject)}
-            </td>
-
-            <td>
-              ${esc(row.mode)}
-            </td>
-
-            <td>
-
-              <span
-                class="status ${attendanceClass(
-                  row.status
-                )}"
-              >
-                ${esc(
-                  row.status
-                )}
-              </span>
-
-            </td>
-
-            <td>
-
-              ${
-                row.status === 'قيد المراجعة'
-
-                ? `
-                  <button
-                    class="approve-btn"
-                    type="button"
-                    data-approve-user="${esc(
-                      row.userId
-                    )}"
-                  >
-                    ✅ اعتماد الحضور
-                  </button>
-                `
-
-                : `
-
-                  <button
-                    class="edit"
-                    type="button"
-                    data-attendance-edit="${esc(
-                      row.userId
-                    )}"
-                    data-status="${esc(
-                      row.status
-                    )}"
-                  >
-                    تعديل
-                  </button>
-
-                `
-              }
-
+            <td
+              colspan="6"
+              class="empty"
+            >
+              لا يوجد طلاب.
             </td>
 
           </tr>
-
-        `
-        ).join('')
-
-      : `
-        <tr>
-          <td
-            colspan="6"
-            class="empty"
-          >
-            لا يوجد طلاب.
-          </td>
-        </tr>
-      `;
+        `;
 
   }catch(error){
 
@@ -3415,9 +4196,10 @@ async function loadAdminAttendance(){
       $('attendanceMsg'),
       error.message
     );
-  }
-}
 
+  }
+
+}
 
 
 $('loadAttendance').onclick =
@@ -3426,7 +4208,6 @@ $('loadAttendance').onclick =
 
 $('attendanceDate').value =
   todayCairo();
-
 
 
 $('adminAttendanceBody').addEventListener(
@@ -3455,12 +4236,16 @@ $('adminAttendanceBody').addEventListener(
 
             body:
               JSON.stringify({
+
                 userId:
-                  approve.dataset.approveUser,
+                  approve.dataset
+                    .approveUser,
 
                 date:
                   $('attendanceDate').value
+
               })
+
           }
         );
 
@@ -3480,10 +4265,12 @@ $('adminAttendanceBody').addEventListener(
           $('attendanceMsg'),
           error.message
         );
+
       }
 
 
       return;
+
     }
 
 
@@ -3497,7 +4284,7 @@ $('adminAttendanceBody').addEventListener(
 
       const status =
         prompt(
-          'اكتب الحالة: حاضر أو غائب أو غير محدد',
+          'اكتب الحالة: حاضر أو غائب أو قيد المراجعة أو غير محدد',
           edit.dataset.status
         );
 
@@ -3511,6 +4298,7 @@ $('adminAttendanceBody').addEventListener(
         ![
           'حاضر',
           'غائب',
+          'قيد المراجعة',
           'غير محدد'
         ].includes(status)
       ){
@@ -3521,6 +4309,7 @@ $('adminAttendanceBody').addEventListener(
         );
 
         return;
+
       }
 
 
@@ -3538,15 +4327,19 @@ $('adminAttendanceBody').addEventListener(
 
             body:
               JSON.stringify({
+
                 userId:
-                  edit.dataset.attendanceEdit,
+                  edit.dataset
+                    .attendanceEdit,
 
                 date:
                   $('attendanceDate').value,
 
                 status:
                   status
+
               })
+
           }
         );
 
@@ -3566,15 +4359,17 @@ $('adminAttendanceBody').addEventListener(
           $('attendanceMsg'),
           error.message
         );
+
       }
+
     }
+
   }
 );
 
 
-
 /* =========================
-   STUDENT CHECKIN
+   CHECKIN
 ========================= */
 
 $('checkinBtn').onclick =
@@ -3617,9 +4412,10 @@ $('checkinBtn').onclick =
 
       $('checkinBtn').disabled =
         false;
-    }
-  };
 
+    }
+
+  };
 
 
 /* =========================
@@ -3645,8 +4441,8 @@ $('logoutBtn').onclick =
     location.replace(
       'index.html'
     );
-  };
 
+  };
 
 
 /* =========================
@@ -3664,10 +4460,11 @@ document.addEventListener(
       closeEdit();
 
       closeProfile();
+
     }
+
   }
 );
-
 
 
 /* =========================
@@ -3732,6 +4529,7 @@ document.addEventListener(
 
       $('gradesSubtitle').textContent =
         'درجاتك';
+
     }
 
 
@@ -3749,6 +4547,7 @@ document.addEventListener(
     }else{
 
       await loadStudentAttendance();
+
     }
 
 
@@ -3764,6 +4563,7 @@ document.addEventListener(
     location.replace(
       'index.html'
     );
+
   }
 
 })();
