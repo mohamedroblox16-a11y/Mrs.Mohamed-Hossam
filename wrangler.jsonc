@@ -6,11 +6,6 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "secrets": {
-    "required": [
-      "RESEND_API_KEY"
-    ]
-  },
   "assets": {
     "directory": "./public/",
     "binding": "ASSETS",
