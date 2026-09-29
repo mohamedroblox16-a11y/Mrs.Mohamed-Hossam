@@ -188,23 +188,19 @@ async function verifyEmailVerificationToken(
 
 function getRuntimeSecret(name) {
   try {
-    // Primary Cloudflare Workers runtime binding.
-    const runtimeValue = env?.[name];
-
-    if (String(runtimeValue || '').trim()) {
-      return String(runtimeValue).trim();
+    if (name === 'RESEND_API_KEY') {
+      return String(env.RESEND_API_KEY || '').trim();
     }
 
-    // With nodejs_compat_populate_process_env, runtime bindings
-    // (including secrets) are also available through process.env.
-    const processValue =
-      globalThis?.process?.env?.[name];
-
-    if (String(processValue || '').trim()) {
-      return String(processValue).trim();
+    if (name === 'RESEND_FROM_EMAIL') {
+      return String(env.RESEND_FROM_EMAIL || '').trim();
     }
 
-    return '';
+    return String(
+      env?.[name] ||
+      globalThis?.process?.env?.[name] ||
+      ''
+    ).trim();
   } catch {
     return '';
   }
