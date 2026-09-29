@@ -1,1159 +1,1760 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#1769ff">
-<title>لوحة التحكم - منصة مستر محمد حسام</title>
-
-<style>
-:root{
-  --p:#1769ff;
-  --p2:#5d42ff;
-  --text:#17233a;
-  --muted:#6d7a92;
-  --card:#fff;
-  --line:#e3e9f3;
-  --danger:#e5484d;
-  --success:#0da36b;
-  --shadow:0 18px 55px rgba(20,45,90,.1)
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  min-height:100vh;
-  font-family:Arial,"Segoe UI",Tahoma,sans-serif;
-  background:linear-gradient(180deg,#f8fbff,#f2f6fb);
-  color:var(--text);
-  transition:.25s
-}
-
-button,input,select{font:inherit}
-button{cursor:pointer}
-
-.page{
-  width:min(1350px,calc(100% - 28px));
-  margin:14px auto 40px
-}
-
-/* TOPBAR */
-
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px;
-  padding:12px 15px;
-  background:rgba(255,255,255,.9);
-  border:1px solid var(--line);
-  border-radius:20px;
-  box-shadow:0 12px 35px rgba(20,45,90,.07);
-  backdrop-filter:blur(14px);
-  position:sticky;
-  top:12px;
-  z-index:30
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-weight:900
-}
-
-.brand-img,
-.teacher-btn{
-  width:52px;
-  height:52px;
-  border-radius:16px;
-  overflow:hidden;
-  flex-shrink:0
-}
-
-.brand-img img,
-.teacher-btn img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block
-}
-
-.brand small{
-  display:block;
-  margin-top:4px;
-  color:var(--muted);
-  font-size:12px;
-  font-weight:500
-}
-
-.top-actions{
-  display:flex;
-  gap:8px;
-  align-items:center
-}
-
-.teacher-btn,
-.theme-btn,
-.refresh-btn{
-  border:1px solid var(--line);
-  background:#fff;
-  color:var(--text)
-}
-
-.teacher-btn{
-  padding:0;
-  border-radius:15px
-}
-
-.theme-btn{
-  width:48px;
-  height:48px;
-  border-radius:15px;
-  font-size:20px
-}
-
-.logout-btn{
-  height:48px;
-  border:1px solid #ffd5d8;
-  border-radius:15px;
-  background:#fff4f5;
-  color:#d63d45;
-  padding:0 15px;
-  font-weight:900
-}
-
-/* WELCOME */
-
-.welcome{
-  margin-top:25px;
-  padding:30px;
-  border-radius:28px;
-  color:#fff;
-  background:
-    radial-gradient(circle at 85% 20%,rgba(255,255,255,.18),transparent 30%),
-    linear-gradient(135deg,#1769ff,#5d42ff);
-  box-shadow:0 22px 60px rgba(23,105,255,.2)
-}
-
-.welcome h1{
-  margin:0 0 8px;
-  font-size:34px
-}
-
-.welcome p{
-  margin:0;
-  opacity:.9;
-  line-height:1.8
-}
-
-.badge{
-  display:inline-block;
-  margin-top:18px;
-  padding:9px 13px;
-  border-radius:999px;
-  background:rgba(255,255,255,.15);
-  border:1px solid rgba(255,255,255,.22);
-  font-size:13px;
-  font-weight:800
-}
-
-/* STATS */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
-  margin-top:18px
-}
-
-.stat,
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  box-shadow:var(--shadow)
-}
-
-.stat{
-  border-radius:22px;
-  padding:20px
-}
-
-.stat-label{
-  color:var(--muted);
-  font-size:13px
-}
-
-.stat-value{
-  font-size:31px;
-  font-weight:900;
-  margin-top:6px
-}
-
-/* GRID */
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:18px;
-  margin-top:18px
-}
-
-.card{
-  border-radius:24px;
-  padding:24px
-}
-
-.full{
-  grid-column:1/-1
-}
-
-.card-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:18px
-}
-
-.card-title h2{
-  margin:0;
-  font-size:21px
-}
-
-.card-title span{
-  color:var(--muted);
-  font-size:13px
-}
-
-/* PROFILE */
-
-.profile-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px
-}
-
-.info{
-  border:1px solid var(--line);
-  background:#f9fbff;
-  border-radius:16px;
-  padding:14px
-}
-
-.info small{
-  display:block;
-  color:var(--muted);
-  margin-bottom:6px
-}
-
-/* LECTURE */
-
-.lecture-box{
-  border:1px dashed #b8c9e8;
-  background:#f8fbff;
-  border-radius:18px;
-  padding:18px
-}
-
-.lecture-box h3{
-  margin:0 0 10px;
-  font-size:20px
-}
-
-.lecture-box p{
-  margin:7px 0;
-  color:var(--muted);
-  line-height:1.8
-}
-
-.link-btn{
-  display:none;
-  margin-top:12px;
-  padding:11px 16px;
-  border-radius:12px;
-  background:linear-gradient(135deg,var(--p),var(--p2));
-  color:#fff;
-  text-decoration:none;
-  font-weight:900
-}
-
-.admin-box{
-  margin-top:16px;
-  padding:18px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:#fafcff
-}
-
-.form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px
-}
-
-.form-grid .full{
-  grid-column:1/-1
-}
-
-.field label{
-  display:block;
-  margin-bottom:7px;
-  font-size:13px;
-  font-weight:800
-}
-
-.field input,
-.field select,
-.search input{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:13px;
-  padding:13px;
-  background:#fff;
-  color:var(--text);
-  outline:0
-}
-
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:14px
-}
-
-.primary,
-.secondary,
-.danger-btn,
-.refresh-btn,
-.edit-btn{
-  border:0;
-  border-radius:13px;
-  padding:12px 16px;
-  font-weight:900
-}
-
-.primary{
-  background:linear-gradient(135deg,var(--p),var(--p2));
-  color:#fff
-}
-
-.secondary,
-.refresh-btn{
-  background:#eef2f7;
-  color:#43516a
-}
-
-.danger-btn{
-  background:#fff0f1;
-  color:#d94148
-}
-
-/* TABLE */
-
-.table-wrap{
-  overflow:auto
-}
-
-.table{
-  width:100%;
-  min-width:900px;
-  border-collapse:collapse
-}
-
-.table th,
-.table td{
-  padding:13px 11px;
-  border-bottom:1px solid var(--line);
-  text-align:right
-}
-
-.table th{
-  font-size:13px;
-  color:var(--muted)
-}
-
-.status{
-  padding:7px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900
-}
-
-.active{
-  background:#e8f8f1;
-  color:#087e56
-}
-
-.inactive{
-  background:#fff0f1;
-  color:#d94148
-}
-
-.edit-btn{
-  background:#eaf2ff;
-  color:#1458d8
-}
-
-/* GRADES */
-
-.grade-form{
-  display:grid;
-  grid-template-columns:1.2fr 1.1fr 1fr .7fr .7fr auto;
-  gap:10px;
-  align-items:end
-}
-
-.empty{
-  text-align:center;
-  padding:35px;
-  color:var(--muted)
-}
-
-.msg{
-  min-height:20px;
-  text-align:center;
-  font-size:13px;
-  font-weight:800;
-  margin-top:10px
-}
-
-.success{
-  color:var(--success)
-}
-
-.error{
-  color:var(--danger)
-}
-
-/* MODAL */
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(4,13,31,.6);
-  backdrop-filter:blur(7px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  z-index:100
-}
-
-.modal.open{
-  display:flex
-}
-
-.modal-box{
-  width:min(700px,100%);
-  max-height:90vh;
-  overflow:auto;
-  background:#fff;
-  border-radius:25px;
-  padding:25px;
-  box-shadow:0 35px 90px rgba(0,0,0,.25)
-}
-
-.modal-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:18px
-}
-
-.modal-head h2{
-  margin:0
-}
-
-.close{
-  width:42px;
-  height:42px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:#f7f9fc;
-  font-size:22px
-}
-
-/* DARK MODE */
-
-.dark{
-  --text:#edf2ff;
-  --muted:#a7b3ca;
-  --card:#101b2d;
-  --line:#2a3953;
-  background:linear-gradient(180deg,#07111f,#0d1727)
-}
-
-.dark .topbar{
-  background:rgba(15,27,45,.93);
-  border-color:#293852
-}
-
-.dark .teacher-btn,
-.dark .theme-btn,
-.dark .refresh-btn,
-.dark .secondary{
-  background:#16243a;
-  border-color:#33445f;
-  color:#fff
-}
-
-.dark .logout-btn{
-  background:#30181b;
-  border-color:#5a2a2f;
-  color:#ff858b
-}
-
-.dark .info,
-.dark .lecture-box,
-.dark .admin-box,
-.dark .field input,
-.dark .field select,
-.dark .search input,
-.dark .modal-box{
-  background:#0d1829;
-  border-color:#30415e;
-  color:#fff
-}
-
-.dark .edit-btn{
-  background:#122542;
-  color:#84aeff
-}
-
-.dark .danger-btn{
-  background:#301a1d;
-  color:#ff858b
-}
-
-.dark .close{
-  background:#16243a;
-  color:#fff;
-  border-color:#30415e
-}
-
-/* MOBILE */
-
-@media(max-width:1100px){
-  .stats{
-    grid-template-columns:repeat(2,1fr)
-  }
-
-  .grade-form{
-    grid-template-columns:1fr 1fr
-  }
-}
-
-@media(max-width:900px){
-  .grid{
-    grid-template-columns:1fr
-  }
-
-  .full{
-    grid-column:auto
-  }
-}
-
-@media(max-width:700px){
-  .page{
-    width:calc(100% - 16px)
-  }
-
-  .brand-img,
-  .teacher-btn,
-  .theme-btn{
-    width:44px;
-    height:44px
-  }
-
-  .brand{
-    font-size:14px
-  }
-
-  .logout-btn{
-    width:44px;
-    height:44px;
-    padding:0;
-    font-size:0
-  }
-
-  .logout-btn:after{
-    content:"↪";
-    font-size:20px
-  }
-
-  .stats,
-  .profile-grid,
-  .form-grid,
-  .grade-form{
-    grid-template-columns:1fr
-  }
-
-  .form-grid .full{
-    grid-column:auto
-  }
-
-  .welcome{
-    padding:24px
-  }
-
-  .welcome h1{
-    font-size:27px
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1769ff">
+
+  <title>لوحة التحكم - منصة مستر محمد حسام</title>
+
+  <style>
+    :root{
+      --primary:#1769ff;
+      --primary2:#5d42ff;
+      --text:#17233a;
+      --muted:#6d7a92;
+      --card:#ffffff;
+      --bg:#f4f7fb;
+      --line:#e3e9f3;
+      --success:#0da36b;
+      --danger:#e5484d;
+      --warning:#e39a00;
+      --shadow:0 18px 55px rgba(20,45,90,.10);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,"Segoe UI",Tahoma,sans-serif;
+      background:linear-gradient(180deg,#f8fbff 0%,#f2f6fb 100%);
+      color:var(--text);
+      transition:.3s ease;
+    }
+
+    button,
+    input,
+    select{
+      font:inherit;
+    }
+
+    button{
+      cursor:pointer;
+    }
+
+    a{
+      text-decoration:none;
+    }
+
+    .page{
+      width:min(1350px,calc(100% - 28px));
+      margin:14px auto 40px;
+    }
+
+    /* =========================
+       TOP BAR
+    ========================= */
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      padding:12px 15px;
+      background:rgba(255,255,255,.90);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:0 12px 35px rgba(20,45,90,.07);
+      backdrop-filter:blur(14px);
+      position:sticky;
+      top:12px;
+      z-index:50;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+    }
+
+    .brand-image{
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      overflow:hidden;
+      flex-shrink:0;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 10px 25px rgba(23,105,255,.25);
+    }
+
+    .brand-image img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .brand small{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:500;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .teacher-btn,
+    .theme-btn{
+      width:48px;
+      height:48px;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:#fff;
+      color:var(--text);
+      transition:.2s ease;
+    }
+
+    .teacher-btn{
+      padding:0;
+      overflow:hidden;
+    }
+
+    .teacher-btn img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .theme-btn{
+      font-size:20px;
+    }
+
+    .teacher-btn:hover,
+    .theme-btn:hover,
+    .logout-btn:hover,
+    .refresh-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .logout-btn{
+      height:48px;
+      padding:0 15px;
+      border:1px solid #ffd5d8;
+      border-radius:15px;
+      background:#fff4f5;
+      color:#d63d45;
+      font-weight:900;
+      transition:.2s ease;
+    }
+
+    /* =========================
+       WELCOME
+    ========================= */
+
+    .welcome{
+      margin-top:25px;
+      padding:30px;
+      border-radius:28px;
+      color:#fff;
+      background:
+        radial-gradient(circle at 85% 20%,rgba(255,255,255,.18),transparent 30%),
+        linear-gradient(135deg,#1769ff,#5d42ff);
+      box-shadow:0 22px 60px rgba(23,105,255,.20);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .welcome h1{
+      margin:0 0 8px;
+      font-size:34px;
+    }
+
+    .welcome p{
+      margin:0;
+      opacity:.92;
+      line-height:1.8;
+    }
+
+    .role-badge{
+      display:inline-block;
+      margin-top:18px;
+      padding:9px 13px;
+      border-radius:999px;
+      background:rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.22);
+      font-size:13px;
+      font-weight:900;
+    }
+
+    /* =========================
+       STATS
+    ========================= */
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:15px;
+      margin-top:18px;
+    }
+
+    .stat{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:7px;
+    }
+
+    .stat-value{
+      font-size:30px;
+      font-weight:900;
+    }
+
+    .stat-note{
+      margin-top:7px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* =========================
+       GRID / CARD
+    ========================= */
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      transition:.3s ease;
+    }
+
+    .full{
+      grid-column:1/-1;
+    }
+
+    .card-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:20px;
+    }
+
+    .card-title h2{
+      margin:0;
+      font-size:21px;
+    }
+
+    .card-title span{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* =========================
+       PROFILE
+    ========================= */
+
+    .profile-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .info-box{
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#f9fbff;
+    }
+
+    .info-box small{
+      display:block;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .info-box strong{
+      display:block;
+      font-size:15px;
+    }
+
+    /* =========================
+       FORM
+    ========================= */
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .full-field{
+      grid-column:1/-1;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:7px;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:13px;
+      padding:13px;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+      transition:.2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      border-color:#73a8ff;
+      box-shadow:0 0 0 4px rgba(23,105,255,.10);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:15px;
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .danger-btn,
+    .refresh-btn,
+    .edit-btn,
+    .attendance-btn{
+      border:0;
+      border-radius:13px;
+      padding:11px 16px;
+      font-weight:900;
+      transition:.2s ease;
+    }
+
+    .primary-btn{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      color:#fff;
+    }
+
+    .secondary-btn,
+    .refresh-btn{
+      background:#eef2f7;
+      color:#46546c;
+    }
+
+    .danger-btn{
+      background:#fff0f1;
+      color:#d94148;
+    }
+
+    .edit-btn{
+      background:#eaf2ff;
+      color:#1458d8;
+    }
+
+    /* =========================
+       LECTURE
+    ========================= */
+
+    .lecture-box{
+      padding:20px;
+      border-radius:19px;
+      background:#f8fbff;
+      border:1px dashed #b8c9e8;
+    }
+
+    .lecture-box h3{
+      margin:0 0 10px;
+      font-size:20px;
+    }
+
+    .lecture-box p{
+      margin:7px 0;
+      color:var(--muted);
+      line-height:1.8;
+    }
+
+    .lecture-link{
+      display:none;
+      margin-top:14px;
+      padding:12px 17px;
+      border-radius:13px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      color:#fff;
+      font-weight:900;
+    }
+
+    .admin-box{
+      margin-top:16px;
+      padding:18px;
+      border-radius:19px;
+      background:#fafcff;
+      border:1px solid var(--line);
+    }
+
+    /* =========================
+       STUDENTS
+    ========================= */
+
+    .students-tools{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom:15px;
+      flex-wrap:wrap;
+    }
+
+    .search{
+      flex:1;
+      min-width:230px;
+    }
+
+    .search input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:13px;
+      padding:13px;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+    }
+
+    .table-wrap{
+      overflow-x:auto;
+    }
+
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:900px;
+    }
+
+    .table th,
+    .table td{
+      padding:13px 11px;
+      border-bottom:1px solid var(--line);
+      text-align:right;
+      vertical-align:middle;
+    }
+
+    .table th{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .status.active{
+      background:#e8f8f1;
+      color:#087f56;
+    }
+
+    .status.inactive{
+      background:#fff0f1;
+      color:#d94148;
+    }
+
+    /* =========================
+       GRADES
+    ========================= */
+
+    .grade-form{
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr .7fr .7fr auto;
+      gap:10px;
+      align-items:end;
+    }
+
+    .grade-number{
+      color:var(--primary);
+      font-weight:900;
+    }
+
+    /* =========================
+       ATTENDANCE
+    ========================= */
+
+    .attendance-summary{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .attendance-box{
+      border:1px solid var(--line);
+      border-radius:17px;
+      padding:17px;
+      background:#f9fbff;
+    }
+
+    .attendance-box small{
+      display:block;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .attendance-box strong{
+      font-size:25px;
+    }
+
+    .attendance-present{
+      color:var(--success);
+    }
+
+    .attendance-absent{
+      color:var(--danger);
+    }
+
+    .attendance-unknown{
+      color:var(--warning);
+    }
+
+    .attendance-controls{
+      display:flex;
+      align-items:end;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .attendance-date{
+      min-width:230px;
+    }
+
+    .attendance-btn.present{
+      background:#e8f8f1;
+      color:#087f56;
+    }
+
+    .attendance-btn.absent{
+      background:#fff0f1;
+      color:#d94148;
+    }
+
+    .attendance-btn.unknown{
+      background:#fff8e8;
+      color:#9c6a00;
+    }
+
+    .student-attendance-status{
+      display:inline-flex;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .student-attendance-status.present{
+      background:#e8f8f1;
+      color:#087f56;
+    }
+
+    .student-attendance-status.absent{
+      background:#fff0f1;
+      color:#d94148;
+    }
+
+    .student-attendance-status.unknown{
+      background:#fff8e8;
+      color:#9c6a00;
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(4,13,31,.60);
+      backdrop-filter:blur(7px);
+      z-index:100;
+    }
+
+    .modal.open{
+      display:flex;
+    }
+
+    .modal-box{
+      width:min(700px,100%);
+      max-height:90vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:25px;
+      padding:25px;
+      box-shadow:0 35px 90px rgba(0,0,0,.25);
+    }
+
+    .modal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:20px;
+    }
+
+    .modal-head h2{
+      margin:0;
+    }
+
+    .close-btn{
+      width:42px;
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#f7f9fc;
+      color:#55637e;
+      font-size:22px;
+    }
+
+    /* =========================
+       MESSAGE / EMPTY
+    ========================= */
+
+    .message{
+      min-height:20px;
+      margin-top:10px;
+      text-align:center;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .success{
+      color:var(--success);
+    }
+
+    .error{
+      color:var(--danger);
+    }
+
+    .empty{
+      text-align:center;
+      padding:35px;
+      color:var(--muted);
+    }
+
+    /* =========================
+       DARK MODE
+    ========================= */
+
+    body.dark-mode{
+      --text:#edf2ff;
+      --muted:#a7b3ca;
+      --card:#101b2d;
+      --bg:#08111f;
+      --line:#2a3953;
+
+      background:linear-gradient(180deg,#07111f,#0d1727);
+    }
+
+    body.dark-mode .topbar{
+      background:rgba(15,27,45,.93);
+      border-color:#293852;
+    }
+
+    body.dark-mode .brand small{
+      color:#9eabc2;
+    }
+
+    body.dark-mode .teacher-btn,
+    body.dark-mode .theme-btn,
+    body.dark-mode .refresh-btn,
+    body.dark-mode .secondary-btn{
+      background:#16243a;
+      border-color:#33445f;
+      color:#fff;
+    }
+
+    body.dark-mode .logout-btn{
+      background:#30181b;
+      border-color:#5a2a2f;
+      color:#ff858b;
+    }
+
+    body.dark-mode .info-box,
+    body.dark-mode .lecture-box,
+    body.dark-mode .admin-box,
+    body.dark-mode .attendance-box{
+      background:#0d1829;
+      border-color:#30415e;
+    }
+
+    body.dark-mode .field input,
+    body.dark-mode .field select,
+    body.dark-mode .search input{
+      background:#0d1829;
+      border-color:#30415e;
+      color:#fff;
+    }
+
+    body.dark-mode .field input::placeholder,
+    body.dark-mode .search input::placeholder{
+      color:#71809b;
+    }
+
+    body.dark-mode .modal-box{
+      background:#101b2d;
+    }
+
+    body.dark-mode .close-btn{
+      background:#16243a;
+      color:#fff;
+      border-color:#30415e;
+    }
+
+    body.dark-mode .edit-btn{
+      background:#122542;
+      color:#84aeff;
+    }
+
+    body.dark-mode .danger-btn{
+      background:#301a1d;
+      color:#ff858b;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media(max-width:1100px){
+
+      .stats{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .grade-form{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    @media(max-width:950px){
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .full{
+        grid-column:auto;
+      }
+    }
+
+    @media(max-width:700px){
+
+      .page{
+        width:calc(100% - 16px);
+      }
+
+      .brand{
+        font-size:14px;
+      }
+
+      .brand-image,
+      .teacher-btn,
+      .theme-btn{
+        width:44px;
+        height:44px;
+      }
+
+      .logout-btn{
+        width:44px;
+        height:44px;
+        padding:0;
+        font-size:0;
+      }
+
+      .logout-btn::after{
+        content:"↪";
+        font-size:20px;
+      }
+
+      .stats,
+      .profile-grid,
+      .form-grid,
+      .grade-form,
+      .attendance-summary{
+        grid-template-columns:1fr;
+      }
+
+      .full-field{
+        grid-column:auto;
+      }
+
+      .welcome{
+        padding:24px;
+      }
+
+      .welcome h1{
+        font-size:27px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="page">
 
-<header class="topbar">
+  <!-- =========================
+       TOP BAR
+  ========================= -->
 
-  <div class="brand">
+  <header class="topbar">
 
-    <div class="brand-img">
-      <img src="Mrs.jpg" alt="مستر محمد حسام">
+    <div class="brand">
+
+      <div class="brand-image">
+        <img
+          src="Mrs.jpg"
+          alt="مستر محمد حسام"
+        >
+      </div>
+
+      <div>
+        منصة مستر محمد حسام
+        <small>لوحة التحكم</small>
+      </div>
+
     </div>
 
-    <div>
-      منصة مستر محمد حسام
-      <small>لوحة التحكم</small>
+    <div class="top-actions">
+
+      <button
+        class="teacher-btn"
+        type="button"
+        title="مستر محمد حسام"
+      >
+        <img
+          src="Mrs.jpg"
+          alt="مستر محمد حسام"
+        >
+      </button>
+
+      <button
+        id="themeBtn"
+        class="theme-btn"
+        type="button"
+        title="الوضع الداكن"
+      >
+        🌙
+      </button>
+
+      <button
+        id="logoutBtn"
+        class="logout-btn"
+        type="button"
+      >
+        خروج
+      </button>
+
     </div>
 
-  </div>
-
-  <div class="top-actions">
-
-    <button class="teacher-btn" type="button">
-      <img src="Mrs.jpg" alt="مستر محمد حسام">
-    </button>
-
-    <button
-      id="themeBtn"
-      class="theme-btn"
-      type="button"
-    >
-      🌙
-    </button>
-
-    <button
-      id="logoutBtn"
-      class="logout-btn"
-      type="button"
-    >
-      خروج
-    </button>
-
-  </div>
-
-</header>
+  </header>
 
 
-<section class="welcome">
+  <!-- =========================
+       WELCOME
+  ========================= -->
 
-  <h1 id="welcomeTitle">
-    أهلاً بيك 👋
-  </h1>
+  <section class="welcome">
 
-  <p id="welcomeText">
-    جاري تحميل بيانات الحساب...
-  </p>
+    <h1 id="welcomeTitle">
+      أهلاً بيك 👋
+    </h1>
 
-  <span
-    id="roleBadge"
-    class="badge"
-  >
-    حساب طالب
-  </span>
-
-</section>
-
-
-<section
-  class="stats"
-  id="adminStats"
-  style="display:none"
->
-
-  <div class="stat">
-    <div class="stat-label">
-      إجمالي الطلاب
-    </div>
-
-    <div
-      id="studentsCount"
-      class="stat-value"
-    >
-      0
-    </div>
-  </div>
-
-  <div class="stat">
-
-    <div class="stat-label">
-      الطلاب النشطين
-    </div>
-
-    <div
-      id="activeCount"
-      class="stat-value"
-    >
-      0
-    </div>
-
-  </div>
-
-  <div class="stat">
-
-    <div class="stat-label">
-      الطلاب غير النشطين
-    </div>
-
-    <div
-      id="inactiveCount"
-      class="stat-value"
-    >
-      0
-    </div>
-
-  </div>
-
-  <div class="stat">
-
-    <div class="stat-label">
-      نوع الحساب
-    </div>
-
-    <div
-      id="roleCount"
-      class="stat-value"
-    >
-      -
-    </div>
-
-  </div>
-
-</section>
-
-
-<main class="grid">
-
-
-<section class="card">
-
-  <div class="card-title">
-    <h2>بيانات الحساب</h2>
-    <span>حسابك</span>
-  </div>
-
-  <div class="profile-grid">
-
-    <div class="info">
-      <small>الاسم</small>
-      <strong id="userName">-</strong>
-    </div>
-
-    <div class="info">
-      <small>رقم التلفون / ديسكورد</small>
-      <strong id="userLogin">-</strong>
-    </div>
-
-    <div class="info">
-      <small>السنة</small>
-      <strong id="userGrade">-</strong>
-    </div>
-
-    <div class="info">
-      <small>المادة</small>
-      <strong id="userSubject">-</strong>
-    </div>
-
-    <div class="info">
-      <small>نوع الاشتراك</small>
-      <strong id="userMode">-</strong>
-    </div>
-
-    <div class="info">
-      <small>نوع الحساب</small>
-      <strong id="userRole">-</strong>
-    </div>
-
-  </div>
-
-</section>
-
-
-<section class="card">
-
-  <div class="card-title">
-    <h2>المحاضرة القادمة</h2>
-    <span>الموعد والرابط</span>
-  </div>
-
-  <div class="lecture-box">
-
-    <h3 id="lectureTitle">
-      المحاضرة القادمة
-    </h3>
-
-    <p id="lectureDate">
-      لم يتم تحديد موعد المحاضرة بعد.
+    <p id="welcomeText">
+      جاري تحميل بيانات الحساب...
     </p>
 
-    <p id="lectureInfo">
-      سيتم ظهور بيانات المحاضرة هنا.
-    </p>
-
-    <a
-      id="lectureLink"
-      class="link-btn"
-      href="#"
-      target="_blank"
+    <div
+      id="roleBadge"
+      class="role-badge"
     >
-      دخول المحاضرة
-    </a>
+      حساب طالب
+    </div>
 
-  </div>
+  </section>
 
 
-  <div
-    id="lectureAdmin"
-    class="admin-box"
+  <!-- =========================
+       ADMIN STATS
+  ========================= -->
+
+  <section
+    id="adminStats"
+    class="stats"
     style="display:none"
   >
 
-    <div class="card-title">
+    <div class="stat">
 
-      <h2 style="font-size:18px">
-        إضافة / تعديل موعد المحاضرة
-      </h2>
-
-    </div>
-
-    <div class="form-grid">
-
-      <div class="field full">
-
-        <label>
-          اسم المحاضرة
-        </label>
-
-        <input
-          id="lectureTitleInput"
-          type="text"
-          placeholder="مثال: مراجعة الوحدة الأولى"
-        >
-
+      <div class="stat-label">
+        إجمالي الطلاب
       </div>
 
-      <div class="field">
-
-        <label>
-          موعد المحاضرة
-        </label>
-
-        <input
-          id="lectureDateInput"
-          type="datetime-local"
-        >
-
-      </div>
-
-      <div class="field">
-
-        <label>
-          رابط المحاضرة
-        </label>
-
-        <input
-          id="lectureUrlInput"
-          type="url"
-          placeholder="https://..."
-        >
-
-      </div>
-
-    </div>
-
-    <div class="actions">
-
-      <button
-        id="saveLecture"
-        class="primary"
-        type="button"
+      <div
+        id="studentsCount"
+        class="stat-value"
       >
-        حفظ موعد المحاضرة
-      </button>
+        0
+      </div>
 
-      <button
-        id="clearLecture"
-        class="danger-btn"
-        type="button"
-      >
-        مسح المحاضرة
-      </button>
+      <div class="stat-note">
+        جميع الحسابات الطلابية
+      </div>
 
     </div>
 
-    <div
-      id="lectureMsg"
-      class="msg"
-    ></div>
+    <div class="stat">
 
-  </div>
+      <div class="stat-label">
+        الطلاب النشطين
+      </div>
 
-</section>
+      <div
+        id="activeStudentsCount"
+        class="stat-value"
+      >
+        0
+      </div>
+
+      <div class="stat-note">
+        حسابات مفعلة
+      </div>
+
+    </div>
+
+    <div class="stat">
+
+      <div class="stat-label">
+        الطلاب غير النشطين
+      </div>
+
+      <div
+        id="inactiveStudentsCount"
+        class="stat-value"
+      >
+        0
+      </div>
+
+      <div class="stat-note">
+        حسابات موقوفة
+      </div>
+
+    </div>
+
+    <div class="stat">
+
+      <div class="stat-label">
+        الحساب الحالي
+      </div>
+
+      <div
+        id="currentRole"
+        class="stat-value"
+      >
+        -
+      </div>
+
+      <div class="stat-note">
+        نوع الحساب
+      </div>
+
+    </div>
+
+  </section>
 
 
-<section
-  id="studentsCard"
-  class="card full"
-  style="display:none"
->
+  <!-- =========================
+       CONTENT
+  ========================= -->
 
-  <div class="card-title">
+  <main class="grid">
 
-    <h2>
-      الطلاب وبياناتهم
-    </h2>
 
-    <span>
-      إدارة الطلاب
-    </span>
+    <!-- =========================
+         PROFILE
+    ========================= -->
 
-  </div>
+    <section class="card">
 
-  <div
-    class="actions"
-    style="margin-top:0;margin-bottom:15px"
-  >
+      <div class="card-title">
 
-    <div
-      class="search"
-      style="flex:1;min-width:240px"
+        <h2>
+          بيانات الحساب
+        </h2>
+
+        <span>
+          حسابك
+        </span>
+
+      </div>
+
+      <div class="profile-grid">
+
+        <div class="info-box">
+
+          <small>
+            الاسم
+          </small>
+
+          <strong id="userName">
+            -
+          </strong>
+
+        </div>
+
+        <div class="info-box">
+
+          <small>
+            رقم التلفون / ديسكورد
+          </small>
+
+          <strong id="userLogin">
+            -
+          </strong>
+
+        </div>
+
+        <div class="info-box">
+
+          <small>
+            السنة
+          </small>
+
+          <strong id="userGrade">
+            -
+          </strong>
+
+        </div>
+
+        <div class="info-box">
+
+          <small>
+            المادة
+          </small>
+
+          <strong id="userSubject">
+            -
+          </strong>
+
+        </div>
+
+        <div class="info-box">
+
+          <small>
+            نوع الاشتراك
+          </small>
+
+          <strong id="userMode">
+            -
+          </strong>
+
+        </div>
+
+        <div class="info-box">
+
+          <small>
+            نوع الحساب
+          </small>
+
+          <strong id="userRole">
+            -
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         LECTURE
+    ========================= -->
+
+    <section class="card">
+
+      <div class="card-title">
+
+        <h2>
+          المحاضرة القادمة
+        </h2>
+
+        <span>
+          الموعد والرابط
+        </span>
+
+      </div>
+
+
+      <div class="lecture-box">
+
+        <h3 id="lectureTitle">
+          المحاضرة القادمة
+        </h3>
+
+        <p id="lectureDate">
+          لم يتم تحديد موعد المحاضرة بعد.
+        </p>
+
+        <p id="lectureInfo">
+          سيتم ظهور بيانات المحاضرة هنا.
+        </p>
+
+        <a
+          id="lectureLink"
+          class="lecture-link"
+          href="#"
+          target="_blank"
+          rel="noopener"
+        >
+          🎥 دخول المحاضرة
+        </a>
+
+      </div>
+
+
+      <!-- إعدادات المدير -->
+
+      <div
+        id="lectureAdmin"
+        class="admin-box"
+        style="display:none"
+      >
+
+        <div class="card-title">
+
+          <h2 style="font-size:18px">
+            إضافة / تعديل موعد المحاضرة
+          </h2>
+
+          <span>
+            للمدير فقط
+          </span>
+
+        </div>
+
+        <div class="form-grid">
+
+          <div class="field full-field">
+
+            <label for="lectureTitleInput">
+              اسم المحاضرة
+            </label>
+
+            <input
+              id="lectureTitleInput"
+              type="text"
+              placeholder="مثال: أول محاضره مستنيك + حملو ديسكورد"
+            >
+
+          </div>
+
+          <div class="field">
+
+            <label for="lectureDateInput">
+              موعد المحاضرة
+            </label>
+
+            <input
+              id="lectureDateInput"
+              type="datetime-local"
+            >
+
+          </div>
+
+          <div class="field">
+
+            <label for="lectureUrlInput">
+              رابط المحاضرة
+            </label>
+
+            <input
+              id="lectureUrlInput"
+              type="url"
+              placeholder="https://discord.gg/..."
+            >
+
+          </div>
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            id="saveLectureBtn"
+            class="primary-btn"
+            type="button"
+          >
+            حفظ موعد المحاضرة
+          </button>
+
+          <button
+            id="clearLectureBtn"
+            class="danger-btn"
+            type="button"
+          >
+            مسح المحاضرة
+          </button>
+
+        </div>
+
+        <div
+          id="lectureMessage"
+          class="message"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         STUDENTS
+    ========================= -->
+
+    <section
+      id="studentsCard"
+      class="card full"
+      style="display:none"
     >
 
-      <input
-        id="studentSearch"
-        type="text"
-        placeholder="ابحث بالاسم أو الرقم أو الديسكورد"
+      <div class="card-title">
+
+        <h2>
+          الطلاب وبياناتهم
+        </h2>
+
+        <span>
+          إدارة الطلاب
+        </span>
+
+      </div>
+
+      <div class="students-tools">
+
+        <div class="search">
+
+          <input
+            id="studentSearch"
+            type="text"
+            placeholder="ابحث بالاسم أو الرقم أو يوزر ديسكورد..."
+          >
+
+        </div>
+
+        <button
+          id="refreshStudentsBtn"
+          class="refresh-btn"
+          type="button"
+        >
+          ↻ تحديث
+        </button>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                الاسم
+              </th>
+
+              <th>
+                التلفون / ديسكورد
+              </th>
+
+              <th>
+                السنة
+              </th>
+
+              <th>
+                المادة
+              </th>
+
+              <th>
+                الاشتراك
+              </th>
+
+              <th>
+                الحالة
+              </th>
+
+              <th>
+                الإجراء
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="studentsBody">
+
+            <tr>
+
+              <td
+                colspan="7"
+                class="empty"
+              >
+                جاري تحميل الطلاب...
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         GRADES
+    ========================= -->
+
+    <section class="card full">
+
+      <div class="card-title">
+
+        <h2>
+          درجات امتحانات الحصص
+        </h2>
+
+        <span id="gradesSubtitle">
+          درجاتك
+        </span>
+
+      </div>
+
+
+      <!-- إضافة الدرجة للمدير -->
+
+      <div
+        id="gradeAdminBox"
+        class="admin-box"
+        style="display:none"
       >
 
-    </div>
+        <div class="grade-form">
 
-    <button
-      id="refreshStudents"
-      class="refresh-btn"
-      type="button"
-    >
-      ↻ تحديث
-    </button>
+          <div class="field">
 
-  </div>
+            <label for="gradeStudent">
+              الطالب
+            </label>
 
-  <div class="table-wrap">
+            <select id="gradeStudent">
 
-    <table class="table">
+              <option value="">
+                اختر الطالب
+              </option>
 
-      <thead>
+            </select>
 
-        <tr>
-          <th>الاسم</th>
-          <th>التليفون/ديسكورد</th>
-          <th>السنة</th>
-          <th>المادة</th>
-          <th>الاشتراك</th>
-          <th>الحالة</th>
-          <th>الإجراء</th>
-        </tr>
+          </div>
 
-      </thead>
+          <div class="field">
 
-      <tbody id="studentsBody">
+            <label for="examName">
+              اسم الامتحان
+            </label>
 
-        <tr>
-          <td
-            colspan="7"
-            class="empty"
+            <input
+              id="examName"
+              type="text"
+              placeholder="امتحان الحصة الأولى"
+            >
+
+          </div>
+
+          <div class="field">
+
+            <label for="lessonName">
+              اسم الحصة
+            </label>
+
+            <input
+              id="lessonName"
+              type="text"
+              placeholder="الحصة الأولى"
+            >
+
+          </div>
+
+          <div class="field">
+
+            <label for="score">
+              الدرجة
+            </label>
+
+            <input
+              id="score"
+              type="number"
+              min="0"
+              placeholder="18"
+            >
+
+          </div>
+
+          <div class="field">
+
+            <label for="total">
+              من
+            </label>
+
+            <input
+              id="total"
+              type="number"
+              min="1"
+              placeholder="20"
+            >
+
+          </div>
+
+          <button
+            id="addGradeBtn"
+            class="primary-btn"
+            type="button"
           >
-            جاري تحميل الطلاب...
-          </td>
-        </tr>
+            + إضافة
+          </button>
 
-      </tbody>
+        </div>
 
-    </table>
-
-  </div>
-
-  <div
-    id="studentsMsg"
-    class="msg"
-  ></div>
-
-</section>
-
-
-<section class="card full">
-
-  <div class="card-title">
-
-    <h2>
-      درجات امتحانات الحصص
-    </h2>
-
-    <span id="gradesSubtitle">
-      درجاتك
-    </span>
-
-  </div>
-
-
-  <div
-    id="adminGradeBox"
-    class="admin-box"
-    style="display:none"
-  >
-
-    <div class="grade-form">
-
-      <div class="field">
-
-        <label>
-          الطالب
-        </label>
-
-        <select id="gradeStudent">
-
-          <option value="">
-            اختر الطالب
-          </option>
-
-        </select>
+        <div
+          id="gradeMessage"
+          class="message"
+        ></div>
 
       </div>
 
-      <div class="field">
 
-        <label>
-          اسم الامتحان
-        </label>
+      <div class="table-wrap">
 
-        <input
-          id="examName"
-          type="text"
-          placeholder="امتحان الحصة الأولى"
-        >
+        <table class="table">
 
-      </div>
+          <thead>
 
-      <div class="field">
+            <tr>
 
-        <label>
-          اسم الحصة
-        </label>
+              <th>
+                الامتحان
+              </th>
 
-        <input
-          id="lessonName"
-          type="text"
-          placeholder="الحصة الأولى"
-        >
+              <th>
+                الحصة
+              </th>
 
-      </div>
+              <th>
+                الدرجة
+              </th>
 
-      <div class="field">
+              <th>
+                النسبة
+              </th>
 
-        <label>
-          الدرجة
-        </label>
+              <th>
+                الإجراء
+              </th>
 
-        <input
-          id="score"
-          type="number"
-          min="0"
-          placeholder="18"
-        >
+            </tr>
 
-      </div>
+          </thead>
 
-      <div class="field">
+          <tbody id="gradesBody">
 
-        <label>
-          من
-        </label>
+            <tr>
 
-        <input
-          id="total"
-          type="number"
-          min="1"
-          placeholder="20"
-        >
+              <td
+                colspan="5"
+                class="empty"
+              >
+                لا توجد درجات حتى الآن.
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
 
       </div>
 
-      <button
-        id="addGrade"
-        class="primary"
-        type="button"
+    </section>
+
+
+    <!-- =========================
+         ATTENDANCE
+    ========================= -->
+
+    <section class="card full">
+
+      <div class="card-title">
+
+        <h2>
+          الحضور والغياب
+        </h2>
+
+        <span id="attendanceSubtitle">
+          سجل حضورك
+        </span>
+
+      </div>
+
+
+      <!-- للطالب -->
+
+      <div
+        id="studentAttendance"
+        style="display:none"
       >
-        + إضافة
-      </button>
 
-    </div>
+        <div class="attendance-summary">
 
-    <div
-      id="gradeMsg"
-      class="msg"
-    ></div>
+          <div class="attendance-box">
 
-  </div>
+            <small>
+              إجمالي أيام الحضور
+            </small>
+
+            <strong
+              id="studentPresentCount"
+              class="attendance-present"
+            >
+              0
+            </strong>
+
+          </div>
+
+          <div class="attendance-box">
+
+            <small>
+              إجمالي أيام الغياب
+            </small>
+
+            <strong
+              id="studentAbsentCount"
+              class="attendance-absent"
+            >
+              0
+            </strong>
+
+          </div>
+
+          <div class="attendance-box">
+
+            <small>
+              إجمالي السجل
+            </small>
+
+            <strong
+              id="studentAttendanceCount"
+              class="attendance-unknown"
+            >
+              0
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="table-wrap">
+
+          <table class="table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  التاريخ
+                </th>
+
+                <th>
+                  الحالة
+                </th>
+
+                <th>
+                  الطريقة
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="studentAttendanceBody">
+
+              <tr>
+
+                <td
+                  colspan="3"
+                  class="empty"
+                >
+                  جاري تحميل سجل الحضور...
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
 
 
-  <div class="table-wrap">
+      <!-- للمدير -->
 
-    <table class="table" style="min-width:680px">
+      <div
+        id="adminAttendance"
+        style="display:none"
+      >
 
-      <thead>
+        <div class="attendance-controls">
 
-        <tr>
-          <th>الامتحان</th>
-          <th>الحصة</th>
-          <th>الدرجة</th>
-          <th>النسبة</th>
-          <th>الإجراء</th>
-        </tr>
+          <div class="field attendance-date">
 
-      </thead>
+            <label for="attendanceDate">
+              تاريخ الحضور
+            </label>
 
-      <tbody id="gradesBody">
+            <input
+              id="attendanceDate"
+              type="date"
+            >
 
-        <tr>
+          </div>
 
-          <td
-            colspan="5"
-            class="empty"
+          <button
+            id="loadAttendanceBtn"
+            class="refresh-btn"
+            type="button"
           >
-            لا توجد درجات حتى الآن.
-          </td>
+            تحميل الحضور
+          </button>
 
-        </tr>
+        </div>
 
-      </tbody>
+        <div class="table-wrap">
 
-    </table>
+          <table class="table">
 
-  </div>
+            <thead>
 
-</section>
+              <tr>
 
+                <th>
+                  الطالب
+                </th>
 
-</main>
+                <th>
+                  السنة
+                </th>
+
+                <th>
+                  المادة
+                </th>
+
+                <th>
+                  الحالة
+                </th>
+
+                <th>
+                  الإجراء
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="adminAttendanceBody">
+
+              <tr>
+
+                <td
+                  colspan="5"
+                  class="empty"
+                >
+                  اختر التاريخ.
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <div
+          id="attendanceMessage"
+          class="message"
+        ></div>
+
+      </div>
+
+    </section>
+
+  </main>
 
 </div>
 
+
+<!-- =========================
+     EDIT STUDENT MODAL
+========================= -->
 
 <div
   id="editModal"
@@ -1170,8 +1771,8 @@ button{cursor:pointer}
       </h2>
 
       <button
-        id="closeEdit"
-        class="close"
+        id="closeEditBtn"
+        class="close-btn"
         type="button"
       >
         ×
@@ -1180,28 +1781,28 @@ button{cursor:pointer}
     </div>
 
     <input
-      id="editId"
+      id="editUserId"
       type="hidden"
     >
 
     <div class="form-grid">
 
-      <div class="field full">
+      <div class="field full-field">
 
-        <label>
+        <label for="editFullName">
           الاسم
         </label>
 
         <input
-          id="editName"
+          id="editFullName"
           type="text"
         >
 
       </div>
 
-      <div class="field full">
+      <div class="field full-field">
 
-        <label>
+        <label for="editLogin">
           رقم التلفون أو يوزر ديسكورد
         </label>
 
@@ -1214,21 +1815,21 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>
+        <label for="editGrade">
           السنة
         </label>
 
         <select id="editGrade">
 
-          <option>
+          <option value="أولى إعدادي">
             أولى إعدادي
           </option>
 
-          <option>
+          <option value="ثانية إعدادي">
             ثانية إعدادي
           </option>
 
-          <option>
+          <option value="ثالثة إعدادي">
             ثالثة إعدادي
           </option>
 
@@ -1238,17 +1839,17 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>
+        <label for="editSubject">
           المادة
         </label>
 
         <select id="editSubject">
 
-          <option>
+          <option value="رياضيات">
             رياضيات
           </option>
 
-          <option>
+          <option value="دراسات اجتماعية">
             دراسات اجتماعية
           </option>
 
@@ -1258,17 +1859,17 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>
+        <label for="editMode">
           نوع الاشتراك
         </label>
 
         <select id="editMode">
 
-          <option>
+          <option value="خصوصي">
             خصوصي
           </option>
 
-          <option>
+          <option value="مجموعة">
             مجموعة
           </option>
 
@@ -1278,8 +1879,8 @@ button{cursor:pointer}
 
       <div class="field">
 
-        <label>
-          الحالة
+        <label for="editActive">
+          حالة الحساب
         </label>
 
         <select id="editActive">
@@ -1296,10 +1897,10 @@ button{cursor:pointer}
 
       </div>
 
-      <div class="field full">
+      <div class="field full-field">
 
-        <label>
-          باسورد جديد (اختياري)
+        <label for="editPassword">
+          باسورد جديد - اختياري
         </label>
 
         <input
@@ -1313,23 +1914,23 @@ button{cursor:pointer}
     </div>
 
     <div
-      id="editMsg"
-      class="msg"
+      id="editMessage"
+      class="message"
     ></div>
 
     <div class="actions">
 
       <button
-        id="saveEdit"
-        class="primary"
+        id="saveEditBtn"
+        class="primary-btn"
         type="button"
       >
         حفظ التعديلات
       </button>
 
       <button
-        id="cancelEdit"
-        class="secondary"
+        id="cancelEditBtn"
+        class="secondary-btn"
         type="button"
       >
         إلغاء
@@ -1344,1182 +1945,2039 @@ button{cursor:pointer}
 
 <script>
 
-const $ = id =>
-  document.getElementById(id);
+  /* =========================
+     HELPERS
+  ========================= */
 
-let currentUser = null;
-let students = [];
+  const $ = (id) =>
+    document.getElementById(id);
 
-
-function msg(el,text,type=''){
-  el.textContent = text || '';
-  el.className = 'msg ' + type;
-}
+  let currentUser = null;
+  let students = [];
 
 
-function esc(v){
-  return String(v ?? '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
-}
+  function escapeHtml(value){
 
-
-/* DARK MODE */
-
-function setTheme(){
-
-  const dark =
-    localStorage.getItem('theme') === 'dark';
-
-  document.body.classList.toggle(
-    'dark',
-    dark
-  );
-
-  $('themeBtn').textContent =
-    dark ? '☀️' : '🌙';
-
-}
-
-setTheme();
-
-$('themeBtn').onclick = () => {
-
-  localStorage.setItem(
-    'theme',
-    localStorage.getItem('theme') === 'dark'
-      ? 'light'
-      : 'dark'
-  );
-
-  setTheme();
-
-};
-
-
-/* API */
-
-async function api(url,opts={}){
-
-  const response =
-    await fetch(
-      url,
-      {
-        credentials:'include',
-        ...opts
-      }
-    );
-
-  let data = {};
-
-  try{
-    data = await response.json();
-  }catch{}
-
-  if(!response.ok){
-
-    throw new Error(
-      data.message || 'حدث خطأ.'
-    );
+    return String(value ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
 
   }
 
-  return data;
-}
 
-
-/* USER */
-
-function showUser(){
-
-  const admin =
-    currentUser.role === 'admin';
-
-  $('userName').textContent =
-    currentUser.fullName || '-';
-
-  $('userLogin').textContent =
-    currentUser.login || '-';
-
-  $('userGrade').textContent =
-    currentUser.grade || '-';
-
-  $('userSubject').textContent =
-    currentUser.subject || '-';
-
-  $('userMode').textContent =
-    currentUser.mode || '-';
-
-  $('userRole').textContent =
-    admin ? 'مدير' : 'طالب';
-
-  $('roleBadge').textContent =
-    admin ? 'حساب مدير' : 'حساب طالب';
-
-  $('roleCount').textContent =
-    admin ? 'مدير' : 'طالب';
-
-  $('welcomeTitle').textContent =
-    `أهلاً بيك يا ${
-      currentUser.fullName || 'صديقي'
-    } 👋`;
-
-  $('welcomeText').textContent =
-    admin
-      ? 'دي لوحة إدارة منصة مستر محمد حسام.'
-      : 'من هنا تقدر تتابع المحاضرات وتشوف درجات امتحاناتك.';
-
-
-  if(admin){
-
-    $('adminStats').style.display =
-      'grid';
-
-    $('studentsCard').style.display =
-      'block';
-
-    $('lectureAdmin').style.display =
-      'block';
-
-    $('adminGradeBox').style.display =
-      'block';
-
-    $('gradesSubtitle').textContent =
-      'إدارة درجات الطلاب';
-
-  }
-
-}
-
-
-/* LECTURE */
-
-function fmtDate(value){
-
-  if(!value){
-
-    return 'لم يتم تحديد موعد المحاضرة بعد.';
-
-  }
-
-  const date =
-    new Date(value);
-
-  if(Number.isNaN(date.getTime())){
-
-    return 'الموعد: ' + value;
-
-  }
-
-  return 'الموعد: ' +
-    date.toLocaleString(
-      'ar-EG',
-      {
-        dateStyle:'full',
-        timeStyle:'short'
-      }
-    );
-
-}
-
-
-function localValue(value){
-
-  if(!value) return '';
-
-  const date =
-    new Date(value);
-
-  if(Number.isNaN(date.getTime())){
-
-    return String(value).slice(0,16);
-
-  }
-
-  return new Date(
-    date.getTime() -
-    date.getTimezoneOffset() * 60000
-  )
-  .toISOString()
-  .slice(0,16);
-
-}
-
-
-async function loadLecture(){
-
-  const data =
-    currentUser.role === 'admin'
-      ? await api('/api/admin/settings')
-      : await api('/api/student/dashboard');
-
-  const settings =
-    data.settings ||
-    data.lecture ||
-    {};
-
-  const title =
-    settings.lecture_title ||
-    settings.title ||
-    'المحاضرة القادمة';
-
-  const url =
-    settings.lecture_url ??
-    settings.url ??
-    '';
-
-  const scheduled =
-    settings.scheduled_at ??
-    settings.scheduledAt ??
-    '';
-
-
-  $('lectureTitle').textContent =
-    title;
-
-  $('lectureDate').textContent =
-    fmtDate(scheduled);
-
-  $('lectureInfo').textContent =
-    url
-      ? 'رابط المحاضرة متاح من الزر بالأسفل.'
-      : 'سيتم ظهور رابط المحاضرة هنا.';
-
-  $('lectureLink').style.display =
-    url
-      ? 'inline-block'
-      : 'none';
-
-  if(url){
-    $('lectureLink').href = url;
-  }
-
-
-  if(
-    currentUser.role === 'admin'
+  function setMessage(
+    element,
+    text,
+    type=''
   ){
 
-    $('lectureTitleInput').value =
-      settings.lecture_title || '';
+    element.textContent =
+      text || '';
 
-    $('lectureUrlInput').value =
-      settings.lecture_url || '';
-
-    $('lectureDateInput').value =
-      localValue(scheduled);
+    element.className =
+      'message ' + type;
 
   }
 
-}
 
+  async function api(
+    url,
+    options={}
+  ){
 
-/* STUDENTS */
-
-async function loadStudents(){
-
-  try{
-
-    const data =
-      await api(
-        '/api/admin/users'
+    const response =
+      await fetch(
+        url,
+        {
+          credentials:'include',
+          cache:'no-store',
+          ...options
+        }
       );
 
-    students =
-      (data.users || [])
-      .filter(
-        user =>
-          user.role !== 'admin'
+    let data = {};
+
+    try{
+      data =
+        await response.json();
+    }catch{}
+
+    if(
+      !response.ok
+    ){
+
+      throw new Error(
+        data.message ||
+        'حدث خطأ.'
       );
 
+    }
 
-    $('studentsCount').textContent =
-      students.length;
+    return data;
 
-    $('activeCount').textContent =
-      students.filter(
-        user => user.active
-      ).length;
-
-    $('inactiveCount').textContent =
-      students.filter(
-        user => !user.active
-      ).length;
+  }
 
 
-    fillGradeStudents();
+  /* =========================
+     DARK MODE
+  ========================= */
 
-    renderStudents(
-      students
+  function updateTheme(){
+
+    const dark =
+      localStorage.getItem(
+        'theme'
+      ) === 'dark';
+
+    document.body.classList.toggle(
+      'dark-mode',
+      dark
     );
 
-  }catch(error){
-
-    $('studentsBody').innerHTML = `
-      <tr>
-        <td
-          colspan="7"
-          class="empty"
-        >
-          ${esc(error.message)}
-        </td>
-      </tr>
-    `;
+    $('themeBtn').textContent =
+      dark
+        ? '☀️'
+        : '🌙';
 
   }
 
-}
+  updateTheme();
 
+  $('themeBtn').addEventListener(
+    'click',
+    () => {
 
-function fillGradeStudents(){
-
-  const select =
-    $('gradeStudent');
-
-  const old =
-    select.value;
-
-  select.innerHTML = `
-    <option value="">
-      اختر الطالب
-    </option>
-  `;
-
-
-  students.forEach(
-    user => {
-
-      const option =
-        document.createElement(
-          'option'
+      const dark =
+        document.body.classList.contains(
+          'dark-mode'
         );
 
-      option.value =
-        user.id;
-
-      option.textContent =
-        `${user.fullName} - ${user.login}`;
-
-      select.appendChild(
-        option
+      localStorage.setItem(
+        'theme',
+        dark
+          ? 'light'
+          : 'dark'
       );
+
+      updateTheme();
 
     }
   );
 
 
-  if(
-    students.some(
-      user => user.id === old
-    )
+  /* =========================
+     USER
+  ========================= */
+
+  function showUser(){
+
+    const isAdmin =
+      currentUser.role === 'admin';
+
+
+    $('userName').textContent =
+      currentUser.fullName || '-';
+
+    $('userLogin').textContent =
+      currentUser.login || '-';
+
+    $('userGrade').textContent =
+      currentUser.grade || '-';
+
+    $('userSubject').textContent =
+      currentUser.subject || '-';
+
+    $('userMode').textContent =
+      currentUser.mode || '-';
+
+    $('userRole').textContent =
+      isAdmin
+        ? 'مدير'
+        : 'طالب';
+
+
+    $('roleBadge').textContent =
+      isAdmin
+        ? 'حساب مدير'
+        : 'حساب طالب';
+
+
+    $('currentRole').textContent =
+      isAdmin
+        ? 'مدير'
+        : 'طالب';
+
+
+    $('welcomeTitle').textContent =
+      `أهلاً بيك يا ${
+        currentUser.fullName ||
+        'صديقي'
+      } 👋`;
+
+
+    $('welcomeText').textContent =
+      isAdmin
+        ? 'دي لوحة إدارة منصة مستر محمد حسام.'
+        : 'من هنا تقدر تتابع المحاضرات ودرجاتك والحضور والغياب.';
+
+
+    if(isAdmin){
+
+      $('adminStats').style.display =
+        'grid';
+
+      $('studentsCard').style.display =
+        'block';
+
+      $('lectureAdmin').style.display =
+        'block';
+
+      $('gradeAdminBox').style.display =
+        'block';
+
+      $('adminAttendance').style.display =
+        'block';
+
+      $('attendanceSubtitle').textContent =
+        'إدارة حضور وغياب الطلاب';
+
+      $('gradesSubtitle').textContent =
+        'إدارة درجات الطلاب';
+
+    }else{
+
+      $('studentAttendance').style.display =
+        'block';
+
+      $('attendanceSubtitle').textContent =
+        'سجل حضورك وغيابك';
+
+      $('gradesSubtitle').textContent =
+        'درجاتك';
+
+    }
+
+  }
+
+
+  /* =========================
+     DATE
+  ========================= */
+
+  function formatDate(
+    value
   ){
 
-    select.value = old;
+    if(!value){
+
+      return 'لم يتم تحديد موعد المحاضرة بعد.';
+
+    }
+
+    const date =
+      new Date(value);
+
+    if(
+      Number.isNaN(
+        date.getTime()
+      )
+    ){
+
+      return 'الموعد: ' +
+        value;
+
+    }
+
+    return 'الموعد: ' +
+      date.toLocaleString(
+        'ar-EG',
+        {
+          dateStyle:'full',
+          timeStyle:'short'
+        }
+      );
 
   }
 
-}
 
+  function localDateTimeValue(
+    value
+  ){
 
-function renderStudents(list){
+    if(!value){
 
-  if(!list.length){
+      return '';
 
-    $('studentsBody').innerHTML = `
-      <tr>
-        <td
-          colspan="7"
-          class="empty"
-        >
-          لا يوجد طلاب.
-        </td>
-      </tr>
-    `;
+    }
 
-    return;
+    const date =
+      new Date(value);
+
+    if(
+      Number.isNaN(
+        date.getTime()
+      )
+    ){
+
+      return String(
+        value
+      ).slice(
+        0,
+        16
+      );
+
+    }
+
+    const local =
+      new Date(
+        date.getTime() -
+        date.getTimezoneOffset() *
+        60000
+      );
+
+    return local
+      .toISOString()
+      .slice(
+        0,
+        16
+      );
 
   }
 
 
-  $('studentsBody').innerHTML =
-    list.map(
-      user => `
+  /* =========================
+     LECTURE
+  ========================= */
 
-        <tr>
+  async function loadLecture(){
 
-          <td>
-            <strong>
-              ${esc(user.fullName)}
-            </strong>
-          </td>
+    try{
 
-          <td>
-            ${esc(user.login)}
-          </td>
-
-          <td>
-            ${esc(user.grade)}
-          </td>
-
-          <td>
-            ${esc(user.subject)}
-          </td>
-
-          <td>
-            ${esc(user.mode)}
-          </td>
-
-          <td>
-
-            <span
-              class="status ${
-                user.active
-                  ? 'active'
-                  : 'inactive'
-              }"
-            >
-              ${
-                user.active
-                  ? 'نشط'
-                  : 'غير نشط'
-              }
-            </span>
-
-          </td>
-
-          <td>
-
-            <button
-              class="edit-btn"
-              data-id="${esc(user.id)}"
-              type="button"
-            >
-              ✏️ تعديل
-            </button>
-
-          </td>
-
-        </tr>
-      `
-    )
-    .join('');
-
-}
+      const data =
+        currentUser.role === 'admin'
+          ? await api(
+              '/api/admin/settings'
+            )
+          : await api(
+              '/api/student/dashboard'
+            );
 
 
-/* SEARCH */
-
-$('studentSearch').oninput =
-  () => {
-
-    const query =
-      $('studentSearch')
-      .value
-      .trim()
-      .toLowerCase();
+      const settings =
+        data.settings ||
+        data.lecture ||
+        {};
 
 
-    if(!query){
+      const title =
+        settings.lecture_title ||
+        settings.title ||
+        'المحاضرة القادمة';
+
+
+      const url =
+        settings.lecture_url ||
+        settings.url ||
+        '';
+
+
+      const scheduledAt =
+        settings.scheduled_at ||
+        settings.scheduledAt ||
+        '';
+
+
+      $('lectureTitle').textContent =
+        title;
+
+
+      $('lectureDate').textContent =
+        formatDate(
+          scheduledAt
+        );
+
+
+      /*
+        الطالب:
+        الرابط يظهر فقط عندما
+        السيرفر يسمح به.
+      */
+
+      if(
+        currentUser.role === 'student'
+      ){
+
+        const visible =
+          data.lecture?.state?.visible === true;
+
+        if(
+          visible &&
+          url
+        ){
+
+          $('lectureInfo').textContent =
+            'رابط المحاضرة متاح الآن.';
+
+          $('lectureLink').href =
+            url;
+
+          $('lectureLink').style.display =
+            'inline-block';
+
+        }else{
+
+          $('lectureInfo').textContent =
+            'رابط المحاضرة هيظهر قبل الموعد بـ5 دقائق.';
+
+          $('lectureLink').style.display =
+            'none';
+
+        }
+
+      }else{
+
+        /*
+          المدير يشوف بيانات الرابط
+          لكن الرابط نفسه يظل موجود
+          في إعدادات المدير.
+        */
+
+        $('lectureInfo').textContent =
+          url
+            ? 'الرابط محفوظ للمحاضرة.'
+            : 'لم يتم إضافة رابط المحاضرة.';
+
+        if(url){
+
+          $('lectureLink').href =
+            url;
+
+          $('lectureLink').style.display =
+            'inline-block';
+
+        }else{
+
+          $('lectureLink').style.display =
+            'none';
+
+        }
+
+
+        $('lectureTitleInput').value =
+          settings.lecture_title ||
+          '';
+
+        $('lectureUrlInput').value =
+          settings.lecture_url ||
+          '';
+
+        $('lectureDateInput').value =
+          localDateTimeValue(
+            scheduledAt
+          );
+
+      }
+
+    }catch(error){
+
+      console.error(
+        'Lecture:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /* حفظ المحاضرة */
+
+  $('saveLectureBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        const title =
+          $('lectureTitleInput')
+            .value
+            .trim();
+
+        const url =
+          $('lectureUrlInput')
+            .value
+            .trim();
+
+        const scheduledAt =
+          $('lectureDateInput')
+            .value;
+
+
+        try{
+
+          setMessage(
+            $('lectureMessage'),
+            'جاري الحفظ...'
+          );
+
+
+          await api(
+            '/api/admin/settings',
+            {
+              method:'PUT',
+
+              headers:{
+                'Content-Type':
+                  'application/json'
+              },
+
+              body:
+                JSON.stringify({
+
+                  lectureTitle:
+                    title,
+
+                  lectureUrl:
+                    url,
+
+                  scheduledAt:
+                    scheduledAt
+
+                })
+
+            }
+          );
+
+
+          setMessage(
+            $('lectureMessage'),
+            'تم حفظ موعد المحاضرة بنجاح.',
+            'success'
+          );
+
+
+          await loadLecture();
+
+
+        }catch(error){
+
+          setMessage(
+            $('lectureMessage'),
+            error.message,
+            'error'
+          );
+
+        }
+
+      }
+    );
+
+
+  /* مسح المحاضرة */
+
+  $('clearLectureBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        try{
+
+          await api(
+            '/api/admin/settings',
+            {
+              method:'DELETE'
+            }
+          );
+
+
+          setMessage(
+            $('lectureMessage'),
+            'تم مسح المحاضرة.',
+            'success'
+          );
+
+
+          await loadLecture();
+
+
+        }catch(error){
+
+          setMessage(
+            $('lectureMessage'),
+            error.message,
+            'error'
+          );
+
+        }
+
+      }
+    );
+
+
+  /* =========================
+     STUDENTS
+  ========================= */
+
+  async function loadStudents(){
+
+    try{
+
+      const data =
+        await api(
+          '/api/admin/users'
+        );
+
+
+      students =
+        (data.users || [])
+          .filter(
+            user =>
+              user.role !== 'admin'
+          );
+
+
+      const total =
+        students.length;
+
+
+      const active =
+        students.filter(
+          user =>
+            user.active
+        ).length;
+
+
+      $('studentsCount').textContent =
+        total;
+
+      $('activeStudentsCount').textContent =
+        active;
+
+      $('inactiveStudentsCount').textContent =
+        total - active;
+
+
+      fillGradeStudents();
 
       renderStudents(
         students
       );
 
+
+    }catch(error){
+
+      $('studentsBody').innerHTML = `
+        <tr>
+          <td
+            colspan="7"
+            class="empty"
+          >
+            ${escapeHtml(
+              error.message
+            )}
+          </td>
+        </tr>
+      `;
+
+    }
+
+  }
+
+
+  function fillGradeStudents(){
+
+    const select =
+      $('gradeStudent');
+
+
+    const old =
+      select.value;
+
+
+    select.innerHTML = `
+      <option value="">
+        اختر الطالب
+      </option>
+    `;
+
+
+    students.forEach(
+      student => {
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+
+        option.value =
+          student.id;
+
+
+        option.textContent =
+          `${student.fullName} - ${student.login}`;
+
+
+        select.appendChild(
+          option
+        );
+
+      }
+    );
+
+
+    if(
+      students.some(
+        student =>
+          student.id ===
+          old
+      )
+    ){
+
+      select.value =
+        old;
+
+    }
+
+  }
+
+
+  function renderStudents(
+    list
+  ){
+
+    if(
+      !list.length
+    ){
+
+      $('studentsBody').innerHTML = `
+        <tr>
+          <td
+            colspan="7"
+            class="empty"
+          >
+            لا يوجد طلاب.
+          </td>
+        </tr>
+      `;
+
       return;
 
     }
 
 
-    renderStudents(
-      students.filter(
-        user => [
+    $('studentsBody').innerHTML =
+      list
+        .map(
+          student => `
 
-          user.fullName,
-          user.login,
-          user.grade,
-          user.subject,
-          user.mode
+            <tr>
 
-        ]
-        .join(' ')
-        .toLowerCase()
-        .includes(query)
-      )
+              <td>
+                <strong>
+                  ${escapeHtml(
+                    student.fullName
+                  )}
+                </strong>
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  student.login
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  student.grade
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  student.subject
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  student.mode
+                )}
+              </td>
+
+              <td>
+
+                <span
+                  class="status ${
+                    student.active
+                      ? 'active'
+                      : 'inactive'
+                  }"
+                >
+                  ${
+                    student.active
+                      ? 'نشط'
+                      : 'غير نشط'
+                  }
+                </span>
+
+              </td>
+
+              <td>
+
+                <button
+                  class="edit-btn"
+                  type="button"
+                  data-user-id="${escapeHtml(
+                    student.id
+                  )}"
+                >
+                  ✏️ تعديل
+                </button>
+
+              </td>
+
+            </tr>
+          `
+        )
+        .join('');
+
+  }
+
+
+  $('studentSearch')
+    .addEventListener(
+      'input',
+      event => {
+
+        const query =
+          event.target.value
+            .trim()
+            .toLowerCase();
+
+
+        if(!query){
+
+          renderStudents(
+            students
+          );
+
+          return;
+
+        }
+
+
+        const filtered =
+          students.filter(
+            student =>
+              [
+                student.fullName,
+                student.login,
+                student.grade,
+                student.subject,
+                student.mode
+              ]
+                .join(' ')
+                .toLowerCase()
+                .includes(
+                  query
+                )
+          );
+
+
+        renderStudents(
+          filtered
+        );
+
+      }
     );
 
-  };
+
+  $('refreshStudentsBtn')
+    .addEventListener(
+      'click',
+      loadStudents
+    );
 
 
-$('refreshStudents').onclick =
-  loadStudents;
+  /* =========================
+     EDIT STUDENT
+  ========================= */
 
+  function openEdit(
+    id
+  ){
 
-/* EDIT */
-
-$('studentsBody').onclick =
-  event => {
-
-    const button =
-      event.target.closest(
-        '.edit-btn'
-      );
-
-    if(!button) return;
-
-
-    const user =
+    const student =
       students.find(
         item =>
-          item.id ===
-          button.dataset.id
+          String(item.id) ===
+          String(id)
       );
 
-    if(!user) return;
+
+    if(!student){
+
+      return;
+
+    }
 
 
-    $('editId').value =
-      user.id;
+    $('editUserId').value =
+      student.id;
 
-    $('editName').value =
-      user.fullName || '';
+    $('editFullName').value =
+      student.fullName || '';
 
     $('editLogin').value =
-      user.login || '';
+      student.login || '';
 
     $('editGrade').value =
-      user.grade ||
+      student.grade ||
       'أولى إعدادي';
 
     $('editSubject').value =
-      user.subject ||
+      student.subject ||
       'رياضيات';
 
     $('editMode').value =
-      user.mode ||
+      student.mode ||
       'خصوصي';
 
     $('editActive').value =
-      user.active ? '1' : '0';
+      student.active
+        ? '1'
+        : '0';
 
     $('editPassword').value =
       '';
 
-    msg(
-      $('editMsg'),
+
+    setMessage(
+      $('editMessage'),
       ''
     );
+
 
     $('editModal').classList.add(
       'open'
     );
 
-    $('editModal').setAttribute(
-      'aria-hidden',
-      'false'
+  }
+
+
+  $('studentsBody')
+    .addEventListener(
+      'click',
+      event => {
+
+        const button =
+          event.target.closest(
+            '.edit-btn'
+          );
+
+        if(!button){
+
+          return;
+
+        }
+
+        openEdit(
+          button.dataset.userId
+        );
+
+      }
     );
 
-  };
+
+  function closeEdit(){
+
+    $('editModal')
+      .classList.remove(
+        'open'
+      );
+
+  }
 
 
-function closeEdit(){
-
-  $('editModal').classList.remove(
-    'open'
-  );
-
-  $('editModal').setAttribute(
-    'aria-hidden',
-    'true'
-  );
-
-}
+  $('closeEditBtn')
+    .addEventListener(
+      'click',
+      closeEdit
+    );
 
 
-$('closeEdit').onclick =
-  closeEdit;
-
-$('cancelEdit').onclick =
-  closeEdit;
-
-$('editModal').onclick =
-  event => {
-
-    if(
-      event.target ===
-      $('editModal')
-    ){
-
-      closeEdit();
-
-    }
-
-  };
+  $('cancelEditBtn')
+    .addEventListener(
+      'click',
+      closeEdit
+    );
 
 
-$('saveEdit').onclick =
-  async () => {
+  $('editModal')
+    .addEventListener(
+      'click',
+      event => {
+
+        if(
+          event.target ===
+          $('editModal')
+        ){
+
+          closeEdit();
+
+        }
+
+      }
+    );
+
+
+  $('saveEditBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        const id =
+          $('editUserId').value;
+
+
+        const body = {
+
+          fullName:
+            $('editFullName')
+              .value
+              .trim(),
+
+          login:
+            $('editLogin')
+              .value
+              .trim(),
+
+          grade:
+            $('editGrade').value,
+
+          subject:
+            $('editSubject').value,
+
+          mode:
+            $('editMode').value,
+
+          active:
+            Number(
+              $('editActive')
+                .value
+            )
+
+        };
+
+
+        const password =
+          $('editPassword')
+            .value
+            .trim();
+
+
+        if(password){
+
+          body.password =
+            password;
+
+        }
+
+
+        try{
+
+          setMessage(
+            $('editMessage'),
+            'جاري الحفظ...'
+          );
+
+
+          await api(
+            '/api/admin/users/' +
+            encodeURIComponent(
+              id
+            ),
+            {
+              method:'PATCH',
+
+              headers:{
+                'Content-Type':
+                  'application/json'
+              },
+
+              body:
+                JSON.stringify(
+                  body
+                )
+            }
+          );
+
+
+          setMessage(
+            $('editMessage'),
+            'تم تعديل بيانات الطالب.',
+            'success'
+          );
+
+
+          await loadStudents();
+
+
+          setTimeout(
+            closeEdit,
+            600
+          );
+
+
+        }catch(error){
+
+          setMessage(
+            $('editMessage'),
+            error.message,
+            'error'
+          );
+
+        }
+
+      }
+    );
+
+
+  /* =========================
+     GRADES
+  ========================= */
+
+  async function loadGrades(){
 
     try{
 
-      const id =
-        $('editId').value;
+      let data;
 
 
-      const body = {
+      if(
+        currentUser.role ===
+        'admin'
+      ){
 
-        fullName:
-          $('editName')
-          .value
-          .trim(),
-
-        login:
-          $('editLogin')
-          .value
-          .trim(),
-
-        grade:
-          $('editGrade').value,
-
-        subject:
-          $('editSubject').value,
-
-        mode:
-          $('editMode').value,
-
-        active:
-          Number(
-            $('editActive').value
-          )
-
-      };
+        const studentId =
+          $('gradeStudent')
+            .value;
 
 
-      const password =
-        $('editPassword').value;
+        if(!studentId){
 
-      if(password){
+          $('gradesBody').innerHTML = `
+            <tr>
+              <td
+                colspan="5"
+                class="empty"
+              >
+                اختر طالبًا لعرض درجاته.
+              </td>
+            </tr>
+          `;
 
-        body.password =
-          password;
+          return;
+
+        }
+
+
+        data =
+          await api(
+            '/api/admin/grades?userId=' +
+            encodeURIComponent(
+              studentId
+            )
+          );
+
+      }else{
+
+        data =
+          await api(
+            '/api/student/grades'
+          );
 
       }
 
 
-      msg(
-        $('editMsg'),
-        'جاري الحفظ...'
-      );
+      const grades =
+        data.grades || [];
 
 
-      await api(
-        '/api/admin/users/' +
-        encodeURIComponent(id),
-        {
-          method:'PATCH',
+      if(!grades.length){
 
-          headers:{
-            'Content-Type':
-              'application/json'
-          },
+        $('gradesBody').innerHTML = `
+          <tr>
+            <td
+              colspan="5"
+              class="empty"
+            >
+              لا توجد درجات حتى الآن.
+            </td>
+          </tr>
+        `;
 
-          body:
-            JSON.stringify(body)
-        }
-      );
+        return;
 
-
-      msg(
-        $('editMsg'),
-        'تم تعديل بيانات الطالب.',
-        'success'
-      );
+      }
 
 
-      await loadStudents();
+      $('gradesBody').innerHTML =
+        grades
+          .map(
+            grade => {
+
+              const percentage =
+                Number(
+                  grade.total
+                ) > 0
+                  ? Math.round(
+                      Number(
+                        grade.score
+                      ) /
+                      Number(
+                        grade.total
+                      ) *
+                      100
+                    )
+                  : 0;
 
 
-      setTimeout(
-        closeEdit,
-        500
-      );
+              return `
 
+                <tr>
 
-    }catch(error){
+                  <td>
+                    <strong>
+                      ${escapeHtml(
+                        grade.exam_name
+                      )}
+                    </strong>
+                  </td>
 
-      msg(
-        $('editMsg'),
-        error.message,
-        'error'
-      );
+                  <td>
+                    ${escapeHtml(
+                      grade.lesson_name
+                    )}
+                  </td>
 
-    }
+                  <td>
+                    <span
+                      class="grade-number"
+                    >
+                      ${grade.score}
+                      /
+                      ${grade.total}
+                    </span>
+                  </td>
 
-  };
+                  <td>
+                    ${percentage}%
+                  </td>
 
+                  <td>
 
-/* LECTURE SAVE */
+                    ${
+                      currentUser.role ===
+                      'admin'
 
-$('saveLecture').onclick =
-  async () => {
+                      ? `
+                        <button
+                          class="danger-btn delete-grade-btn"
+                          type="button"
+                          data-grade-id="${escapeHtml(
+                            grade.id
+                          )}"
+                        >
+                          حذف
+                        </button>
+                      `
 
-    try{
+                      : '-'
+                    }
 
-      msg(
-        $('lectureMsg'),
-        'جاري الحفظ...'
-      );
+                  </td>
 
+                </tr>
 
-      await api(
-        '/api/admin/settings',
-        {
-          method:'PUT',
+              `;
 
-          headers:{
-            'Content-Type':
-              'application/json'
-          },
-
-          body:
-            JSON.stringify({
-
-              lectureTitle:
-                $('lectureTitleInput')
-                .value
-                .trim(),
-
-              lectureUrl:
-                $('lectureUrlInput')
-                .value
-                .trim(),
-
-              scheduledAt:
-                $('lectureDateInput')
-                .value
-
-            })
-
-        }
-      );
-
-
-      msg(
-        $('lectureMsg'),
-        'تم حفظ موعد المحاضرة.',
-        'success'
-      );
-
-
-      await loadLecture();
-
-
-    }catch(error){
-
-      msg(
-        $('lectureMsg'),
-        error.message,
-        'error'
-      );
-
-    }
-
-  };
-
-
-$('clearLecture').onclick =
-  async () => {
-
-    try{
-
-      await api(
-        '/api/admin/settings',
-        {
-          method:'DELETE'
-        }
-      );
-
-
-      $('lectureTitleInput')
-        .value = '';
-
-      $('lectureUrlInput')
-        .value = '';
-
-      $('lectureDateInput')
-        .value = '';
-
-
-      msg(
-        $('lectureMsg'),
-        'تم مسح المحاضرة.',
-        'success'
-      );
-
-
-      await loadLecture();
-
-
-    }catch(error){
-
-      msg(
-        $('lectureMsg'),
-        error.message,
-        'error'
-      );
-
-    }
-
-  };
-
-
-/* GRADES */
-
-async function loadGrades(){
-
-  try{
-
-    const data =
-      currentUser.role === 'admin'
-
-        ? (
-            $('gradeStudent').value
-
-              ? await api(
-                  '/api/admin/grades?userId=' +
-                  encodeURIComponent(
-                    $('gradeStudent').value
-                  )
-                )
-
-              : null
+            }
           )
+          .join('');
 
-        : await api(
-            '/api/student/grades'
+
+    }catch(error){
+
+      $('gradesBody').innerHTML = `
+        <tr>
+          <td
+            colspan="5"
+            class="empty"
+          >
+            ${escapeHtml(
+              error.message
+            )}
+          </td>
+        </tr>
+      `;
+
+    }
+
+  }
+
+
+  $('gradeStudent')
+    .addEventListener(
+      'change',
+      loadGrades
+    );
+
+
+  $('addGradeBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        const userId =
+          $('gradeStudent').value;
+
+        const examName =
+          $('examName')
+            .value
+            .trim();
+
+        const lessonName =
+          $('lessonName')
+            .value
+            .trim();
+
+        const score =
+          Number(
+            $('score').value
+          );
+
+        const total =
+          Number(
+            $('total').value
           );
 
 
-    if(!data){
+        if(
+          !userId ||
+          !examName ||
+          !lessonName
+        ){
 
-      $('gradesBody').innerHTML = `
-        <tr>
-          <td
-            colspan="5"
-            class="empty"
-          >
-            اختر الطالب لعرض درجاته.
-          </td>
-        </tr>
-      `;
+          setMessage(
+            $('gradeMessage'),
+            'اختر الطالب واكتب بيانات الامتحان.',
+            'error'
+          );
 
-      return;
+          return;
 
-    }
-
-
-    const grades =
-      data.grades || [];
+        }
 
 
-    if(!grades.length){
+        if(
+          !Number.isFinite(
+            score
+          ) ||
+          !Number.isFinite(
+            total
+          ) ||
+          total <= 0 ||
+          score < 0 ||
+          score > total
+        ){
 
-      $('gradesBody').innerHTML = `
-        <tr>
-          <td
-            colspan="5"
-            class="empty"
-          >
-            لا توجد درجات حتى الآن.
-          </td>
-        </tr>
-      `;
+          setMessage(
+            $('gradeMessage'),
+            'اكتب درجة صحيحة.',
+            'error'
+          );
 
-      return;
+          return;
 
-    }
+        }
 
 
-    $('gradesBody').innerHTML =
-      grades.map(
-        grade => `
+        try{
 
+          await api(
+            '/api/admin/grades',
+            {
+              method:'POST',
+
+              headers:{
+                'Content-Type':
+                  'application/json'
+              },
+
+              body:
+                JSON.stringify({
+
+                  userId,
+                  examName,
+                  lessonName,
+                  score,
+                  total
+
+                })
+
+            }
+          );
+
+
+          setMessage(
+            $('gradeMessage'),
+            'تمت إضافة الدرجة للطالب.',
+            'success'
+          );
+
+
+          $('examName').value =
+            '';
+
+          $('lessonName').value =
+            '';
+
+          $('score').value =
+            '';
+
+          $('total').value =
+            '';
+
+
+          await loadGrades();
+
+
+        }catch(error){
+
+          setMessage(
+            $('gradeMessage'),
+            error.message,
+            'error'
+          );
+
+        }
+
+      }
+    );
+
+
+  $('gradesBody')
+    .addEventListener(
+      'click',
+      async event => {
+
+        const button =
+          event.target.closest(
+            '.delete-grade-btn'
+          );
+
+        if(!button){
+
+          return;
+
+        }
+
+
+        try{
+
+          await api(
+            '/api/admin/grades/' +
+            encodeURIComponent(
+              button.dataset.gradeId
+            ),
+            {
+              method:'DELETE'
+            }
+          );
+
+
+          await loadGrades();
+
+
+        }catch(error){
+
+          setMessage(
+            $('gradeMessage'),
+            error.message,
+            'error'
+          );
+
+        }
+
+      }
+    );
+
+
+  /* =========================
+     STUDENT ATTENDANCE
+  ========================= */
+
+  async function loadStudentAttendance(){
+
+    try{
+
+      const data =
+        await api(
+          '/api/student/dashboard'
+        );
+
+
+      const records =
+        data.attendance || [];
+
+
+      const present =
+        records.filter(
+          row =>
+            row.status === 'حاضر'
+        ).length;
+
+
+      const absent =
+        records.filter(
+          row =>
+            row.status === 'غائب'
+        ).length;
+
+
+      $('studentPresentCount')
+        .textContent =
+        present;
+
+      $('studentAbsentCount')
+        .textContent =
+        absent;
+
+      $('studentAttendanceCount')
+        .textContent =
+        records.length;
+
+
+      if(!records.length){
+
+        $('studentAttendanceBody')
+          .innerHTML = `
+            <tr>
+              <td
+                colspan="3"
+                class="empty"
+              >
+                لا يوجد سجل حضور حتى الآن.
+              </td>
+            </tr>
+          `;
+
+        return;
+
+      }
+
+
+      $('studentAttendanceBody')
+        .innerHTML =
+        records.map(
+          row => {
+
+            let statusClass =
+              'unknown';
+
+
+            if(
+              row.status ===
+              'حاضر'
+            ){
+
+              statusClass =
+                'present';
+
+            }else if(
+              row.status ===
+              'غائب'
+            ){
+
+              statusClass =
+                'absent';
+
+            }
+
+
+            return `
+              <tr>
+
+                <td>
+                  ${escapeHtml(
+                    row.date
+                  )}
+                </td>
+
+                <td>
+
+                  <span
+                    class="student-attendance-status ${statusClass}"
+                  >
+                    ${escapeHtml(
+                      row.status
+                    )}
+                  </span>
+
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    row.method ||
+                    '-'
+                  )}
+                </td>
+
+              </tr>
+            `;
+
+          }
+        ).join('');
+
+
+    }catch(error){
+
+      $('studentAttendanceBody')
+        .innerHTML = `
           <tr>
-
-            <td>
-              <strong>
-                ${esc(
-                  grade.exam_name
-                )}
-              </strong>
-            </td>
-
-            <td>
-              ${esc(
-                grade.lesson_name
+            <td
+              colspan="3"
+              class="empty"
+            >
+              ${escapeHtml(
+                error.message
               )}
             </td>
-
-            <td>
-              <strong>
-                ${grade.score}
-                /
-                ${grade.total}
-              </strong>
-            </td>
-
-            <td>
-              ${
-                Math.round(
-                  Number(grade.score) /
-                  Number(grade.total) *
-                  100
-                )
-              }%
-            </td>
-
-            <td>
-
-              ${
-                currentUser.role === 'admin'
-
-                  ? `
-
-                    <button
-                      class="danger-btn delete-grade"
-                      data-id="${esc(grade.id)}"
-                      type="button"
-                    >
-                      حذف
-                    </button>
-
-                  `
-
-                  : '-'
-              }
-
-            </td>
-
           </tr>
+        `;
 
-        `
-      )
-      .join('');
-
-
-  }catch(error){
-
-    $('gradesBody').innerHTML = `
-      <tr>
-        <td
-          colspan="5"
-          class="empty"
-        >
-          ${esc(error.message)}
-        </td>
-      </tr>
-    `;
+    }
 
   }
 
-}
+
+  /* =========================
+     ADMIN ATTENDANCE
+  ========================= */
+
+  function todayLocal(){
+
+    const date =
+      new Date();
+
+    const y =
+      date.getFullYear();
+
+    const m =
+      String(
+        date.getMonth() + 1
+      ).padStart(2,'0');
+
+    const d =
+      String(
+        date.getDate()
+      ).padStart(2,'0');
+
+    return `${y}-${m}-${d}`;
+
+  }
 
 
-$('gradeStudent').onchange =
-  loadGrades;
-
-
-$('addGrade').onclick =
-  async () => {
-
-    try{
-
-      const body = {
-
-        userId:
-          $('gradeStudent').value,
-
-        examName:
-          $('examName')
-          .value
-          .trim(),
-
-        lessonName:
-          $('lessonName')
-          .value
-          .trim(),
-
-        score:
-          Number(
-            $('score').value
-          ),
-
-        total:
-          Number(
-            $('total').value
-          )
-
-      };
-
-
-      await api(
-        '/api/admin/grades',
-        {
-          method:'POST',
-
-          headers:{
-            'Content-Type':
-              'application/json'
-          },
-
-          body:
-            JSON.stringify(body)
-        }
-      );
-
-
-      msg(
-        $('gradeMsg'),
-        'تمت إضافة الدرجة للطالب.',
-        'success'
-      );
-
-
-      $('examName').value =
-        '';
-
-      $('lessonName').value =
-        '';
-
-      $('score').value =
-        '';
-
-      $('total').value =
-        '';
-
-
-      await loadGrades();
-
-
-    }catch(error){
-
-      msg(
-        $('gradeMsg'),
-        error.message,
-        'error'
-      );
-
-    }
-
-  };
-
-
-$('gradesBody').onclick =
-  async event => {
-
-    const button =
-      event.target.closest(
-        '.delete-grade'
-      );
-
-    if(!button) return;
-
-
-    try{
-
-      await api(
-        '/api/admin/grades/' +
-        encodeURIComponent(
-          button.dataset.id
-        ),
-        {
-          method:'DELETE'
-        }
-      );
-
-
-      await loadGrades();
-
-
-    }catch(error){
-
-      msg(
-        $('gradeMsg'),
-        error.message,
-        'error'
-      );
-
-    }
-
-  };
-
-
-/* LOGOUT */
-
-$('logoutBtn').onclick =
-  async () => {
-
-    try{
-
-      await api(
-        '/api/logout',
-        {
-          method:'POST'
-        }
-      );
-
-    }catch{}
-
-    location.replace(
-      'index.html'
-    );
-
-  };
-
-
-/* START */
-
-(async () => {
-
-  try{
-
-    const data =
-      await api(
-        '/api/me'
-      );
-
-    currentUser =
-      data.user;
-
-
-    showUser();
-
-    await loadLecture();
-
+  function attendanceStatusClass(
+    status
+  ){
 
     if(
-      currentUser.role ===
-      'admin'
+      status === 'حاضر'
     ){
 
-      await loadStudents();
+      return 'present';
+
+    }
+
+    if(
+      status === 'غائب'
+    ){
+
+      return 'absent';
+
+    }
+
+    return 'unknown';
+
+  }
+
+
+  async function loadAdminAttendance(){
+
+    const date =
+      $('attendanceDate')
+        .value;
+
+
+    if(!date){
+
+      $('adminAttendanceBody')
+        .innerHTML = `
+          <tr>
+            <td
+              colspan="5"
+              class="empty"
+            >
+              اختر التاريخ.
+            </td>
+          </tr>
+        `;
+
+      return;
 
     }
 
 
-    await loadGrades();
+    try{
+
+      const data =
+        await api(
+          '/api/admin/attendance?date=' +
+          encodeURIComponent(
+            date
+          )
+        );
 
 
-  }catch{
+      const rows =
+        data.rows || [];
 
-    location.replace(
-      'index.html'
-    );
+
+      if(!rows.length){
+
+        $('adminAttendanceBody')
+          .innerHTML = `
+            <tr>
+              <td
+                colspan="5"
+                class="empty"
+              >
+                لا يوجد طلاب.
+              </td>
+            </tr>
+          `;
+
+        return;
+
+      }
+
+
+      $('adminAttendanceBody')
+        .innerHTML =
+        rows.map(
+          row => {
+
+            const status =
+              row.status ||
+              'غير محدد';
+
+
+            const cls =
+              attendanceStatusClass(
+                status
+              );
+
+
+            return `
+              <tr>
+
+                <td>
+                  <strong>
+                    ${escapeHtml(
+                      row.fullName
+                    )}
+                  </strong>
+                  <br>
+                  <small>
+                    ${escapeHtml(
+                      row.login
+                    )}
+                  </small>
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    row.grade
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    row.subject
+                  )}
+                </td>
+
+                <td>
+
+                  <span
+                    class="student-attendance-status ${cls}"
+                  >
+                    ${escapeHtml(
+                      status
+                    )}
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <div
+                    class="actions"
+                    style="margin:0"
+                  >
+
+                    <button
+                      type="button"
+                      class="attendance-btn present"
+                      data-attendance-user="${escapeHtml(
+                        row.userId
+                      )}"
+                      data-attendance-status="حاضر"
+                    >
+                      حاضر
+                    </button>
+
+                    <button
+                      type="button"
+                      class="attendance-btn absent"
+                      data-attendance-user="${escapeHtml(
+                        row.userId
+                      )}"
+                      data-attendance-status="غائب"
+                    >
+                      غائب
+                    </button>
+
+                    <button
+                      type="button"
+                      class="attendance-btn unknown"
+                      data-attendance-user="${escapeHtml(
+                        row.userId
+                      )}"
+                      data-attendance-status="غير محدد"
+                    >
+                      مسح
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+            `;
+
+          }
+        ).join('');
+
+
+    }catch(error){
+
+      $('adminAttendanceBody')
+        .innerHTML = `
+          <tr>
+            <td
+              colspan="5"
+              class="empty"
+            >
+              ${escapeHtml(
+                error.message
+              )}
+            </td>
+          </tr>
+        `;
+
+    }
 
   }
 
-})();
+
+  $('attendanceDate').value =
+    todayLocal();
+
+
+  $('loadAttendanceBtn')
+    .addEventListener(
+      'click',
+      loadAdminAttendance
+    );
+
+
+  $('adminAttendanceBody')
+    .addEventListener(
+      'click',
+      async event => {
+
+        const button =
+          event.target.closest(
+            '[data-attendance-user]'
+          );
+
+        if(!button){
+
+          return;
+
+        }
+
+
+        const userId =
+          button.dataset
+            .attendanceUser;
+
+
+        const status =
+          button.dataset
+            .attendanceStatus;
+
+
+        const date =
+          $('attendanceDate')
+            .value;
+
+
+        try{
+
+          await api(
+            '/api/admin/attendance',
+            {
+              method:'POST',
+
+              headers:{
+                'Content-Type':
+                  'application/json'
+              },
+
+              body:
+                JSON.stringify({
+                  userId,
+                  date,
+                  status
+                })
+
+            }
+          );
+
+
+          setMessage(
+            $('attendanceMessage'),
+            'تم تحديث الحضور.',
+            'success'
+          );
+
+
+          await loadAdminAttendance();
+
+
+        }catch(error){
+
+          setMessage(
+            $('attendanceMessage'),
+            error.message,
+            'error'
+          );
+
+        }
+
+      }
+    );
+
+
+  /* =========================
+     LOGOUT
+  ========================= */
+
+  $('logoutBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        try{
+
+          await api(
+            '/api/logout',
+            {
+              method:'POST'
+            }
+          );
+
+        }catch{}
+
+        window.location.replace(
+          'index.html'
+        );
+
+      }
+    );
+
+
+  /* =========================
+     START
+  ========================= */
+
+  (async () => {
+
+    try{
+
+      const data =
+        await api(
+          '/api/me'
+        );
+
+
+      currentUser =
+        data.user;
+
+
+      showUser();
+
+
+      await loadLecture();
+
+
+      if(
+        currentUser.role ===
+        'admin'
+      ){
+
+        await loadStudents();
+
+        await loadAdminAttendance();
+
+      }else{
+
+        await loadGrades();
+
+        await loadStudentAttendance();
+
+      }
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+      window.location.replace(
+        'index.html'
+      );
+
+    }
+
+  })();
 
 </script>
 
