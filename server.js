@@ -187,7 +187,7 @@ async function verifyEmailVerificationToken(
 
 function getRuntimeSecret(name) {
   try {
-    const value =
+    const runtimeValue =
       env &&
       Object.prototype.hasOwnProperty.call(
         env,
@@ -196,7 +196,16 @@ function getRuntimeSecret(name) {
         ? env[name]
         : '';
 
-    return String(value || '').trim();
+    if (String(runtimeValue || '').trim()) {
+      return String(runtimeValue).trim();
+    }
+
+    const processValue =
+      globalThis?.process?.env?.[name] || '';
+
+    return String(
+      processValue || ''
+    ).trim();
   } catch {
     return '';
   }
