@@ -1693,6 +1693,7 @@ button{
         <tr>
           <th>الاسم</th>
           <th>التسجيل</th>
+          <th>الإيميل</th>
           <th>السنة</th>
           <th>المادة</th>
           <th>الاشتراك</th>
@@ -1705,7 +1706,7 @@ button{
 
         <tr>
           <td
-            colspan="7"
+            colspan="8"
             class="empty"
           >
             جاري التحميل...
@@ -2090,6 +2091,11 @@ button{
         <input id="editLogin">
 
       </div>
+      
+      <div class="field full-field">
+        <label>الإيميل</label>
+        <input id="editEmail" type="email" placeholder="example@gmail.com">
+      </div>
 
 
 
@@ -2234,6 +2240,11 @@ button{
       <div class="info">
         <small>التسجيل</small>
         <strong id="profileLogin">-</strong>
+      </div>
+      
+      <div class="info">
+        <small>الإيميل</small>
+        <strong id="profileEmail">-</strong>
       </div>
 
       <div class="info">
@@ -3305,6 +3316,10 @@ function renderStudents(
             ${esc(student.login)}
           </td>
 
+          <td dir="ltr" style="text-align:left;word-break:break-all">
+            ${esc(student.email || 'غير مضاف')}
+          </td>
+
           <td>
             ${esc(student.grade)}
           </td>
@@ -3389,6 +3404,7 @@ $('studentSearch').oninput =
               [
                 student.fullName,
                 student.login,
+                student.email,
                 student.grade,
                 student.subject,
                 student.mode
@@ -3472,6 +3488,9 @@ function openEdit(id){
 
   $('editLogin').value =
     student.login || '';
+
+  $('editEmail').value =
+    student.email || '';
 $('editGrade').value =
     student.grade || '';
 
@@ -3542,6 +3561,11 @@ $('saveEdit').onclick =
 
         login:
           $('editLogin')
+            .value
+            .trim(),
+
+        email:
+          $('editEmail')
             .value
             .trim(),
 grade:
@@ -3640,6 +3664,9 @@ async function openProfile(id){
 
     $('profileLogin').textContent =
       profile.login || '-';
+
+    $('profileEmail').textContent =
+      profile.email || 'غير مضاف';
 
     $('profileGrade').textContent =
       profile.grade || '-';
